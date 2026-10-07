@@ -20,6 +20,9 @@
     "A placeholder until the real widgets are built." : {
       "comment" : "Widget gallery description of the placeholder widget."
     },
+    "Anytime" : {
+
+    },
     "Done once, on one day." : {
 
     },
@@ -28,6 +31,9 @@
     },
     "Evening" : {
       "comment" : "Part of the day"
+    },
+    "Every day" : {
+
     },
     "Morning" : {
       "comment" : "Part of the day"
@@ -52,6 +58,12 @@
 
     },
     "Tomorrow" : {
+
+    },
+    "Weekdays" : {
+
+    },
+    "Weekends" : {
 
     },
     "Yesterday" : {

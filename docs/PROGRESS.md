@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-13 · Tasks tab
+**Current task:** T-14 · History
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -22,7 +22,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-10 | Settings | B · App screens | ✅ | 2026-10-07 | Settings screen with every F-16 setting, 15-minute `MinuteIntervalPicker` limited to valid part times, notification status with the system link. Help › How to use is added with the guide (T-28). 96 `TempoTests`, 7 UI tests and 140 Core tests pass on iOS 27.0. D-066, D-067. |
 | T-11 | Task editor | B · App screens | ✅ | 2026-10-07 | Editor sheet for every type and timing, validation messages, "Already over" parts, schedule note, confirmations for Delete, End habit and Delete with history. `WeekdayPicker`, `TaskManager.updateOneTime`, D-035 checks. 117 `TempoTests`, 10 UI tests and 144 Core tests pass on iOS 27.0. D-068–D-072 (D-070 has an open question). |
 | T-12 | Today screen and Log time | B · App screens | ✅ | 2026-10-07 | Today with day strip, sections from `DayPlan`, folded ended parts, live "ends in", rows, swipe actions, delete confirmations, link focus, empty states; Log time sheet. ▶ waits for the timer (T-20). 131 `TempoTests`, 15 UI tests and 150 Core tests pass on iOS 27.0. D-073–D-077. |
-| T-13 | Tasks tab | B · App screens | ⬜ |  |  |
+| T-13 | Tasks tab | B · App screens | ✅ | 2026-10-07 | Habits and One-time segments (remembered with `@AppStorage`), progress lines, date groups, + presets, empty states. `HabitProgress` in Core. 136 `TempoTests`, 17 UI tests and 153 Core tests pass on iOS 27.0. D-078. |
 | T-14 | History | B · App screens | ⬜ |  |  |
 | T-15 | Habit detail | B · App screens | ⬜ |  |  |
 | T-16 | Missed tab | B · App screens | ⬜ |  |  |

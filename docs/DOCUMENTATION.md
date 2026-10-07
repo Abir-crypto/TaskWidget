@@ -332,7 +332,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Tasks (T-13), Habit detail (T-15), Missed (T-16), Stats (T-18), History (T-14), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: Habit detail (T-15), Missed (T-16), Stats (T-18), History (T-14), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -407,9 +407,39 @@ Reads everything through a `Snapshot`; writes completions, dates (move), copies,
 - Haptics on completing and switching days (T-31).
 
 ## F-11 · Tasks tab
-Status: Not built · Last updated: —
+Status: Built (T-13) · Last updated: 2026-10-07 · T-13
 
-_Not built yet. Intended behavior: SPEC F-11._
+### What it does
+Two lists behind a segmented control: active habits with their progress, and upcoming one-time tasks.
+
+### Behavior
+- **Segment:** "Habits" (default) or "One-time". The last choice is stored with `@AppStorage("tasksSegment")` and survives a restart.
+- **Habits:** every habit that hasn't ended, in creation order, including habits that haven't started yet. Each row has a type icon (progress `checkmark.circle`, duration `timer`), the title, a schedule summary and a progress line:
+  - schedule: "Every day", "Weekdays", "Weekends", or short weekday names in the region's order ("Mon, Wed, Fri"), then " · " and the timing ("Evening", "12:30", "Anytime"). It uses the latest schedule, which applies from today.
+  - progress habits: "4 of 5 this week" (done scheduled days of this week out of its scheduled days, within the habit's start and last day), or "Day 12 of 30" when it has a set length;
+  - duration habits: "2h 10m of 3h 30m this week" (weekly total against the weekly goal, SPEC §5.5);
+  - a habit that hasn't started: "Starts Thu 8 Oct" (D-078).
+  - Tapping a row opens Habit detail (placeholder until T-15).
+- **One-time:** every one-time task dated today or later that isn't done and isn't missed, grouped under "Today", "Tomorrow" or a short date, in day order within a date. Each row shows the title and its timing. Tapping opens the editor. Today's missed tasks are in the Missed tab instead.
+- **Floating +:** opens the editor with a progress habit preset on Habits (it can still be changed), or a one-time task on One-time.
+- **Clock button:** opens History.
+- **Empty states** (F-24): "No habits yet" with "Add a habit"; "No upcoming tasks" with "Add a task".
+
+### Data
+Reads everything through a `Snapshot`.
+
+### Implementation (iOS)
+- Views: `Tempo/Views/Tasks/TasksView`, `TasksViewModel`, `TasksSegment`, `HabitSummary`, `OneTimeGroup`; `Components/HabitRow`, `OneTimeRow`.
+- Rules: `Packages/Core/Sources/Core/Stats/HabitProgress` (week counts, day of length, not started); `DurationMath.weeklyProgress`.
+- Utilities: `Shared/Utilities/Formatters/ScheduleFormatter`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Stats/HabitProgressTests.swift`.
+- `TempoTests/ViewModels/TasksViewModelTests.swift`: active habits and their progress lines, set lengths, upcoming one-time tasks grouped by date without done or missed ones, empty lists, weekday summaries.
+- `TempoUITests/TasksUITests.swift`: the segment survives a restart; + presets the type from the segment, with both empty states.
+
+### Known gaps
+- None for F-11. Habit detail itself comes in T-15.
 
 ## F-12 · History
 Status: Not built · Last updated: —
@@ -597,7 +627,7 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-23._
 
 ## F-24 · Empty states
-Status: Partly built (T-12) · Last updated: 2026-10-07 · T-12
+Status: Partly built (T-12, T-13) · Last updated: 2026-10-07 · T-13
 
 ### What it does
 Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
@@ -609,10 +639,12 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | Today, a future day | "Nothing planned for Thu 8 Oct" with "Add a task" (preset to that day) |
 | Today, an empty past day | "Nothing was planned for Mon 5 Oct" |
 | Today, an empty part | Small grey text, e.g. "Nothing this evening" (wording per day in F-10, D-074) |
-| Everything else | Not built yet (T-13 onward) |
+| Tasks › Habits | "No habits yet" with "Add a habit" (progress habit preset) |
+| Tasks › One-time | "No upcoming tasks" with "Add a task" (one-time preset) |
+| Everything else | Not built yet (T-14 onward) |
 
 ### Implementation (iOS)
-- `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`.
+- `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift` and `Tempo/Views/Tasks/TasksView.swift`.
 
 ### Known gaps
 - The rest of the F-24 table, with its screens; T-29 checks every row.

@@ -4,6 +4,16 @@
     "" : {
 
     },
+    "%@ of %@ this week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@ this week"
+          }
+        }
+      }
+    },
     "%@ starts at" : {
 
     },
@@ -26,6 +36,16 @@
         }
       }
     },
+    "%lld of %lld this week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld this week"
+          }
+        }
+      }
+    },
     "A habit measured in minutes against a daily target." : {
 
     },
@@ -39,6 +59,9 @@
 
     },
     "Add" : {
+
+    },
+    "Add a habit" : {
 
     },
     "Add a task" : {
@@ -107,6 +130,16 @@
     "Date" : {
 
     },
+    "Day %lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Day %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "Delete" : {
 
     },
@@ -161,6 +194,9 @@
     "Evening" : {
       "comment" : "Part of the day"
     },
+    "Every day" : {
+
+    },
     "Fixed time" : {
 
     },
@@ -168,6 +204,9 @@
 
     },
     "Habit" : {
+
+    },
+    "Habits" : {
 
     },
     "Has missed tasks" : {
@@ -186,6 +225,9 @@
 
     },
     "It moves to History with its stats, and you can start it again later." : {
+
+    },
+    "List" : {
 
     },
     "Log time" : {
@@ -224,10 +266,16 @@
     "No anytime tasks" : {
 
     },
+    "No habits yet" : {
+
+    },
     "No tasks" : {
 
     },
     "No tasks today" : {
+
+    },
+    "No upcoming tasks" : {
 
     },
     "Noon" : {
@@ -350,6 +398,9 @@
     "Starts" : {
 
     },
+    "Starts %@" : {
+
+    },
     "Stats" : {
 
     },
@@ -408,6 +459,12 @@
 
     },
     "Version" : {
+
+    },
+    "Weekdays" : {
+
+    },
+    "Weekends" : {
 
     },
     "When" : {

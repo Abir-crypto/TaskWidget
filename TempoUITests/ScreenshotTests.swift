@@ -64,4 +64,15 @@ final class ScreenshotTests: XCTestCase {
         _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
         save(app, "today-empty")
     }
+
+    @MainActor
+    func testTasks() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        app.tabBars.buttons["Tasks"].tap()
+        app.buttons["Habits"].tap()
+        _ = app.staticTexts["Take medicine"].waitForExistence(timeout: 5)
+        save(app, "tasks-habits")
+        app.buttons["One-time"].tap()
+        save(app, "tasks-onetime")
+    }
 }
