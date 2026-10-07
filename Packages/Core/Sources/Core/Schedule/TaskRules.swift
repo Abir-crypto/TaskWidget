@@ -9,6 +9,9 @@ public enum TaskRules {
     /// Set lengths: 1–365 days, 30 when switched on.
     public static let lengthRange = 1...365
     public static let defaultLength = 30
+    /// Log time: 5–480 minutes in 5-minute steps (SPEC F-05).
+    public static let logTimeRange = 5...480
+    public static let logTimeStep = 5
 
     /// The title with leading and trailing spaces removed.
     public static func normalizedTitle(_ title: String) -> String {
@@ -32,6 +35,10 @@ public enum TaskRules {
         guard type == .duration else { return target == nil ? nil : .invalidTarget }
         guard let target, targetRange.contains(target), target % targetStep == 0 else { return .invalidTarget }
         return nil
+    }
+
+    public static func logTimeError(_ minutes: Int) -> TaskRuleError? {
+        logTimeRange.contains(minutes) && minutes % logTimeStep == 0 ? nil : .invalidLogTime
     }
 
     public static func lengthError(_ length: Int?) -> TaskRuleError? {
@@ -69,4 +76,6 @@ public enum TaskRuleError: Error, Hashable, Sendable {
     case invalidLength
     /// The date or start day is before today.
     case dayInPast
+    /// Logged minutes aren't 5–480 in 5-minute steps.
+    case invalidLogTime
 }

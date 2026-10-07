@@ -79,6 +79,36 @@ final class TaskManager {
         return occurrence
     }
 
+    // MARK: Time
+
+    /// Log time: adds a manual entry to today (SPEC F-05). 5–480 minutes in 5-minute steps, and only on a day
+    /// between the habit's start and last day.
+    @discardableResult
+    func logTime(taskID: UUID, minutes: Int) throws -> TimeEntryValue {
+        if let error = TaskRules.logTimeError(minutes) { throw TaskError.invalid(error) }
+        let task = try existingTask(taskID)
+        guard task.type == .duration else { throw TaskError.wrongType }
+        guard Editability.canLogTime(task: task, day: today, today: today, calendar: calendar) else {
+            throw TaskError.notAllowed
+        }
+        let entry = TimeEntryValue(
+            taskID: taskID, day: today, seconds: minutes * 60, source: .manual, createdAt: clock.now)
+        try store.write([.timeEntry(entry)])
+        refresh.afterChange()
+        return entry
+    }
+
+    /// Deletes one of today's time entries. Entries on past days are read-only (SPEC F-05).
+    func deleteTimeEntry(id: UUID) throws {
+        guard var entry = try store.timeEntries(taskID: nil).first(where: { $0.id == id }) else {
+            throw TaskError.notFound
+        }
+        guard Editability.canDeleteTimeEntry(entry, today: today) else { throw TaskError.notAllowed }
+        entry.deletedAt = clock.now
+        try store.write([.timeEntry(entry)])
+        refresh.afterChange()
+    }
+
     // MARK: Move
 
     /// Move to tomorrow, or Move to next day on a future day (SPEC F-04). A task that isn't missed changes its

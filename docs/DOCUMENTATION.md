@@ -235,9 +235,33 @@ Reads `completions` and `time_entries`; writes `completions` and `tasks.date`. U
 - Screens that show statuses and offer these actions come in T-12 onward. The timer's exception for past days arrives with T-19.
 
 ## F-05 · Time tracking
-Status: Not built · Last updated: —
+Status: Partly built (T-06) · Last updated: 2026-10-07 · T-06
 
-_Not built yet. Intended behavior: SPEC F-05._
+### What it does
+Duration habits collect time entries. The math for minutes, weekly goals and totals is in `Core`, and `TaskManager` can log time by hand and delete today's entries. There's no UI yet.
+
+### Behavior
+- **Minutes** for a habit on a day: the sum of that day's live entries' seconds, divided by 60 and rounded down (3,599 s → 59 min). There's no upper limit.
+- **Scheduled days** in a range: days between the start and last day whose weekday is in that day's schedule.
+- **Goal** over a range (`DurationMath.goal`): the sum of each scheduled day's own target, so a target changed mid-week adds up day by day (30 + 45 + 45).
+- **Total** over a range (`total`): the minutes of every live day in the range, scheduled or not. Minutes on an unscheduled day count toward totals but don't make the day scheduled.
+- **Weekly progress** (`weeklyProgress`): goal and total for the week containing a day, starting on the region's first weekday, counting only days between the start and last day. The goal is met when the total reaches it. The SPEC §5.5 example gives a goal of 90 and a total of 115.
+- **Log time** (`TaskManager.logTime`): a manual entry on today, 5–480 minutes in 5-minute steps (`invalidLogTime`). Only duration habits (`wrongType`), and only when today is between the habit's start and last day (`notAllowed`), whether or not today is scheduled. Entries can't be added to future or past days.
+- **Deleting an entry** (`deleteTimeEntry`): only entries from today; past entries are read-only (`notAllowed`).
+
+### Data
+`time_entries` (`source = manual` for Log time).
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Duration/` — `DurationMath`, `GoalProgress`; `TaskRules.logTimeError`.
+- Manager: `Shared/Managers/TaskManager.swift` — `logTime`, `deleteTimeEntry`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Duration/DurationMathTests.swift`: rounding, summing, the §5.5 example, a mid-week target change, mid-week weekday change, start and last days, unscheduled days, region week start, Log time steps.
+- `TempoTests/Managers/TimeLoggingTests.swift`: Log time on today and unscheduled days, refused on future and ended habits, steps, type, deleting today's but not past entries.
+
+### Known gaps
+- The Log time sheet (T-12), today's entries in Habit detail (T-15), and the timer's entries (T-19).
 
 ## F-06 · Timer
 Status: Not built · Last updated: —
