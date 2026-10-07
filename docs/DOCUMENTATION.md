@@ -330,9 +330,33 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-13._
 
 ## F-14 · Stats
-Status: Not built · Last updated: —
+Status: Partly built (T-08) · Last updated: 2026-10-07 · T-08
 
-_Not built yet. Intended behavior: SPEC F-14._
+### What it does
+The stats formulas (SPEC §5.7) and the data for every Stats card exist in `Core` (`StatsCalculator.stats(for:)` → `StatsSnapshot`). The screen comes in T-18.
+
+### Behavior
+- **Ranges** (`StatsRange`): a week (region's first weekday), a calendar month or a calendar year. `previous`/`next` step by one range. The screen may go forward only while the next range has started (`canGoForward`), and back only while the previous range ends on or after the day the first live task was created (`canGoBack`, `firstDay`).
+- **Counting:** ranges count up to and including today. Past occurrences always count; today's count only once Done, Missed or Short. Future days never count.
+- **Completion rate** (`CompletionRate`): done ÷ counted, shown as a whole percent rounded half up (23 of 28 → 82%). With no counted days it's `nil`, shown as "—" (D-062).
+- **Change from previous:** this range's percent minus the previous range's, in points, using the rounded percents. `nil` (hidden) when either range has no counted days.
+- **One-time completed:** one-time tasks whose date is in the range, up to today, with a completion. A task completed early for a later date counts once its date arrives.
+- **Total time:** minutes across every duration habit and live day in the range.
+- **Completion chart data:** one `DayRate` per day of the range; for a year, also one `MonthRate` per month.
+- **Time per duration habit** (`HabitTime`): minutes in the range against the sum of its targets over every scheduled day of the range, including days still to come.
+- **Parts of the day** (`PartRate`): done ÷ counted for Morning, Noon, Evening, Night and Anytime over every type of occurrence with a final status; fixed times count in their part. **Most missed** is the lowest rate among those with at least 3 counted, the earlier part winning a tie; none if no part has 3.
+- **Streaks** (`Streak`): per habit, the run of consecutive done scheduled days counting back from the most recent counted day (unscheduled days are skipped; an Upcoming or Open today doesn't break it, and a Done today extends it). Best is the longest run ever. Sorted by current streak, highest first, then creation order.
+- **Habits list** (`HabitRate`): each habit live on at least one day of the range, with its rate. Ended habits appear for ranges they were live in. No habits → `hasHabits` is false (empty state, F-24).
+- **Per-habit helpers** for Habit detail: `rate(of:from:through:)`, `statuses(of:from:through:)` (status per scheduled day; unscheduled days are absent), `streak(of:)`.
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Stats/` — `StatsCalculator`, `StatsSnapshot` (+ `DayRate`, `MonthRate`, `HabitTime`, `PartRate`, `HabitStreak`, `HabitRate`), `StatsRange` (+ `StatsRangeKind`), `CompletionRate`, `Streak`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Stats/StatsCalculatorTests.swift`: 23 of 28 → 82%, rounding, today's evening habit at 13:00, future days, change hidden and shown, duration goals with future days, part rates and Most missed with the minimum of 3, final statuses only, streaks across unscheduled days and an Open today, best runs, streak order, no habits → "—", one-time counts, chart sizes, habits live in a range, range navigation, first day, week statuses.
+
+### Known gaps
+- The Stats screen (T-18) and Habit detail (T-15).
 
 ## F-15 · Task editor
 Status: Not built · Last updated: —

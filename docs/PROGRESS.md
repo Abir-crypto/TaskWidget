@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-08 · Stats calculations
+**Current task:** T-09 · App structure and navigation
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -17,7 +17,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-05 | Status and the daily cycle | A · Foundation | ✅ | 2026-10-07 | `Core/Status`: `StatusRules`, `Editability`, `MovePlan`; `Status`, `ActivityLog`, `Snapshot`. `TaskManager`: complete, undo, toggle, Move to tomorrow, and Editability checks before every write. 80 Core tests (Mac and iOS 27.0) and 70 `TempoTests` pass. D-060. |
 | T-06 | Duration math | A · Foundation | ✅ | 2026-10-07 | `Core/Duration`: `DurationMath`, `GoalProgress`; Log time rule. `TaskManager.logTime` (today only) and `deleteTimeEntry` (today's only). 90 Core tests (Mac and iOS 27.0) and 76 `TempoTests` pass. |
 | T-07 | Next-task rule and missed queries | A · Foundation | ✅ | 2026-10-07 | `Core/NextTask` (`NextTaskRule`, `NextTask`, `NextTaskKind`), `Core/Missed` (`MissedQueries`, `MissedFilter` and its parts), `DayOrder`. 116 Core tests (Mac and iOS 27.0) and 76 `TempoTests` pass. D-061. |
-| T-08 | Stats calculations | A · Foundation | ⬜ |  |  |
+| T-08 | Stats calculations | A · Foundation | ✅ | 2026-10-07 | `Core/Stats`: `StatsCalculator` → `StatsSnapshot`, `StatsRange`, `CompletionRate`, `Streak`. 136 Core tests (Mac and iOS 27.0) and 76 `TempoTests` pass. D-062. Phase A done. |
 | T-09 | App structure and navigation | B · App screens | ⬜ |  |  |
 | T-10 | Settings | B · App screens | ⬜ |  |  |
 | T-11 | Task editor | B · App screens | ⬜ |  |  |
