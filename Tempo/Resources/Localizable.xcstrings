@@ -30,6 +30,16 @@
     "%@ total" : {
 
     },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
     "%lld done" : {
 
     },
@@ -41,6 +51,16 @@
     },
     "%lld missed" : {
 
+    },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
     },
     "%lld of %lld min" : {
       "localizations" : {
@@ -81,6 +101,9 @@
 
     },
     "Add a habit" : {
+
+    },
+    "Add a habit to see your stats" : {
 
     },
     "Add a task" : {
@@ -146,6 +169,9 @@
     "Close" : {
 
     },
+    "Completion" : {
+
+    },
     "Couldn't change the habit" : {
 
     },
@@ -164,6 +190,16 @@
     "Current" : {
 
     },
+    "Current %lld · Best %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Current %1$lld · Best %2$lld"
+          }
+        }
+      }
+    },
     "Custom" : {
 
     },
@@ -171,6 +207,9 @@
 
     },
     "Date" : {
+
+    },
+    "Day" : {
 
     },
     "Day %lld of %lld" : {
@@ -274,6 +313,9 @@
     "Habit" : {
 
     },
+    "Habit days done" : {
+
+    },
     "Habits" : {
 
     },
@@ -316,8 +358,14 @@
     "Missed" : {
 
     },
+    "Month" : {
+
+    },
     "Morning" : {
       "comment" : "Part of the day"
+    },
+    "Most missed: %@" : {
+
     },
     "Move to next day" : {
 
@@ -329,6 +377,9 @@
 
     },
     "Newest first" : {
+
+    },
+    "Next" : {
 
     },
     "Next month" : {
@@ -350,6 +401,9 @@
 
     },
     "No filters" : {
+
+    },
+    "No habit days" : {
 
     },
     "No habits yet" : {
@@ -452,6 +506,9 @@
     "One-time" : {
       "comment" : "Task type"
     },
+    "One-time tasks completed" : {
+
+    },
     "Ongoing" : {
 
     },
@@ -462,6 +519,9 @@
 
     },
     "Order" : {
+
+    },
+    "Overview" : {
 
     },
     "Part of the day" : {
@@ -477,6 +537,9 @@
 
     },
     "Pick today or a later day." : {
+
+    },
+    "Previous" : {
 
     },
     "Previous month" : {
@@ -569,6 +632,15 @@
     "Streak" : {
 
     },
+    "Streaks" : {
+
+    },
+    "Tap a day to open it in Today." : {
+
+    },
+    "Tap a month to see it." : {
+
+    },
     "Task" : {
 
     },
@@ -617,6 +689,9 @@
     "Time can only be logged today, between the habit's start and last day." : {
 
     },
+    "Time logged" : {
+
+    },
     "Timer" : {
 
     },
@@ -647,6 +722,9 @@
     "Version" : {
 
     },
+    "Week" : {
+
+    },
     "Weekdays" : {
 
     },
@@ -654,6 +732,9 @@
 
     },
     "When" : {
+
+    },
+    "Year" : {
 
     },
     "Yesterday" : {
@@ -674,8 +755,40 @@
     "^[%lld hour](inflect: true)" : {
 
     },
+    "down %lld points from %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "down %1$lld points from %2$@"
+          }
+        }
+      }
+    },
     "ends in %@" : {
 
+    },
+    "last month" : {
+
+    },
+    "last week" : {
+
+    },
+    "last year" : {
+
+    },
+    "same as %@" : {
+
+    },
+    "up %lld points from %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "up %1$lld points from %2$@"
+          }
+        }
+      }
     },
     "—" : {
 

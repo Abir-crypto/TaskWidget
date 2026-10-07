@@ -14,6 +14,7 @@ final class AppDependencies {
     let settings: SettingsManager
     let tasks: TaskManager
     let missed: MissedManager
+    let stats: StatsManager
 
     init(
         clock: any Clock,
@@ -30,6 +31,7 @@ final class AppDependencies {
         self.settings = SettingsManager(store: store, refresh: refresh)
         self.tasks = TaskManager(store: store, clock: clock, refresh: refresh)
         self.missed = MissedManager(tasks: tasks, deviceState: deviceState, clock: clock)
+        self.stats = StatsManager(tasks: tasks, clock: clock)
     }
 
     /// The real dependencies: the shared App Group store, the system clock and WidgetKit. UI tests get an

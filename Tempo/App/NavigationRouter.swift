@@ -57,6 +57,13 @@ final class NavigationRouter {
         editor = request
     }
 
+    /// Opens a day in Today from inside the app, for example from the Stats chart (SPEC F-14). Unlike a link,
+    /// this isn't an outside open, so it doesn't affect the missed popup.
+    func showDay(_ day: DayKey) {
+        todayFocus = TodayFocus(day: day, part: nil, taskID: nil)
+        selectedTab = .today
+    }
+
     /// Opens the Missed tab with Earlier filtered to one habit (SPEC F-13 "See all").
     func showMissed(for taskID: UUID) {
         missedTaskFilter = taskID

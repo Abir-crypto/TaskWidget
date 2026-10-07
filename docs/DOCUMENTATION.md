@@ -343,7 +343,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Stats (T-18), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -518,33 +518,40 @@ Reads everything through a `Snapshot`; deletes time entries, ends habits and sta
 - ▶ for duration habits, hidden while a timer exists (T-20).
 
 ## F-14 · Stats
-Status: Partly built (T-08) · Last updated: 2026-10-07 · T-08
+Status: Built (T-08, T-18) · Last updated: 2026-10-07 · T-18
 
 ### What it does
-The stats formulas (SPEC §5.7) and the data for every Stats card exist in `Core` (`StatsCalculator.stats(for:)` → `StatsSnapshot`). The screen comes in T-18.
+The Stats tab shows a week, month or year: an overview, a completion chart, time per duration habit, parts of the day, streaks and each habit's rate. The formulas are SPEC §5.7, computed in `Core`.
 
 ### Behavior
-- **Ranges** (`StatsRange`): a week (region's first weekday), a calendar month or a calendar year. `previous`/`next` step by one range. The screen may go forward only while the next range has started (`canGoForward`), and back only while the previous range ends on or after the day the first live task was created (`canGoBack`, `firstDay`).
-- **Counting:** ranges count up to and including today. Past occurrences always count; today's count only once Done, Missed or Short. Future days never count.
-- **Completion rate** (`CompletionRate`): done ÷ counted, shown as a whole percent rounded half up (23 of 28 → 82%). With no counted days it's `nil`, shown as "—" (D-062).
-- **Change from previous:** this range's percent minus the previous range's, in points, using the rounded percents. `nil` (hidden) when either range has no counted days.
-- **One-time completed:** one-time tasks whose date is in the range, up to today, with a completion. A task completed early for a later date counts once its date arrives.
-- **Total time:** minutes across every duration habit and live day in the range.
-- **Completion chart data:** one `DayRate` per day of the range; for a year, also one `MonthRate` per month.
-- **Time per duration habit** (`HabitTime`): minutes in the range against the sum of its targets over every scheduled day of the range, including days still to come.
-- **Parts of the day** (`PartRate`): done ÷ counted for Morning, Noon, Evening, Night and Anytime over every type of occurrence with a final status; fixed times count in their part. **Most missed** is the lowest rate among those with at least 3 counted, the earlier part winning a tie; none if no part has 3.
-- **Streaks** (`Streak`): per habit, the run of consecutive done scheduled days counting back from the most recent counted day (unscheduled days are skipped; an Upcoming or Open today doesn't break it, and a Done today extends it). Best is the longest run ever. Sorted by current streak, highest first, then creation order.
-- **Habits list** (`HabitRate`): each habit live on at least one day of the range, with its rate. Ended habits appear for ranges they were live in. No habits → `hasHabits` is false (empty state, F-24).
-- **Per-habit helpers** for Habit detail: `rate(of:from:through:)`, `statuses(of:from:through:)` (status per scheduled day; unscheduled days are absent), `streak(of:)`.
+- **Range:** a segmented Week / Month / Year picker (Week by default), with the range's title between arrows: "Oct 4–10, 2026", "October 2026" or "2026", in the user's format. Switching kind goes to the period containing today. "Previous" is disabled when the previous range ends before the day the first live task was created; "Next" is disabled when the next range hasn't started.
+- **Overview:** the habits' completion rate in large type ("—" with no counted days), with "up 8 points from last week", "down 3 points from last month" or "same as last year" when the previous range has counted days; "Habit days done" ("23 of 28"); "One-time tasks completed"; "Time logged" ("3h 10m").
+- **Completion chart:**
+  - Week: a bar per day (Swift Charts), 0–100%, colored by completion (green at 100%, paler green from 50%, orange below, red at 0%; grey for days with nothing counted).
+  - Month: a calendar grid with each day tinted the same way; future days are faint; today has an accent outline.
+  - Year: a bar per month ("Jan" … "Dec").
+  - Tapping a day (Week or Month) opens that day in Today (read-only for past days); tapping a month in the Year chart shows that month (D-083). The footer says "Tap a day to open it in Today." or "Tap a month to see it." VoiceOver gets one button per day or month with its date and percentage.
+- **Time** (only when there are duration habits in the range): each habit's "1h 5m of 3h 30m" with a progress bar (goal includes days still to come).
+- **Parts of the day:** Morning, Noon, Evening, Night and Anytime with their rates ("—" when nothing counted), and "Most missed: Evening" in the footer when a part qualifies (at least 3 counted).
+- **Streaks:** each habit's "Current 3 · Best 4", highest current first.
+- **Habits:** each habit live in the range with its rate; tapping opens Habit detail.
+- **Empty state** (F-24): with no habits, "Add a habit to see your stats" with "Add a habit" (progress habit preset).
+- Reloads after every change and when the app becomes active.
+- **Formulas** (T-08, `StatsCalculator`): counted days up to and including today (today only once final), rates rounded half up, change in rounded points, one-time tasks by date up to today, total time, goals including future days, part rates over final statuses, streaks skipping unscheduled days and an open today (D-062).
 
 ### Implementation (iOS)
+- Views: `Tempo/Views/Stats/StatsView`, `StatsViewModel`; `Components/WeekChart`, `MonthGrid`, `YearChart`, `RateColor`.
+- Manager: `Shared/Managers/StatsManager`.
+- App: `NavigationRouter.showDay(_:)` opens a day in Today without counting as an outside link.
 - Rules: `Packages/Core/Sources/Core/Stats/` — `StatsCalculator`, `StatsSnapshot` (+ `DayRate`, `MonthRate`, `HabitTime`, `PartRate`, `HabitStreak`, `HabitRate`), `StatsRange` (+ `StatsRangeKind`), `CompletionRate`, `Streak`.
 
 ### Tests
-- `Packages/Core/Tests/CoreTests/Stats/StatsCalculatorTests.swift`: 23 of 28 → 82%, rounding, today's evening habit at 13:00, future days, change hidden and shown, duration goals with future days, part rates and Most missed with the minimum of 3, final statuses only, streaks across unscheduled days and an Open today, best runs, streak order, no habits → "—", one-time counts, chart sizes, habits live in a range, range navigation, first day, week statuses.
+- `Packages/Core/Tests/CoreTests/Stats/StatsCalculatorTests.swift` (formulas, T-08).
+- `TempoTests/ViewModels/StatsViewModelTests.swift`: every card for a week, switching kinds, navigation limits, tapping a month, the empty state, tapping a day.
+- `TempoUITests/StatsUITests.swift`: the empty state and its button; range limits; tapping a day in the month grid opens it in Today.
 
 ### Known gaps
-- The Stats screen (T-18) and Habit detail (T-15).
+- None for F-14.
 
 ## F-15 · Task editor
 Status: Built (T-11) · Last updated: 2026-10-07 · T-11
@@ -693,7 +700,7 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-23._
 
 ## F-24 · Empty states
-Status: Partly built (T-12–T-16) · Last updated: 2026-10-07 · T-16
+Status: Partly built (T-12–T-18) · Last updated: 2026-10-07 · T-18
 
 ### What it does
 Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
@@ -714,7 +721,8 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | Missed › Today | "You haven't missed a task today" |
 | Missed › Earlier | "Nothing missed before today" |
 | Missed, filters with no results | "No missed tasks match these filters" with "Clear filters" |
-| Everything else | Not built yet (T-18 onward) |
+| Stats, with no habits | "Add a habit to see your stats" with "Add a habit" |
+| Everything else | Not built yet (task picker T-20, widgets T-24 onward) |
 
 ### Implementation (iOS)
 - `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.

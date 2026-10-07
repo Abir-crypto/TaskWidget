@@ -115,4 +115,22 @@ final class ScreenshotTests: XCTestCase {
         _ = app.buttons["Not now"].waitForExistence(timeout: 5)
         save(app, "missed-popup")
     }
+
+    @MainActor
+    func testStats() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        app.tabBars.buttons["Stats"].tap()
+        _ = app.staticTexts["Overview"].waitForExistence(timeout: 5)
+        save(app, "stats-1-week")
+        app.swipeUp()
+        save(app, "stats-2-week-scrolled")
+        app.swipeUp()
+        save(app, "stats-3-week-scrolled")
+        app.swipeDown()
+        app.swipeDown()
+        app.buttons["Month"].tap()
+        save(app, "stats-4-month")
+        app.buttons["Year"].tap()
+        save(app, "stats-5-year")
+    }
 }
