@@ -14,6 +14,11 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Notification details (T-21)
+- Platform: ios.md §10 — the delegate holds early responses; the planner returns content and `NotificationText` writes the words.
+- Platform: ios.md §13 — `-ui-testing-finished-timer` (added in T-20).
+- No changes to SPEC.md. D-087 and D-088 fill gaps in F-07: the Morning summary's wording and count, how the recap classes tasks, and clearing pending notifications when permission is off.
+
 ## 2026-10-07 · Missed popup details (T-17)
 - Platform: ios.md §13 — `-ui-testing-no-popup` keeps the missed popup out of UI tests that aren't about it.
 - No changes to SPEC.md. D-082: swiping the popup away counts as seen, like its buttons.

@@ -1,6 +1,59 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ and %lld more" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ and %2$lld more"
+          }
+        }
+      }
+    },
+    "%@ at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ at %2$@"
+          }
+        }
+      }
+    },
+    "%@ ends in %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ends in %2$lld min"
+          }
+        }
+      }
+    },
+    "%@ timer is still running" : {
+
+    },
+    "%@ …and %lld anytime" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ …and %2$lld anytime"
+          }
+        }
+      }
+    },
+    "%lld left: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld left: %2$@"
+          }
+        }
+      }
+    },
     "%lld of %lld min" : {
       "localizations" : {
         "en" : {
@@ -35,6 +88,15 @@
     "Every day" : {
 
     },
+    "In %lld min" : {
+
+    },
+    "It's been running for ^[%lld hour](inflect: true)." : {
+
+    },
+    "Keep going" : {
+
+    },
     "Morning" : {
       "comment" : "Part of the day"
     },
@@ -50,11 +112,33 @@
     "Progress" : {
       "comment" : "Task type"
     },
+    "Stop" : {
+
+    },
     "Tempo" : {
       "comment" : "App name, shown in the placeholder widget and its gallery title.",
       "shouldTranslate" : false
     },
+    "Timer is still running" : {
+
+    },
     "Today" : {
+
+    },
+    "Today: %lld missed" : {
+
+    },
+    "Today: %lld missed, %lld still open" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today: %1$lld missed, %2$lld still open"
+          }
+        }
+      }
+    },
+    "Today: %lld still open" : {
 
     },
     "Tomorrow" : {
@@ -67,6 +151,9 @@
 
     },
     "Yesterday" : {
+
+    },
+    "^[%lld task](inflect: true)" : {
 
     }
   },

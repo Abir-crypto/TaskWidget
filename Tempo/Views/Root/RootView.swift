@@ -56,6 +56,13 @@ struct RootView: View {
             LogTimeView(dependencies: dependencies, taskID: request.taskID)
         }
         .environment(timerController)
+        // A new day or a new time zone changes every status and reminder (SPEC §6, ios.md §10).
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            timeChanged()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
+            timeChanged()
+        }
         .onOpenURL { url in
             router.open(DeepLink(url: url))
         }
@@ -74,6 +81,7 @@ struct RootView: View {
                 }
                 // A widget may have changed data while the app was in the background.
                 dependencies.refresh.dataMayHaveChanged()
+                Task { await dependencies.reminders.rebuild() }
                 showMissedPopupIfNeeded()
             case .background:
                 router.didEnterBackground()
@@ -81,6 +89,11 @@ struct RootView: View {
                 break
             }
         }
+    }
+
+    private func timeChanged() {
+        dependencies.refresh.dataMayHaveChanged()
+        Task { await dependencies.reminders.rebuild() }
     }
 
     /// Shows the missed popup on a normal open, when today has missed tasks it hasn't shown (SPEC F-08).

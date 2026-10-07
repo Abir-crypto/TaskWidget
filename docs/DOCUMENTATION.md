@@ -320,12 +320,55 @@ One timer per device, generic or for a habit, which can be paused, resumed, fini
 - Clocks count from the app's clock and then update themselves.
 
 ### Known gaps
-- The running alert notification and its Stop / Keep going (T-21); the widgets (T-23, T-24).
+- The widgets (T-23, T-24). The running alert notification and its Stop / Keep going are in F-07 (T-21).
 
 ## F-07 · Notifications
-Status: Not built · Last updated: —
+Status: Partly built (T-21) · Last updated: 2026-10-07 · T-21
 
-_Not built yet. Intended behavior: SPEC F-07._
+### What it does
+The app keeps the next 72 hours of reminders scheduled (the earliest 60): part summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap and the running-timer alert. The plan is rebuilt from the current data after every change. Asking for permission comes with the guide (T-28); until then Settings' "Allow notifications" asks.
+
+### Behavior
+- **Planning** (`ReminderPlanner`, SPEC §5.9), for every day from today to 72 hours ahead, judged on the data at the time of the rebuild:
+  - `part-start.<day>.<part>` at the part's start, when the part has tasks that aren't done. Morning also counts the day's Anytime tasks, and is sent even when only Anytime tasks are left.
+  - `ending-soon.<day>.<part>` at the part's end minus the lead (30 min by default), never before the part starts, when the part has tasks that aren't done.
+  - `fixed.<task_id>.<day>` at the fixed time minus the lead (10 min by default), when the task isn't done.
+  - `recap.<day>` at the recap time (23:30 by default), when the day has tasks that aren't done. Each is classed by its status at the recap time: Missed or Short → "missed", still Upcoming or Open → "still open".
+  - `timer-alert` at the timer's next alert time (`TimerRules.nextAlert`), while a timer is running.
+  - A duration habit counts as not done until it reaches its target. Each kind is skipped when turned off in Settings. Only notifications after now and within 72 hours are kept, earliest first, at most 60 (iOS allows 64).
+- **Words** (`NotificationText`), with lists of up to 3 names then "and N more"; fixed-time tasks read "Interview at 12:30"; duration habits show "(10 of 30 min)" in ending-soon and recap lists:
+  - Part starts: "Noon · 3 tasks" / "Call the bank, Interview at 12:30, Read". Morning counts its Anytime tasks in the title and adds "…and 2 anytime" to the body; with only Anytime tasks, the body lists them (D-087).
+  - Ending soon: "Evening ends in 30 min" (the actual minutes left if the part is shorter than the lead) / "2 left: Gym, Read (10 of 30 min)".
+  - Fixed time: "Interview at 12:30" / "In 10 min".
+  - Recap: "Today: 2 missed, 1 still open", "Today: 2 missed" or "Today: 1 still open" / the missed then open names.
+  - Timer: "Read timer is still running" or "Timer is still running" / "It's been running for 2 hours."
+  - Times follow the user's 12- or 24-hour setting.
+- **Delivery:** each notification uses a calendar trigger with year, month, day, hour and minute and no time zone, so reminders float with local time like the tasks. Sound is on. The timer alert has the `TIMER_ALERT` category with "Stop" (opens the app) and "Keep going".
+- **Rebuilding** (`ReminderManager.rebuild`) replaces every pending notification. It runs at launch, whenever the app becomes active, after every change (through `RefreshManager`, 0.5 s after a burst of changes; so Settings changes apply at once), on a day change or time zone change, and in the background refresh (`com.applab.tempo.refresh`, asked for again each time, no sooner than an hour later). Rebuilds run one at a time; one asked for during another runs once more afterward.
+- **Permission:** with permission refused or not yet given, nothing is scheduled (any pending requests are cleared) and nothing fails.
+- **While the app is open,** notifications still appear as banners, in the list, with sound.
+- **Tapping** a notification opens its place: part summaries and ending-soon → Today at that day and part; fixed time → Today at that task; recap → the Missed tab; timer alert → the timer screen. A tap counts as opening from a link, so the missed popup waits.
+- **Timer alert actions:** "Stop" pauses the timer and opens the timer screen; "Keep going" leaves it running and reschedules the alert one period later.
+- Taps that arrive before the app has finished starting are kept and handled once it's ready.
+
+### Data
+Reads everything plus `deviceState.timer`; reads the notification permission from the system.
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Reminders/` — `ReminderPlanner`, `PlannedNotification`, `ReminderContent`, `ReminderItem`, `ReminderDestination`.
+- Managers: `Shared/Managers/ReminderManager`, `ScheduledNotification`, `NotificationCategory`, `NotificationScheduling` (now with `replacePending`), `SystemNotificationScheduler` (+ `registerCategories`), `FixedNotificationScheduler`; `RefreshManager.reminders`, `refreshNowAndWait`.
+- Words: `Shared/Utilities/Formatters/NotificationText`.
+- App: `Tempo/App/AppDelegate` (notification delegate, via `UIApplicationDelegateAdaptor`), `NotificationActionHandler`, `NotificationResponse`, `BackgroundRefresh`; rebuild triggers in `TempoApp` and `RootView`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Reminders/ReminderPlannerTests.swift`: each kind's time and condition, Morning with Anytime, the ending-soon clamp, a lead in the past, recap classes, completing tasks, duration targets, settings toggles and leads, the 48–72 hour horizon and the limit, the timer alert (Keep going, paused, off), past fire times.
+- `TempoTests/Notifications/NotificationTextTests.swift`: every F-07 example word for word, "and N more", links.
+- `TempoTests/Notifications/ReminderManagerTests.swift`: rebuilds, refused permission, completing a task, Settings changes, the timer alert and its category, rebuilding after any change, overlapping rebuilds.
+- `TempoTests/Notifications/NotificationActionHandlerTests.swift`: taps open each place; Stop; Keep going.
+
+### Known gaps
+- Asking for permission on the guide's last page (T-28).
+- Rebuilding from widget buttons (T-22).
 
 ## F-08 · Missed tasks
 Status: Built (T-03, T-07, T-16, T-17) · Last updated: 2026-10-07 · T-17
@@ -367,7 +410,7 @@ Reads everything through a `Snapshot`; writes completions and copies through `Ta
   - A link that arrives while the popup is open closes it.
 
 ### Known gaps
-- The end-of-day recap that lists all of today's missed tasks comes with notifications (T-21).
+- None for F-08. The end-of-day recap (F-07) lists all of today's missed tasks, including ones the popup has shown.
 
 ## F-09 · Navigation and app structure
 Status: Built (T-09) · Last updated: 2026-10-07 · T-09
@@ -668,7 +711,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 - **About:** "Version" shows the marketing version and build, e.g. "1.0 (1)".
 - **Validation** (`SettingsValue.validationError`): part times follow F-02; leads and the alert period must be one of their choices; the recap must be a 15-minute step from Night's start to 23:45. A change that breaks a rule isn't saved, and the screen reloads what's stored.
 - Times show in the user's 12- or 24-hour format (`TimeOfDayFormatter`).
-- Saving refreshes the widgets (and, from T-21, the notifications) through `RefreshManager`.
+- Saving refreshes the widgets and rebuilds the notifications through `RefreshManager`, so a kind turned off or a new lead time applies at once.
 
 ### Data
 `settings` (every column). Reads the notification permission from the system.
@@ -687,7 +730,6 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 
 ### Known gaps
 - **Help › How to use** comes with the guide (T-28).
-- Settings changes rebuild notifications once they exist (T-21).
 
 ## F-17 · Widgets: general rules
 Status: Not built · Last updated: —
@@ -803,7 +845,7 @@ Everything is stored on the device in one SwiftData store inside the App Group, 
   - Setting a value to empty removes the key. A value that can't be decoded reads as empty and is logged. The guide-completed flag will use `@AppStorage` (T-28).
 - **Sharing with the widgets:** the store file is `Tempo.store` in the App Group container. Every read and write makes a fresh `ModelContext`, so each process sees the other's writes (CLAUDE.md, ios.md §6).
 - **If the store can't be opened,** the app shows "Can't open your tasks" / "Something went wrong while opening Tempo's data. Close the app and open it again." (D-057).
-- **After every write** through a manager, `RefreshManager.afterChange()` reloads every widget, 0.5 s after the last of a burst of writes. `refreshNow()` skips the wait, for App Intents. Notification rebuilding joins it in T-21.
+- **After every write** through a manager, `RefreshManager.afterChange()` reloads every widget and rebuilds the notifications, 0.5 s after the last of a burst of writes. `refreshNow()` skips the wait; `refreshNowAndWait()` also waits for the notifications, for App Intents (T-21).
 
 ### Data
 All tables in SPEC §4 and the device-only state in §4.6.

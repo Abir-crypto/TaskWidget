@@ -3,8 +3,8 @@ import Observation
 
 /// Runs after every write so every view of the data catches up (ios.md §4, rule 2).
 ///
-/// It reloads every widget. Notification rebuilding joins it in T-21. Screens watch `revision` and reload
-/// from storage when it changes.
+/// It reloads every widget and rebuilds the pending notifications. Screens watch `revision` and reload from
+/// storage when it changes.
 @Observable
 @MainActor
 final class RefreshManager {
@@ -16,6 +16,8 @@ final class RefreshManager {
 
     @ObservationIgnored private let widgets: any WidgetReloading
     @ObservationIgnored private var pending: Task<Void, Never>?
+    /// Rebuilds notifications after each refresh. Set once the reminder manager exists.
+    @ObservationIgnored var reminders: ReminderManager?
 
     init(widgets: any WidgetReloading) {
         self.widgets = widgets
@@ -42,7 +44,19 @@ final class RefreshManager {
     func refreshNow() {
         pending?.cancel()
         pending = nil
-        Log.refresh.debug("Reloading widgets")
+        Log.refresh.debug("Reloading widgets and rebuilding notifications")
         widgets.reloadAll()
+        if let reminders {
+            Task { await reminders.rebuild() }
+        }
+    }
+
+    /// Refreshes immediately and waits for the notifications to be rebuilt. App Intents use this, because the
+    /// extension's process may end as soon as the intent returns.
+    func refreshNowAndWait() async {
+        pending?.cancel()
+        pending = nil
+        widgets.reloadAll()
+        await reminders?.rebuild()
     }
 }

@@ -16,6 +16,7 @@ final class AppDependencies {
     let missed: MissedManager
     let stats: StatsManager
     let timer: TimerManager
+    let reminders: ReminderManager
 
     init(
         clock: any Clock,
@@ -34,6 +35,8 @@ final class AppDependencies {
         self.missed = MissedManager(tasks: tasks, deviceState: deviceState, clock: clock)
         self.stats = StatsManager(tasks: tasks, clock: clock)
         self.timer = TimerManager(deviceState: deviceState, tasks: tasks, clock: clock, refresh: refresh)
+        self.reminders = ReminderManager(store: store, deviceState: deviceState, scheduler: notifications, clock: clock)
+        refresh.reminders = reminders
     }
 
     /// The real dependencies: the shared App Group store, the system clock and WidgetKit. UI tests get an

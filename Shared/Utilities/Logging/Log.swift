@@ -9,4 +9,5 @@ enum Log {
     static let settings = Logger(subsystem: subsystem, category: "Settings")
     static let tasks = Logger(subsystem: subsystem, category: "Tasks")
     static let refresh = Logger(subsystem: subsystem, category: "Refresh")
+    static let reminders = Logger(subsystem: subsystem, category: "Reminders")
 }

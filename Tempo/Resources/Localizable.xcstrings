@@ -4,6 +4,36 @@
     "" : {
 
     },
+    "%@ and %lld more" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ and %2$lld more"
+          }
+        }
+      }
+    },
+    "%@ at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ at %2$@"
+          }
+        }
+      }
+    },
+    "%@ ends in %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ ends in %2$lld min"
+          }
+        }
+      }
+    },
     "%@ of %@" : {
       "localizations" : {
         "en" : {
@@ -27,8 +57,21 @@
     "%@ starts at" : {
 
     },
+    "%@ timer is still running" : {
+
+    },
     "%@ total" : {
 
+    },
+    "%@ …and %lld anytime" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ …and %2$lld anytime"
+          }
+        }
+      }
     },
     "%@: %@" : {
       "localizations" : {
@@ -42,6 +85,16 @@
     },
     "%lld done" : {
 
+    },
+    "%lld left: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld left: %2$@"
+          }
+        }
+      }
     },
     "%lld min" : {
 
@@ -385,16 +438,25 @@
     "History" : {
 
     },
+    "In %lld min" : {
+
+    },
     "It moves to History with its stats, and you can start it again later." : {
 
     },
     "It moves to History with its stats, and you can start it again later. Its running timer will be discarded." : {
 
     },
+    "It's been running for ^[%lld hour](inflect: true)." : {
+
+    },
     "Its running timer will be discarded." : {
 
     },
     "Its time won't be saved." : {
+
+    },
+    "Keep going" : {
 
     },
     "Less than a minute, nothing saved." : {
@@ -716,6 +778,9 @@
     "Stats" : {
 
     },
+    "Stop" : {
+
+    },
     "Streak" : {
 
     },
@@ -779,6 +844,9 @@
     "Timer" : {
 
     },
+    "Timer is still running" : {
+
+    },
     "Title" : {
 
     },
@@ -789,6 +857,22 @@
 
     },
     "Today's time" : {
+
+    },
+    "Today: %lld missed" : {
+
+    },
+    "Today: %lld missed, %lld still open" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today: %1$lld missed, %2$lld still open"
+          }
+        }
+      }
+    },
+    "Today: %lld still open" : {
 
     },
     "Tomorrow" : {
@@ -837,6 +921,9 @@
 
     },
     "^[%lld hour](inflect: true)" : {
+
+    },
+    "^[%lld task](inflect: true)" : {
 
     },
     "down %lld points from %@" : {
