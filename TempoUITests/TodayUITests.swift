@@ -23,7 +23,8 @@ final class TodayUITests: XCTestCase {
     @MainActor
     func testLogTimeFromASwipe() {
         let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
-        let read = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read'")).firstMatch
+        // Swipe the whole row; a swipe that starts on the short title near the edge reads as a tap.
+        let read = app.cells.containing(.staticText, identifier: "Read").firstMatch
         XCTAssertTrue(read.waitForExistence(timeout: 5))
         read.swipeRight()
         app.buttons["Log time"].tap()

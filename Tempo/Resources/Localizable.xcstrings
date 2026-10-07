@@ -72,6 +72,16 @@
         }
       }
     },
+    "%lld of %lld min today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld min today"
+          }
+        }
+      }
+    },
     "%lld of %lld this week" : {
       "localizations" : {
         "en" : {
@@ -100,6 +110,12 @@
     "Add" : {
 
     },
+    "Add %@ to" : {
+
+    },
+    "Add a duration task" : {
+
+    },
     "Add a habit" : {
 
     },
@@ -114,6 +130,29 @@
     },
     "Add task" : {
 
+    },
+    "Added %lld min" : {
+
+    },
+    "Added %lld min to %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Added %1$lld min to %2$@"
+          }
+        }
+      }
+    },
+    "Added %lld min to %@ · %lld of %lld min %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Added %1$lld min to %2$@ · %3$lld of %4$lld min %5$@"
+          }
+        }
+      }
     },
     "Alert after" : {
 
@@ -152,6 +191,9 @@
 
     },
     "Cancel" : {
+
+    },
+    "Change task" : {
 
     },
     "Changes apply from today. Earlier days keep their old schedule." : {
@@ -237,6 +279,12 @@
     "Delete with history" : {
 
     },
+    "Discard" : {
+
+    },
+    "Discard this timer?" : {
+
+    },
     "Done" : {
 
     },
@@ -272,6 +320,9 @@
 
     },
     "End habit keeps its history and stats. Delete with history removes them for good." : {
+
+    },
+    "End habit keeps its history and stats. Delete with history removes them for good. Its running timer will be discarded." : {
 
     },
     "End or delete this habit?" : {
@@ -337,6 +388,18 @@
     "It moves to History with its stats, and you can start it again later." : {
 
     },
+    "It moves to History with its stats, and you can start it again later. Its running timer will be discarded." : {
+
+    },
+    "Its running timer will be discarded." : {
+
+    },
+    "Its time won't be saved." : {
+
+    },
+    "Less than a minute, nothing saved." : {
+
+    },
     "List" : {
 
     },
@@ -365,6 +428,9 @@
       "comment" : "Part of the day"
     },
     "Most missed: %@" : {
+
+    },
+    "Move %@ to" : {
 
     },
     "Move to next day" : {
@@ -400,6 +466,9 @@
     "No data yet. Check back after its first day." : {
 
     },
+    "No duration tasks yet" : {
+
+    },
     "No filters" : {
 
     },
@@ -425,6 +494,9 @@
 
     },
     "No time logged today" : {
+
+    },
+    "No timer running" : {
 
     },
     "No upcoming tasks" : {
@@ -518,6 +590,9 @@
     "Open Settings" : {
 
     },
+    "Opens the timer" : {
+
+    },
     "Order" : {
 
     },
@@ -531,6 +606,12 @@
 
     },
     "Parts of the day" : {
+
+    },
+    "Pause" : {
+
+    },
+    "Paused" : {
 
     },
     "Pick at least one day" : {
@@ -567,6 +648,9 @@
 
     },
     "Repeat on" : {
+
+    },
+    "Resume" : {
 
     },
     "Review missed tasks" : {
@@ -617,6 +701,9 @@
     "Start again" : {
 
     },
+    "Start timer" : {
+
+    },
     "Started again" : {
 
     },
@@ -663,9 +750,6 @@
 
     },
     "This month" : {
-
-    },
-    "This screen is being built." : {
 
     },
     "This task can't be changed any more." : {
@@ -780,6 +864,9 @@
     "same as %@" : {
 
     },
+    "today" : {
+
+    },
     "up %lld points from %@" : {
       "localizations" : {
         "en" : {
@@ -789,6 +876,9 @@
           }
         }
       }
+    },
+    "· Paused" : {
+
     },
     "—" : {
 

@@ -5,6 +5,7 @@ struct RootView: View {
     let dependencies: AppDependencies
     @Bindable var router: NavigationRouter
     @State private var model: RootViewModel
+    @State private var timerController: TimerController
     /// The popup content on screen, kept so it can be marked seen when the popup closes.
     @State private var shownPopup: MissedPopupContent?
     @Environment(\.scenePhase) private var scenePhase
@@ -13,6 +14,7 @@ struct RootView: View {
         self.dependencies = dependencies
         self.router = router
         _model = State(initialValue: RootViewModel(missed: dependencies.missed))
+        _timerController = State(initialValue: TimerController(dependencies: dependencies, router: router))
     }
 
     var body: some View {
@@ -37,8 +39,11 @@ struct RootView: View {
                 Color.clear.task(id: context.date) { model.load() }
             }
         }
-        .task(id: dependencies.refresh.revision) { model.load() }
-        .sheet(item: $router.editor) { request in
+        .task(id: dependencies.refresh.revision) {
+            model.load()
+            timerController.load()
+        }
+        .sheet(item: $router.editor, onDismiss: { router.editorDidClose() }) { request in
             TaskEditorView(dependencies: dependencies, request: request)
         }
         .sheet(isPresented: $router.isTimerScreenPresented) {
@@ -50,6 +55,7 @@ struct RootView: View {
         .sheet(item: $router.logTime) { request in
             LogTimeView(dependencies: dependencies, taskID: request.taskID)
         }
+        .environment(timerController)
         .onOpenURL { url in
             router.open(DeepLink(url: url))
         }
@@ -100,5 +106,7 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView(dependencies: .preview(hour: 13, sample: true), router: NavigationRouter())
+    let dependencies = AppDependencies.preview(hour: 13, sample: true)
+    let router = NavigationRouter()
+    return RootView(dependencies: dependencies, router: router).environment(router)
 }

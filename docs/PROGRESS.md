@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-20 · Timer in the app
+**Current task:** T-21 · Notifications
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -29,7 +29,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-17 | Missed popup | B · App screens | ✅ | 2026-10-07 | Popup on normal opens (0.5 s after active), Review highlights in Missed, Not now; seen list per day; skipped when opened from a link. 164 `TempoTests`, 27 UI tests and 153 Core tests pass on iOS 27.0. D-082. |
 | T-18 | Stats screen | B · App screens | ✅ | 2026-10-07 | Week/Month/Year with limits, overview with change, week and year bar charts and month grid (tap opens Today or the month), time, parts with Most missed, streaks, habits, empty state. `StatsManager`. 170 `TempoTests`, 29 UI tests and 153 Core tests pass on iOS 27.0. D-083. Phase B done. |
 | T-19 | Timer engine | C · Timer | ✅ | 2026-10-07 | `Core/Timer/TimerRules`; `TimerManager` (start, pause, resume, finish, save, discard, next alert) on `DeviceState`; `TaskManager` timer entries to the start day and timer discard on end/delete. 183 `TempoTests` and 163 Core tests pass on iOS 27.0 (no UI changes, so no UI-test run). |
-| T-20 | Timer in the app | C · Timer | ⬜ |  |  |
+| T-20 | Timer in the app | C · Timer | ✅ | 2026-10-07 | ▶ on Today and Habit detail, timer bar on every tab, timer screen with earlier progress, task picker (order, Discard, empty state), confirmation with Undo and Change task, timer-discard warnings. 194 `TempoTests`, 32 UI tests and 163 Core tests pass on iOS 27.0. D-084–D-086. Phase C done. |
 | T-21 | Notifications | D · Notifications | ⬜ |  |  |
 | T-22 | Widget foundation | E · Widgets | ⬜ |  |  |
 | T-23 | Timer widget | E · Widgets | ⬜ |  |  |

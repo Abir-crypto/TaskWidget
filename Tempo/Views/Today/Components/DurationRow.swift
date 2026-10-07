@@ -1,10 +1,12 @@
 import Core
 import SwiftUI
 
-/// A duration habit on Today: the title and progress ("10 of 30 min"), and Done once the target is reached
-/// (SPEC F-10). The ▶ button arrives with the timer (T-20).
+/// A duration habit on Today: the title, progress ("10 of 30 min") and ▶, and Done once the target is reached
+/// (SPEC F-10).
 struct DurationRow: View {
     let item: DayItem
+    /// Starts a timer for the habit. `nil` hides ▶: while a timer exists, or when time can't be logged today.
+    var onStart: (() -> Void)?
 
     private var target: Int { item.targetMinutes ?? 0 }
     private var progress: Double { target > 0 ? min(Double(item.minutes) / Double(target), 1) : 0 }
@@ -41,9 +43,19 @@ struct DurationRow: View {
                 }
                 StatusLabel(status: item.status).font(.caption.weight(.semibold))
             }
+            if let onStart {
+                Button(action: onStart) {
+                    Image(systemName: "play.circle.fill")
+                        .font(.title)
+                        .foregroundStyle(.tint)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel(Text("Start timer"))
+                .accessibilityValue(Text(item.task.title))
+            }
         }
         .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }
 

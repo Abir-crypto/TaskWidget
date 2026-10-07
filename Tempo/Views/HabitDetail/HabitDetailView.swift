@@ -7,6 +7,7 @@ struct HabitDetailView: View {
     let dependencies: AppDependencies
     @State private var model: HabitDetailViewModel
     @Environment(NavigationRouter.self) private var router
+    @Environment(TimerController.self) private var timer
     @Environment(\.dismiss) private var dismiss
 
     init(dependencies: AppDependencies, taskID: UUID) {
@@ -41,7 +42,13 @@ struct HabitDetailView: View {
             Button("End habit") { model.endHabit() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("It moves to History with its stats, and you can start it again later.")
+            if timer.isTiming(model.taskID) {
+                Text(
+                    "It moves to History with its stats, and you can start it again later. Its running timer will be discarded."
+                )
+            } else {
+                Text("It moves to History with its stats, and you can start it again later.")
+            }
         }
         .alert(
             "Couldn't change the habit",
@@ -114,6 +121,13 @@ struct HabitDetailView: View {
     @ViewBuilder
     private func actions(_ task: TaskValue) -> some View {
         Section {
+            if task.type == .duration, model.canLogTime, timer.active == nil {
+                Button {
+                    timer.startHabit(task.id)
+                } label: {
+                    Label("Start timer", systemImage: "play.fill")
+                }
+            }
             if task.type == .duration, model.canLogTime {
                 Button {
                     router.logTime = LogTimeRequest(taskID: task.id)
@@ -275,5 +289,5 @@ struct HabitDetailView: View {
     return NavigationStack {
         HabitDetailView(dependencies: dependencies, taskID: id)
     }
-    .environment(NavigationRouter())
+    .previewEnvironment(dependencies)
 }

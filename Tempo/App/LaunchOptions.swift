@@ -7,17 +7,21 @@ import Foundation
 /// - `-ui-testing-timezone <identifier>`: the time zone rules run in, so fixed times mean the same on any Mac.
 /// - `-ui-testing-sample`: start with `SampleData`.
 /// - `-ui-testing-no-popup`: mark today's missed tasks as already seen, so the missed popup stays away.
+/// - `-ui-testing-finished-timer <seconds>`: leave a finished generic timer waiting for the task picker, as the
+///   Timer widget's Done does.
 struct LaunchOptions {
     var isUITesting = false
     var fixedNow: Date?
     var timeZone: TimeZone?
     var usesSampleData = false
     var suppressesMissedPopup = false
+    var finishedTimerSeconds: Int?
 
     init(arguments: [String] = ProcessInfo.processInfo.arguments) {
         isUITesting = arguments.contains("-ui-testing")
         usesSampleData = arguments.contains("-ui-testing-sample")
         suppressesMissedPopup = arguments.contains("-ui-testing-no-popup")
+        finishedTimerSeconds = value(after: "-ui-testing-finished-timer", in: arguments).flatMap(Int.init)
         fixedNow = value(after: "-ui-testing-now", in: arguments).flatMap { ISO8601DateFormatter().date(from: $0) }
         timeZone = value(after: "-ui-testing-timezone", in: arguments).flatMap(TimeZone.init(identifier:))
     }

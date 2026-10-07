@@ -159,5 +159,6 @@ struct MissedView: View {
 }
 
 #Preview {
-    MissedView(dependencies: .preview(hour: 13, sample: true), router: NavigationRouter())
+    let dependencies = AppDependencies.preview(hour: 13, sample: true)
+    return MissedView(dependencies: dependencies, router: NavigationRouter()).previewEnvironment(dependencies)
 }

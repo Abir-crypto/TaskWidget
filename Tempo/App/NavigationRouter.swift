@@ -18,6 +18,8 @@ final class NavigationRouter {
     var editor: EditorRequest?
     var isTimerScreenPresented = false
     var taskPicker: TaskPickerRequest?
+    /// Kept while the editor adds a duration task from the empty task picker; the picker reopens after (D-084).
+    var resumePickerAfterEditor: TaskPickerRequest?
     var logTime: LogTimeRequest?
     var isSettingsPresented = false
     var isHistoryPresented = false
@@ -75,6 +77,13 @@ final class NavigationRouter {
         missedPopup = nil
         missedHighlight = Set(occurrenceIDs)
         selectedTab = .missed
+    }
+
+    /// Called when the editor closes: reopens a task picker that was waiting for a new duration task.
+    func editorDidClose() {
+        guard let request = resumePickerAfterEditor else { return }
+        resumePickerAfterEditor = nil
+        taskPicker = request
     }
 
     func didEnterBackground() {

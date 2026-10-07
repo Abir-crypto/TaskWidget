@@ -208,10 +208,11 @@ struct StatsView: View {
 }
 
 #Preview("Sample") {
-    StatsView(dependencies: .preview(hour: 13, sample: true), router: NavigationRouter())
-        .environment(NavigationRouter())
+    let dependencies = AppDependencies.preview(hour: 13, sample: true)
+    return StatsView(dependencies: dependencies, router: NavigationRouter()).previewEnvironment(dependencies)
 }
 
 #Preview("Empty") {
-    StatsView(dependencies: .preview(), router: NavigationRouter())
+    let dependencies = AppDependencies.preview()
+    return StatsView(dependencies: dependencies, router: NavigationRouter()).previewEnvironment(dependencies)
 }

@@ -6,6 +6,7 @@ struct TodayView: View {
     let dependencies: AppDependencies
     @Bindable var router: NavigationRouter
     @State private var model: TodayViewModel
+    @Environment(TimerController.self) private var timer
 
     init(dependencies: AppDependencies, router: NavigationRouter) {
         self.dependencies = dependencies
@@ -47,10 +48,15 @@ struct TodayView: View {
         ) { item in
             deleteButtons(for: item)
         } message: { item in
-            Text(
-                item.task.type == .oneTime
-                    ? "This can't be undone."
-                    : "End habit keeps its history and stats. Delete with history removes them for good.")
+            if item.task.type == .oneTime {
+                Text("This can't be undone.")
+            } else if timer.isTiming(item.task.id) {
+                Text(
+                    "End habit keeps its history and stats. Delete with history removes them for good. Its running timer will be discarded."
+                )
+            } else {
+                Text("End habit keeps its history and stats. Delete with history removes them for good.")
+            }
         }
         .alert(
             "Couldn't change the task",
@@ -174,7 +180,9 @@ struct TodayView: View {
     @ViewBuilder
     private func rowContent(_ item: DayItem) -> some View {
         if item.task.type == .duration {
-            DurationRow(item: item)
+            DurationRow(
+                item: item,
+                onStart: timer.active == nil && model.canLogTime(item) ? { timer.startHabit(item.task.id) } : nil)
         } else {
             TaskRow(item: item, canComplete: model.canComplete(item)) { model.toggleCompletion(item) }
         }
@@ -260,9 +268,11 @@ struct TodayView: View {
 }
 
 #Preview("Today") {
-    TodayView(dependencies: .preview(hour: 13, sample: true), router: NavigationRouter())
+    let dependencies = AppDependencies.preview(hour: 13, sample: true)
+    return TodayView(dependencies: dependencies, router: NavigationRouter()).previewEnvironment(dependencies)
 }
 
 #Preview("Empty") {
-    TodayView(dependencies: .preview(), router: NavigationRouter())
+    let dependencies = AppDependencies.preview()
+    return TodayView(dependencies: dependencies, router: NavigationRouter()).previewEnvironment(dependencies)
 }

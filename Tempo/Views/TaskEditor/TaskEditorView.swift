@@ -6,6 +6,7 @@ struct TaskEditorView: View {
     let dependencies: AppDependencies
     @State private var model: TaskEditorViewModel
     @State private var confirming: TaskEditorViewModel.DestructiveAction?
+    @Environment(TimerController.self) private var timer
     @Environment(\.dismiss) private var dismiss
 
     init(dependencies: AppDependencies, request: EditorRequest) {
@@ -255,13 +256,23 @@ struct TaskEditorView: View {
         }
     }
 
-    private func confirmationMessage(for action: TaskEditorViewModel.DestructiveAction) -> LocalizedStringKey {
+    private func confirmationMessage(for action: TaskEditorViewModel.DestructiveAction) -> String {
+        var message: String
         switch action {
-        case .deleteOneTime: "This can't be undone."
-        case .endHabit: "It moves to History with its stats, and you can start it again later."
+        case .deleteOneTime:
+            message = String(localized: "This can't be undone.")
+        case .endHabit:
+            message = String(localized: "It moves to History with its stats, and you can start it again later.")
         case .deleteWithHistory:
-            "All of its history and stats will be deleted. This can't be undone. End the habit instead to keep them."
+            message = String(
+                localized:
+                    "All of its history and stats will be deleted. This can't be undone. End the habit instead to keep them."
+            )
         }
+        if action != .deleteOneTime, let id = model.editing?.id, timer.isTiming(id) {
+            message += " " + String(localized: "Its running timer will be discarded.")
+        }
+        return message
     }
 
     @ViewBuilder
@@ -293,9 +304,11 @@ struct TaskEditorView: View {
 }
 
 #Preview("New") {
-    TaskEditorView(dependencies: .preview(), request: .new())
+    let dependencies = AppDependencies.preview()
+    return TaskEditorView(dependencies: dependencies, request: .new()).previewEnvironment(dependencies)
 }
 
 #Preview("New duration habit") {
-    TaskEditorView(dependencies: .preview(hour: 18), request: .new(type: .duration))
+    let dependencies = AppDependencies.preview(hour: 18)
+    return TaskEditorView(dependencies: dependencies, request: .new(type: .duration)).previewEnvironment(dependencies)
 }

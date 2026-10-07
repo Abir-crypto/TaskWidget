@@ -9,7 +9,7 @@ final class HabitDetailUITests: XCTestCase {
     @MainActor
     func testOpensFromTodayWithItsSections() {
         let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
-        let read = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read'")).firstMatch
+        let read = app.staticTexts["Read"]
         XCTAssertTrue(read.waitForExistence(timeout: 5))
         read.tap()
         XCTAssertTrue(app.staticTexts["This week"].waitForExistence(timeout: 3))

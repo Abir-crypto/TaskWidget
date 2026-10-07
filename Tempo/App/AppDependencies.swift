@@ -55,6 +55,11 @@ final class AppDependencies {
             if options.suppressesMissedPopup, let unseen = try? dependencies.missed.unseenToday() {
                 dependencies.missed.markSeen(unseen.map(\.id))
             }
+            if let seconds = options.finishedTimerSeconds {
+                let day = DayKey(clock.now, calendar: clock.calendar)
+                deviceState.pendingOpenAction = .chooseTaskForTimer(
+                    FinishedTimer(habitID: nil, day: day, seconds: seconds))
+            }
             return dependencies
         }
         let clock = SystemClock()

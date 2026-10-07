@@ -269,10 +269,10 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 - Today's entries in Habit detail (T-15), and the timer's entries (T-19).
 
 ## F-06 · Timer
-Status: Partly built (T-19) · Last updated: 2026-10-07 · T-19
+Status: Partly built (T-19, T-20) · Last updated: 2026-10-07 · T-20
 
 ### What it does
-The timer engine: one timer per device, generic or for a habit, which can be paused, resumed, finished or discarded. Its state is stored on the device, shared by the app and the widgets. The timer's screens and widget controls come in T-20 and T-23.
+One timer per device, generic or for a habit, which can be paused, resumed, finished or discarded. Its state is stored on the device, shared by the app and the widgets. In the app it shows as a bar above the tabs and a timer screen, with a task picker and a confirmation after Done. Widget controls come in T-23 and T-24.
 
 ### Behavior
 - **State** (`TimerState`, in `deviceState.timer`): kind (`generic`/`habit`), habit id, the day it started, seconds counted in earlier segments, and the current segment's start (empty while paused). Because it stores moments, the timer keeps going across app restarts and device restarts. If the clock moves backwards, the time counted never goes below zero.
@@ -296,13 +296,31 @@ The timer engine: one timer per device, generic or for a habit, which can be pau
 ### Implementation (iOS)
 - Rules: `Packages/Core/Sources/Core/Timer/` — `TimerRules`, `TimerState`, `TimerKind`, `FinishedTimer`.
 - Manager: `Shared/Managers/TimerManager` (+ `TimerError`, `TimerSaveResult`); `TaskManager.addTimerEntry`, `moveTimeEntry`, `undoTimerEntry`, and the timer discard in `endHabit`/`deleteWithHistory` (`TaskManager` now takes the `DeviceState`).
+- App (T-20): `Tempo/App/TimerController` (in the environment), `ActiveTimer`, `TimerToast`, `TaskPickerRequest`; `NavigationRouter.resumePickerAfterEditor`, `editorDidClose`.
+- Views (T-20): `Tempo/Components/TimerBar/TimerBar`, `TimerClock`; `Tempo/Components/ConfirmationToast/ConfirmationToast`; `Tempo/Views/TimerScreen/TimerScreenView`; `Tempo/Views/TaskPicker/TaskPickerView`, `TaskPickerViewModel`, `PickerHabit`; ▶ in `Today/Components/DurationRow` and `HabitDetailView`.
 
 ### Tests
 - `Packages/Core/Tests/CoreTests/Timer/TimerRulesTests.swift`: start, paused time, no-op pause/resume, freezing at Done, the one-minute minimum, 23:40→00:20, a clock moved back, alert times, encoding.
 - `TempoTests/Managers/TimerManagerTests.swift`: one timer, which habits can be timed, pause/resume, Done, under a minute, past midnight, Discard, a generic timer's habit, alert times, ending and deleting the timed habit, a restart, Change task and Undo.
+- `TempoTests/ViewModels/TimerControllerTests.swift`: ▶ and the bar's state, Done with its confirmation, under a minute, a generic Done through the picker, Undo, Change task, Discard, the picker coming back after adding a task.
+- `TempoTests/ViewModels/TaskPickerViewModelTests.swift`: order, progress lines, the empty state, moving.
+- `TempoUITests/TimerUITests.swift`: ▶ starts a timer and hides every ▶, the bar on every tab, the timer screen with earlier time, Pause, Done; the picker from a finished generic timer and the confirmation's Undo; the picker's empty state.
+
+### In the app (T-20)
+- **▶** ("Start timer"): on Today's duration rows and as "Start timer" in Habit detail, only when no timer exists and the habit can receive time today. It starts a habit timer straight away. Every ▶ is hidden while a timer exists.
+- **Timer bar:** while a timer exists, a bar sits above the tab bar on every tab: an icon (timer, or pause when paused), the habit's title or "Timer", the clock counting up (frozen, with "· Paused", while paused), a Pause/Resume button and "Done". Tapping the bar opens the timer screen.
+- **Timer screen** (sheet): the title, a large clock, "Paused" when paused, and for habit timers a progress bar with "22 of 30 min today" (time logged earlier today plus the timer, refreshed every 15 seconds); "Pause"/"Resume", "Done", and "Discard" (confirmed with "Discard this timer?" / "Its time won't be saved."). "Close" leaves the timer running. With no timer it shows "No timer running".
+- **Done:**
+  - Habit timer: the time is saved (under a minute, nothing is saved) and the confirmation appears.
+  - Generic timer: the time is frozen and the **task picker** opens. A generic timer finished in the Timer widget opens the same picker through the pending open action.
+- **Task picker** (sheet, "Choose a task"): "Add 18 min to" above the duration habits live on the timer's day (today unless it ran past midnight). Habits scheduled that day and still below their target come first, then the rest (past their target, or not scheduled that day), each with "10 of 30 min" or "35 min". Choosing one saves the time and shows the confirmation. "Discard" throws the time away. It can't be swiped away, so the time is never lost by accident. With no duration habits: "No duration tasks yet", "Add a duration task" and "Discard"; Add keeps the time and reopens the picker when the editor closes (D-084).
+- **Confirmation:** in the timer bar's place for about 5 seconds: "Added 18 min to Read · 28 of 30 min today" (the day's date instead of "today" for a timer that ran past midnight), with "Undo" (deletes the entry) and "Change task" (opens the picker as "Move 18 min to", leaving out the current habit, and moves the entry). After a timer under a minute: "Less than a minute, nothing saved." (D-086).
+- **Ending or deleting a habit with a timer:** the existing confirmations (Today's delete, Habit detail's End habit, the editor's End habit and Delete with history) add "Its running timer will be discarded." (D-085).
+- The bar, screen and buttons reload after every change, including timer changes made by a widget.
+- Clocks count from the app's clock and then update themselves.
 
 ### Known gaps
-- The timer bar, timer screen, task picker, confirmation and ▶ buttons (T-20); the running alert notification (T-21); the widgets (T-23, T-24).
+- The running alert notification and its Stop / Keep going (T-21); the widgets (T-23, T-24).
 
 ## F-07 · Notifications
 Status: Not built · Last updated: —
@@ -362,7 +380,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Missed badge:** the number of today's Missed and Short tasks; hidden at 0. It's recounted on launch, after every change, when the app becomes active, and every minute (statuses change at part boundaries).
 - **Settings** opens from a gear button (accessibility label "Settings") at the top right of Today, pushed onto Today's navigation stack. **History** opens from a clock button ("History") on Tasks, pushed onto Tasks' stack (D-063).
 - **Floating + button** ("Add task"): bottom right of Today and Tasks only. Today's opens the editor preset to the selected day (F-10); Tasks' presets a progress habit (the segment comes with T-13). Scrolling content on those screens keeps an 88-point bottom margin, so the last row is never under the button.
-- **Timer bar slot:** every tab's root has a bottom safe-area inset for the timer bar, just above the tab bar. It takes no space until a timer exists (T-20).
+- **Timer bar:** every tab's root has the timer bar in a bottom safe-area inset, just above the tab bar, while a timer exists, and the timer's confirmation in the same place after Done (F-06).
 - **Presented over the tabs** as sheets: the editor, the timer screen and the task picker (D-063).
 - **Links** (`tempo://`, parsed by `DeepLink`):
   - `today[?day=yyyymmdd][&part=…][&task=<uuid>]` → the Today tab; the day, part and task are kept in `NavigationRouter.todayFocus` for the Today screen (T-12).
@@ -374,7 +392,6 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -394,7 +411,7 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 
 ### Known gaps
 - The screens behind the tabs are placeholders until their tasks.
-- The missed popup (T-17) and the timer bar's content (T-20).
+- None for F-09.
 
 ## F-10 · Today screen
 Status: Partly built (T-12) · Last updated: 2026-10-07 · T-12
@@ -412,14 +429,14 @@ The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening,
   - A part with no tasks shows small grey text: "Nothing this morning", "Nothing at noon", "Nothing this evening", "Nothing tonight" on today; "Nothing in the morning", "Nothing at noon", "Nothing in the evening", "Nothing at night" on other days; "No anytime tasks" for Anytime (D-074).
 - **Rows:**
   - One-time tasks and progress habits: a checkbox (accessibility "Mark done"/"Mark not done" with the title), the title (struck through and grey when done), "Habit" with a repeat icon for progress habits, the fixed time on the right if there is one, and a red "Missed" label when missed. The checkbox is disabled where F-04 doesn't allow completing.
-  - Duration habits: a progress ring, the title, "10 of 30 min", the fixed time if any, and "Done", "Short" or "Missed" with an icon once final. Time can still be added after Done.
+  - Duration habits: a progress ring, the title, "10 of 30 min", the fixed time if any, "Done", "Short" or "Missed" with an icon once final, and ▶ ("Start timer") while no timer exists and time can be logged today (F-06). Time can still be added after Done.
   - Statuses always come with text and an icon.
 - **Tapping a row:** a one-time task opens the editor (read-only for past days); a habit opens Habit detail.
 - **Swipe actions**, only where F-04 allows (D-077):
   - From the left: "Done"/"Undo" (one-time and progress, today; one-time on future days), "Log time" (duration habits, today).
   - From the right: "Delete", "Edit" (today and later), "Move to tomorrow" on today or "Move to next day" on a future day (one-time tasks that aren't done; not offered again once a missed task has been copied, D-081).
   - Past days have no swipe actions.
-- **Delete:** a one-time task asks "Delete this task?" ("This can't be undone."). A habit asks "End or delete this habit?" with "End habit" and "Delete with history" ("End habit keeps its history and stats. Delete with history removes them for good.").
+- **Delete:** a one-time task asks "Delete this task?" ("This can't be undone."). A habit asks "End or delete this habit?" with "End habit" and "Delete with history" ("End habit keeps its history and stats. Delete with history removes them for good.", plus "Its running timer will be discarded." when it's being timed).
 - **Floating +:** opens the editor preset to the selected day (today when a past day is selected).
 - **Links:** `tempo://today?day=…&part=…&task=…` selects the day, unfolds the part (or the task's part) and scrolls to the part or task.
 - **Empty states** (F-24): today with no tasks → "No tasks today" with "Add a task"; a future day → "Nothing planned for Thu 8 Oct" with "Add a task" preset to that day; a past day → "Nothing was planned for Mon 5 Oct". The day strip stays visible.
@@ -444,8 +461,6 @@ Reads everything through a `Snapshot`; writes completions, dates (move), copies,
 - `TempoUITests/TodayUITests.swift`: checkbox complete/undo, Log time from a swipe, Move to tomorrow from a swipe, swiping the strip by a week and the Today button, unfolding an ended part, disabled checkboxes on past days.
 
 ### Known gaps
-- ▶ on duration rows and hiding it while a timer exists (T-20).
-- The missed popup (T-17).
 - Haptics on completing and switching days (T-31).
 
 ## F-11 · Tasks tab
@@ -523,7 +538,7 @@ Pushed from a habit row in Today, Tasks or History, it shows one habit's schedul
 ### Behavior
 - **Title bar:** the habit's title, and "Edit" (opens the editor) on the right.
 - **Header:** the type with its icon, the title, the schedule summary ("Every day · Evening"), and for duration habits the target ("30 min a day"), then the length: "Day 12 of 30", "Ongoing", "Starts Thu 8 Oct" or "Ended Sat 26 Sep".
-- **Buttons:** "Log time" (duration habits, when time can be logged today; opens the Log time sheet), and "End habit" (with the confirmation "End this habit?" / "It moves to History with its stats, and you can start it again later.") for an active habit, or "Start again" for an ended one (confirmed with "Started again").
+- **Buttons:** "Start timer" (▶; duration habits, when time can be logged today and no timer exists), "Log time" (duration habits, when time can be logged today; opens the Log time sheet), and "End habit" (with the confirmation "End this habit?" / "It moves to History with its stats, and you can start it again later.") for an active habit, or "Start again" for an ended one (confirmed with "Started again").
 - **This week:** seven days in the region's order, each with an icon and color: done (filled check), short (half circle), missed (filled x), upcoming (empty circle, including today while open), not scheduled (dash). VoiceOver reads the weekday and the result.
 - **Month calendar:** the month's grid starting on the region's first weekday. Done days are green, missed red, short pale orange, upcoming outlined; today has an accent ring. Arrows move between months, from the habit's start month up to the current month. A legend (Done, Short, Missed, Upcoming) with icons sits under it. Each day reads its date and result to VoiceOver.
 - **Stats:** "This week", "This month" and "This year", each with the completion rate ("—" with no counted days, SPEC §5.7). Duration habits add the time: this week "1h 5m of 3h 30m" (against the weekly goal), the month and year "2h 20m total".
@@ -546,7 +561,7 @@ Reads everything through a `Snapshot`; deletes time entries, ends habits and sta
 - `TempoUITests/HabitDetailUITests.swift`: opening from Today with its sections, End habit confirming first, "See all" opening Missed.
 
 ### Known gaps
-- ▶ for duration habits, hidden while a timer exists (T-20).
+- None for F-13.
 
 ## F-14 · Stats
 Status: Built (T-08, T-18) · Last updated: 2026-10-07 · T-18
@@ -731,7 +746,7 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-23._
 
 ## F-24 · Empty states
-Status: Partly built (T-12–T-18) · Last updated: 2026-10-07 · T-18
+Status: Partly built (T-12–T-20) · Last updated: 2026-10-07 · T-20
 
 ### What it does
 Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
@@ -753,7 +768,8 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | Missed › Earlier | "Nothing missed before today" |
 | Missed, filters with no results | "No missed tasks match these filters" with "Clear filters" |
 | Stats, with no habits | "Add a habit to see your stats" with "Add a habit" |
-| Everything else | Not built yet (task picker T-20, widgets T-24 onward) |
+| Task picker, with no duration habits | "No duration tasks yet" with "Add a duration task" and "Discard" |
+| Widgets | Not built yet (T-24 onward) |
 
 ### Implementation (iOS)
 - `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.

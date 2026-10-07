@@ -100,9 +100,11 @@ struct TasksView: View {
 }
 
 #Preview("Sample") {
-    TasksView(dependencies: .preview(hour: 13, sample: true), router: NavigationRouter())
+    let dependencies = AppDependencies.preview(hour: 13, sample: true)
+    return TasksView(dependencies: dependencies, router: NavigationRouter()).previewEnvironment(dependencies)
 }
 
 #Preview("Empty") {
-    TasksView(dependencies: .preview(), router: NavigationRouter())
+    let dependencies = AppDependencies.preview()
+    return TasksView(dependencies: dependencies, router: NavigationRouter()).previewEnvironment(dependencies)
 }

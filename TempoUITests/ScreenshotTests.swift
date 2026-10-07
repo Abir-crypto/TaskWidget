@@ -133,4 +133,25 @@ final class ScreenshotTests: XCTestCase {
         app.buttons["Year"].tap()
         save(app, "stats-5-year")
     }
+
+    @MainActor
+    func testTimer() {
+        let app = UITestApp.launch(now: "2026-10-06T18:00:00+01:00", sample: true)
+        app.buttons["Start timer"].tap()
+        _ = app.buttons["Pause"].waitForExistence(timeout: 3)
+        save(app, "timer-1-bar")
+        app.staticTexts["Read"].firstMatch.tap()
+        _ = app.staticTexts["10 of 30 min today"].waitForExistence(timeout: 3)
+        save(app, "timer-2-screen")
+    }
+
+    @MainActor
+    func testTaskPicker() {
+        let app = UITestApp.launch(now: "2026-10-06T18:00:00+01:00", sample: true, finishedTimer: 1_080)
+        _ = app.staticTexts["Add 18 min to"].waitForExistence(timeout: 5)
+        save(app, "picker-1")
+        app.staticTexts["Read"].firstMatch.tap()
+        _ = app.buttons["Undo"].waitForExistence(timeout: 3)
+        save(app, "picker-2-toast")
+    }
 }

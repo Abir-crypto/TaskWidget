@@ -63,7 +63,7 @@ final class NavigationUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Cancel"].waitForExistence(timeout: 5))
 
         app.open(try XCTUnwrap(URL(string: "tempo://timer")))
-        XCTAssertTrue(app.staticTexts["Timer"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["No timer running"].waitForExistence(timeout: 5))
         app.buttons["Close"].tap()
 
         app.open(try XCTUnwrap(URL(string: "tempo://unknown")))
