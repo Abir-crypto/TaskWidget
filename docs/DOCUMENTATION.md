@@ -269,9 +269,40 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 - Today's entries in Habit detail (T-15), and the timer's entries (T-19).
 
 ## F-06 · Timer
-Status: Not built · Last updated: —
+Status: Partly built (T-19) · Last updated: 2026-10-07 · T-19
 
-_Not built yet. Intended behavior: SPEC F-06._
+### What it does
+The timer engine: one timer per device, generic or for a habit, which can be paused, resumed, finished or discarded. Its state is stored on the device, shared by the app and the widgets. The timer's screens and widget controls come in T-20 and T-23.
+
+### Behavior
+- **State** (`TimerState`, in `deviceState.timer`): kind (`generic`/`habit`), habit id, the day it started, seconds counted in earlier segments, and the current segment's start (empty while paused). Because it stores moments, the timer keeps going across app restarts and device restarts. If the clock moves backwards, the time counted never goes below zero.
+- **One timer:** starting another while one exists (running or paused) throws `TimerError.timerExists`.
+- **Habit timer** (`startHabitTimer`): only a duration habit that can receive time today (between its start and last day) (`cantTimeHabit` otherwise). Counting starts immediately.
+- **Generic timer** (`startGenericTimer`): no habit; the habit is chosen at Done.
+- **Pause / resume** (`pause`, `resume`): any number of times; paused time isn't counted. Pausing a paused timer, or resuming a running one, changes nothing.
+- **Done** (`finish`): the clock stops at that moment and the timer is cleared; the result (`FinishedTimer`) carries the frozen whole seconds, the habit (if any) and the day the timer started.
+  - **Habit timer** (`finishHabitTimer`): the time is saved straight away as a `timer` entry. Under 60 seconds, nothing is saved (`.tooShort`).
+  - **Generic timer:** `save(_:to:)` saves the frozen time to the chosen habit later; time spent choosing isn't counted.
+  - The entry always goes to the day the timer started, even after midnight. This is the only way to add time to a past day (`TaskManager.addTimerEntry`), and the habit must be live on that day.
+- **Discard** (`discard`): clears the timer and saves nothing.
+- **Running alert time** (`nextAlert(periodMinutes:)`): the first whole number of alert periods after the timer was last started or resumed that is still ahead of now, so after "Keep going" it comes back one period later. `nil` while paused. Notifications use it from T-21.
+- **Ending or deleting a habit** whose timer exists discards the timer (`TaskManager.endHabit`, `deleteWithHistory`). The app asks first (T-20).
+- **For the confirmation** (T-20): `TaskManager.moveTimeEntry` ("Change task") and `undoTimerEntry` ("Undo").
+- Every timer change refreshes the widgets through `RefreshManager`.
+
+### Data
+`deviceState.timer`; writes `time_entries` with `source = timer`.
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Timer/` — `TimerRules`, `TimerState`, `TimerKind`, `FinishedTimer`.
+- Manager: `Shared/Managers/TimerManager` (+ `TimerError`, `TimerSaveResult`); `TaskManager.addTimerEntry`, `moveTimeEntry`, `undoTimerEntry`, and the timer discard in `endHabit`/`deleteWithHistory` (`TaskManager` now takes the `DeviceState`).
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Timer/TimerRulesTests.swift`: start, paused time, no-op pause/resume, freezing at Done, the one-minute minimum, 23:40→00:20, a clock moved back, alert times, encoding.
+- `TempoTests/Managers/TimerManagerTests.swift`: one timer, which habits can be timed, pause/resume, Done, under a minute, past midnight, Discard, a generic timer's habit, alert times, ending and deleting the timed habit, a restart, Change task and Undo.
+
+### Known gaps
+- The timer bar, timer screen, task picker, confirmation and ▶ buttons (T-20); the running alert notification (T-21); the widgets (T-23, T-24).
 
 ## F-07 · Notifications
 Status: Not built · Last updated: —

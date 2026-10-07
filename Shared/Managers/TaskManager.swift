@@ -9,11 +9,14 @@ final class TaskManager {
     private let store: any TaskStore
     private let clock: any Clock
     private let refresh: RefreshManager
+    /// Where the timer lives, so ending or deleting a habit can discard its timer (SPEC F-06).
+    private let deviceState: DeviceState?
 
-    init(store: any TaskStore, clock: any Clock, refresh: RefreshManager) {
+    init(store: any TaskStore, clock: any Clock, refresh: RefreshManager, deviceState: DeviceState? = nil) {
         self.store = store
         self.clock = clock
         self.refresh = refresh
+        self.deviceState = deviceState
     }
 
     var calendar: Calendar { clock.calendar }
@@ -106,6 +109,49 @@ final class TaskManager {
         try store.write([.timeEntry(entry)])
         refresh.afterChange()
         return entry
+    }
+
+    /// Saves a finished timer's time to a duration habit, on the day the timer started (SPEC F-06). This is the
+    /// one way to add time to a past day. The habit must be live on that day.
+    @discardableResult
+    func addTimerEntry(taskID: UUID, finished: FinishedTimer) throws -> TimeEntryValue {
+        let task = try existingTask(taskID)
+        guard task.type == .duration else { throw TaskError.wrongType }
+        guard TimerRules.shouldSave(finished) else { throw TaskError.invalid(.invalidLogTime) }
+        let engine = ScheduleEngine(tasks: [task], schedules: [], calendar: calendar)
+        guard engine.isLive(task, on: finished.day) else { throw TaskError.notAllowed }
+        let entry = TimeEntryValue(
+            taskID: taskID, day: finished.day, seconds: finished.seconds, source: .timer, createdAt: clock.now)
+        try store.write([.timeEntry(entry)])
+        refresh.afterChange()
+        return entry
+    }
+
+    /// Moves a time entry to another duration habit, for the confirmation's "Change task" (SPEC F-06).
+    @discardableResult
+    func moveTimeEntry(id: UUID, to taskID: UUID) throws -> TimeEntryValue {
+        guard var entry = try store.timeEntries(taskID: nil).first(where: { $0.id == id }) else {
+            throw TaskError.notFound
+        }
+        let task = try existingTask(taskID)
+        guard task.type == .duration else { throw TaskError.wrongType }
+        let engine = ScheduleEngine(tasks: [task], schedules: [], calendar: calendar)
+        guard engine.isLive(task, on: entry.day) else { throw TaskError.notAllowed }
+        entry.taskID = taskID
+        try store.write([.timeEntry(entry)])
+        refresh.afterChange()
+        return entry
+    }
+
+    /// Removes a time entry the timer just saved, for the confirmation's "Undo" (SPEC F-06). Unlike
+    /// `deleteTimeEntry`, it works for an entry saved to the day before, when a timer ran past midnight.
+    func undoTimerEntry(id: UUID) throws {
+        guard var entry = try store.timeEntries(taskID: nil).first(where: { $0.id == id }) else {
+            throw TaskError.notFound
+        }
+        entry.deletedAt = clock.now
+        try store.write([.timeEntry(entry)])
+        refresh.afterChange()
     }
 
     /// Deletes one of today's time entries. Entries on past days are read-only (SPEC F-05).
@@ -322,6 +368,7 @@ final class TaskManager {
         let loggedToday = try store.timeEntries(taskID: taskID).contains { $0.day == today }
         task.endedOn = doneToday || loggedToday ? today : today.adding(days: -1, in: calendar)
         try store.write([.task(task)])
+        discardTimer(of: taskID)
         refresh.afterChange()
     }
 
@@ -351,6 +398,14 @@ final class TaskManager {
         let task = try existingTask(taskID)
         guard task.type.isHabit else { throw TaskError.wrongType }
         try deleteEverything(of: task)
+        discardTimer(of: taskID)
+    }
+
+    /// A habit that ends or is deleted can't keep a timer (SPEC F-06, F-10). The app asks before this happens.
+    private func discardTimer(of taskID: UUID) {
+        guard let deviceState, deviceState.timer?.habitID == taskID else { return }
+        Log.tasks.info("Discarding the timer of a habit that ended or was deleted")
+        deviceState.timer = nil
     }
 
     // MARK: Helpers
