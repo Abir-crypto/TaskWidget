@@ -335,6 +335,9 @@
     "Discard" : {
 
     },
+    "Discard Timer" : {
+
+    },
     "Discard this timer?" : {
 
     },
@@ -400,6 +403,9 @@
 
     },
     "Filters on" : {
+
+    },
+    "Finish Habit Timer" : {
 
     },
     "Finish Timer" : {
@@ -770,6 +776,9 @@
 
     },
     "Sort and filter" : {
+
+    },
+    "Start Habit Timer" : {
 
     },
     "Start Timer" : {

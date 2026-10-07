@@ -93,7 +93,7 @@ struct WidgetFoundationTests {
             title: "Call", date: environment.tasks.today, timing: .part(.noon))
         let replacementsBefore = scheduler.replaceCount
 
-        let intent = ToggleCompletionIntent(taskID: call.id, day: environment.tasks.today)
+        let intent = ToggleCompletionIntent(taskID: call.id, day: environment.tasks.today, done: true)
         intent.value = true
         try await intent.run(in: environment)
         #expect(try store.completions(taskID: call.id).count == 1)

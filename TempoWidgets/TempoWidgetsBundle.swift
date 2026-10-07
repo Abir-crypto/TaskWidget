@@ -5,5 +5,6 @@ import WidgetKit
 struct TempoWidgetsBundle: WidgetBundle {
     var body: some Widget {
         TimerWidget()  // .systemSmall
+        NowWidget()  // .systemLarge
     }
 }

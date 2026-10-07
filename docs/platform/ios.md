@@ -323,7 +323,7 @@ Every intent lives in `Shared/Intents/`, is compiled into both targets, sets `st
 
 | Intent | Used by | Opens app | What it does |
 |---|---|---|---|
-| `ToggleCompletionIntent(taskID, day)` | Now widget checkboxes | No | A `SetValueIntent`: completes or undoes, following F-04 |
+| `ToggleCompletionIntent(taskID, day, done)` | Now widget checkboxes | No | Sets the task done or not done, following F-04 |
 | `StartHabitTimerIntent(taskID)` | Now widget ▶ | No | Starts a habit timer |
 | `StartGenericTimerIntent` | Timer widget Start | No | Starts a generic timer |
 | `PauseTimerIntent`, `ResumeTimerIntent` | Timer widget, Now widget | No | |
@@ -386,7 +386,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
 ```
 
 **Interactive pieces**
-- **Checkboxes:** `Toggle(isOn:intent:)` with a custom `CheckboxToggleStyle`. This gives an immediate optimistic check.
+- **Checkboxes:** `Button(intent: ToggleCompletionIntent(taskID:day:done:))` drawn as a round checkbox (`WidgetCheckbox`). Each button carries the state it sets. `Toggle(isOn:intent:)` with a `SetValueIntent` was tried first, but its intents never completed on the iOS 27 simulator (`intelligencetasksd` crashes there), while `Button(intent:)` works (D-090).
 - **Other buttons:** `Button(intent:)`.
 
 **Text and progress that update themselves**

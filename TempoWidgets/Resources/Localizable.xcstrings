@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    " " : {
+
+    },
     "%@ and %lld more" : {
       "localizations" : {
         "en" : {
@@ -31,6 +34,16 @@
         }
       }
     },
+    "%@ starts at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ starts at %2$@"
+          }
+        }
+      }
+    },
     "%@ timer is still running" : {
 
     },
@@ -44,6 +57,9 @@
         }
       }
     },
+    "%lld left" : {
+
+    },
     "%lld left: %@" : {
       "localizations" : {
         "en" : {
@@ -53,6 +69,9 @@
           }
         }
       }
+    },
+    "%lld missed today ›" : {
+
     },
     "%lld of %lld min" : {
       "localizations" : {
@@ -64,6 +83,19 @@
         }
       }
     },
+    "%lld of %lld min today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld min today"
+          }
+        }
+      }
+    },
+    "+%lld more" : {
+
+    },
     "A habit measured in minutes against a daily target." : {
 
     },
@@ -74,6 +106,12 @@
 
     },
     "Day" : {
+
+    },
+    "Discard" : {
+
+    },
+    "Discard Timer" : {
 
     },
     "Done" : {
@@ -91,7 +129,13 @@
     "Every day" : {
 
     },
+    "Finish Habit Timer" : {
+
+    },
     "Finish Timer" : {
+
+    },
+    "Habit" : {
 
     },
     "In %lld min" : {
@@ -106,14 +150,26 @@
     "Mark Task Done" : {
 
     },
+    "Mark done" : {
+
+    },
+    "Mark not done" : {
+
+    },
     "Morning" : {
       "comment" : "Part of the day"
     },
     "Night" : {
       "comment" : "Part of the day"
     },
+    "No tasks today" : {
+
+    },
     "Noon" : {
       "comment" : "Part of the day"
+    },
+    "Now" : {
+
     },
     "One-time" : {
       "comment" : "Task type"
@@ -145,10 +201,16 @@
     "Start" : {
 
     },
+    "Start Habit Timer" : {
+
+    },
     "Start Timer" : {
 
     },
     "Start a timer and choose the habit when you're done." : {
+
+    },
+    "Start timer for %@" : {
 
     },
     "Stop" : {
@@ -161,6 +223,9 @@
 
     },
     "Timer is still running" : {
+
+    },
+    "Timer running ·" : {
 
     },
     "Today" : {
@@ -191,10 +256,22 @@
     "Weekends" : {
 
     },
+    "What's on now and next. Check off tasks and time habits." : {
+
+    },
     "Yesterday" : {
 
     },
+    "You're free today" : {
+
+    },
     "^[%lld task](inflect: true)" : {
+
+    },
+    "ends" : {
+
+    },
+    "from %@" : {
 
     }
   },

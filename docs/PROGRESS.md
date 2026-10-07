@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-24 · Now widget
+**Current task:** T-25 · Day widget
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -33,7 +33,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-21 | Notifications | D · Notifications | ✅ | 2026-10-07 | `Core/Reminders` planner; `NotificationText`; `ReminderManager` (serialized rebuilds after every change, launch, activation, day and time zone changes, background refresh); `AppDelegate` with taps, Stop and Keep going. Verified with unit tests and a fake notification center; real delivery can't be driven from tests. 212 `TempoTests`, 32 UI tests and 176 Core tests pass on iOS 27.0. D-087, D-088. |
 | T-22 | Widget foundation | E · Widgets | ✅ | 2026-10-07 | `TimelinePlanner` (Core), `WidgetSnapshot`/`SnapshotLoader`/`WidgetTimelinePlan` (Shared), `TodayTimelineProvider`, fallback view, `IntentEnvironment` and `ToggleCompletionIntent`. Widget rendering on a Home Screen can't be driven from the command line; the timeline and data paths are unit-tested. 217 `TempoTests` and 181 Core tests pass on iOS 27.0. D-089. |
 | T-23 | Timer widget | E · Widgets | ✅ | 2026-10-07 | Every F-18 state; Start/Pause/Resume/Done intents (Done opens the task picker with the frozen time); habit timers display only. Verified on a real Home Screen through SpringBoard UI automation (screenshots of each state). Placeholder widget removed. 223 `TempoTests`, 32 UI tests and 181 Core tests pass on iOS 27.0. |
-| T-24 | Now widget | E · Widgets | ⬜ |  |  |
+| T-24 | Now widget | E · Widgets | ✅ | 2026-10-07 | List mode (current/next part/Anytime, +N more, missed footer, generic-timer line), checkboxes, ▶ into timer mode with Pause/Resume, Done and Discard. Checked on a real Home Screen; checkboxes moved from `Toggle(isOn:intent:)` to `Button(intent:)` after the toggle's intents failed on the iOS 27 simulator. 231 `TempoTests`, 32 UI tests and 181 Core tests pass on iOS 27.0. D-090. |
 | T-25 | Day widget | E · Widgets | ⬜ |  |  |
 | T-26 | Focus widget | E · Widgets | ⬜ |  |  |
 | T-27 | Lock Screen widgets | E · Widgets | ⬜ |  |  |
@@ -53,6 +53,7 @@ Nothing is blocked.
 
 Add one line per work session, newest first: the date, what was done, and anything the next session needs to know.
 
+- 2026-10-07 (afternoon) — T-24 Now widget done. Widgets can be checked on a real Home Screen with the `ScreenshotTests` SpringBoard tests (`TEST_RUNNER_TEMPO_SCREENSHOTS=<folder>`); a long press that lands on a widget instead of empty space removes it, so the page layout matters. The iPhone 17 (iOS 27.0) simulator's Home Screen has the Now widget on its second page. Next: T-25 Day widget.
 - 2026-10-07 — T-01 unblocked (D-052): tests now run on the latest installed iOS simulator (iOS 27.0, iPhone 17); the deployment target stays iOS 17.0. `xcode-select` still points to the Command Line Tools, so keep prefixing `xcodebuild` and `xcrun` with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. String catalogs: after a simulator build, `xcrun xcstringstool sync <catalog> --stringsdata …` merges the extracted strings (the build doesn't write them back on the command line).
 - 2026-10-07 — T-01 skeleton built: git repo, docs moved to `docs/`, `Tempo.xcodeproj` (app, widget extension, tests), `Packages/Core`, the ios.md §3 folder tree, App Group, URL scheme, background fetch, string catalogs and `.swift-format`. Tests pass on iOS 26.5 and 27.0. Blocked on the iOS 17 runtime. The Mac's `xcode-select` points to the Command Line Tools, so `xcodebuild` needs `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` until it's switched.
 - 2026-10-06 — Spec v1.0 and supporting docs written. No code yet. Next: T-01.

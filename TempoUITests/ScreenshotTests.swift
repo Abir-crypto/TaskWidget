@@ -184,7 +184,8 @@ final class ScreenshotTests: XCTestCase {
         springboard.staticTexts["Tempo"].firstMatch.tap()
         sleep(2)
         save(springboard, "widget-5-tempo")
-        let candidates = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget'")).allElementsBoundByIndex
+        let candidates = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget'"))
+            .allElementsBoundByIndex
         if let button = candidates.last(where: { $0.isHittable }) {
             button.tap()
         } else {
@@ -267,7 +268,8 @@ final class ScreenshotTests: XCTestCase {
         let delete = app.buttons["Delete with history"].firstMatch
         for _ in 0..<4 where !delete.isHittable { app.swipeUp() }
         delete.tap()
-        let confirm = app.buttons.matching(NSPredicate(format: "label == 'Delete with history'")).allElementsBoundByIndex
+        let confirm = app.buttons.matching(NSPredicate(format: "label == 'Delete with history'"))
+            .allElementsBoundByIndex
             .last { $0.isHittable }
         confirm?.tap()
         sleep(1)
@@ -282,5 +284,116 @@ final class ScreenshotTests: XCTestCase {
         Self.deleteHabit(named: "Widget check", in: app)
         app.tabBars.buttons["Tasks"].tap()
         save(app, "cleanup-tasks")
+    }
+
+    /// Adds the Now widget (large) to the Home Screen with a task in the real store, photographs list mode,
+    /// checks the task from the widget, then cleans up.
+    @MainActor
+    func testNowWidgetOnHomeScreen() {
+        let app = XCUIApplication()
+        app.launch()
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["Add task"].tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Widget check")
+        app.buttons["Anytime"].tap()
+        app.buttons["Save"].tap()
+        sleep(1)
+
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        for _ in 0..<3 where !springboard.icons["Contacts"].exists || !springboard.icons["Contacts"].isHittable { springboard.swipeLeft() }
+        let alreadyAdded = springboard.buttons.matching(NSPredicate(format: "value == 'Widget check'")).firstMatch.waitForExistence(timeout: 3)
+        if !alreadyAdded { addNowWidget(springboard) }
+        sleep(3)
+        save(springboard, "now-2-home")
+        let checkbox = springboard.buttons.matching(NSPredicate(format: "value == 'Widget check'")).firstMatch
+        if checkbox.waitForExistence(timeout: 3) { checkbox.tap() }
+        sleep(10)
+        save(springboard, "now-3-checked")
+        app.activate()
+        app.tabBars.buttons["Today"].tap()
+        sleep(1)
+        save(app, "now-4-app-today")
+        let row = app.staticTexts["Widget check"].firstMatch
+        if row.waitForExistence(timeout: 3) {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
+        sleep(1)
+    }
+
+    @MainActor
+    private func addNowWidget(_ springboard: XCUIApplication) {
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6)).press(forDuration: 2)
+        sleep(1)
+        if springboard.buttons["Edit"].waitForExistence(timeout: 3) { springboard.buttons["Edit"].tap() }
+        sleep(1)
+        let add = springboard.buttons["Add Widget"].firstMatch
+        if add.waitForExistence(timeout: 3) { add.tap() }
+        sleep(2)
+        let search = springboard.searchFields.firstMatch
+        if search.waitForExistence(timeout: 3) {
+            search.tap()
+            search.typeText("Tempo")
+        }
+        sleep(1)
+        springboard.staticTexts["Tempo"].firstMatch.tap()
+        sleep(2)
+        springboard.swipeLeft()
+        sleep(2)
+        save(springboard, "now-1-gallery")
+        let candidates = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget'"))
+            .allElementsBoundByIndex
+        if let button = candidates.last(where: { $0.isHittable }) {
+            button.tap()
+        } else {
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.905)).tap()
+        }
+        sleep(2)
+        if springboard.buttons["Done"].firstMatch.waitForExistence(timeout: 2) {
+            springboard.buttons["Done"].firstMatch.tap()
+        }
+    }
+
+    /// Taps the first checkbox in the Now widget (already on the Home Screen, top of the Timer widget's page) and
+    /// checks the task is done in the app, then cleans up.
+    @MainActor
+    func testNowWidgetCheckbox() {
+        let app = XCUIApplication()
+        app.launch()
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["Add task"].tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Widget check")
+        app.buttons["Anytime"].tap()
+        app.buttons["Save"].tap()
+        sleep(1)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        for _ in 0..<3 where !springboard.icons["Contacts"].exists || !springboard.icons["Contacts"].isHittable { springboard.swipeLeft() }
+        sleep(3)
+        save(springboard, "check-1-before")
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.14, dy: 0.167)).tap()
+        sleep(8)
+        save(springboard, "check-2-after")
+        app.activate()
+        app.tabBars.buttons["Today"].tap()
+        sleep(1)
+        save(app, "check-3-app")
+        let row = app.staticTexts["Widget check"].firstMatch
+        if row.waitForExistence(timeout: 3) {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
+        sleep(1)
     }
 }

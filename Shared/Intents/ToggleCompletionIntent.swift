@@ -3,8 +3,8 @@ import Core
 import Foundation
 
 /// The Now widget's checkboxes: marks a one-time task or progress habit done, or not done, without opening the
-/// app (SPEC F-21, F-04).
-struct ToggleCompletionIntent: SetValueIntent {
+/// app (SPEC F-21, F-04). Each button carries the state it sets, so a repeated tap can't undo itself (D-090).
+struct ToggleCompletionIntent: AppIntent {
     static let title: LocalizedStringResource = "Mark Task Done"
     static let isDiscoverable = false
 
@@ -19,9 +19,10 @@ struct ToggleCompletionIntent: SetValueIntent {
 
     init() {}
 
-    init(taskID: UUID, day: DayKey) {
+    init(taskID: UUID, day: DayKey, done: Bool) {
         self.taskID = taskID.uuidString
         self.day = day.rawValue
+        self.value = done
     }
 
     @MainActor

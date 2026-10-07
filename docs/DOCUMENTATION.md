@@ -743,7 +743,7 @@ The foundation every widget shares: one timeline provider that reads the app's s
 - **Next timeline:** after midnight (`TimelinePlanner.nextMidnight`), and the entries already cover tomorrow in case the refresh is late.
 - **Load failure:** a single entry showing "Open Tempo to refresh" with a refresh icon, and another try 15 minutes later.
 - **After any change** — in the app, from a widget button or from a notification action — every widget reloads (`WidgetCenter.reloadAllTimelines`) and the notifications are rebuilt (`RefreshManager`). Widget buttons wait for both before returning (`refreshNowAndWait`), since the extension's process may end right after.
-- **Widget buttons** (`Shared/Intents/`, compiled into the app and the extension, hidden from Shortcuts with `isDiscoverable = false`): `ToggleCompletionIntent` (a `SetValueIntent` for the Now widget's checkboxes) completes or undoes a task by id and day, following F-04; the timer intents are in F-18 and F-21.
+- **Widget buttons** (`Shared/Intents/`, compiled into the app and the extension, hidden from Shortcuts with `isDiscoverable = false`): `ToggleCompletionIntent` (the Now widget's checkboxes, a button that carries the state it sets) completes or undoes a task by id and day, following F-04; the timer intents are in F-18 and F-21.
 - The T-01 placeholder widget used this provider until the Timer widget replaced it (T-23).
 
 ### Data
@@ -828,9 +828,40 @@ The next-task rule (SPEC §5.6), shared by this widget and the Lock Screen widge
 - The widget's views, "when" line and "All N tasks done" (T-26).
 
 ## F-21 · Now widget (large)
-Status: Not built · Last updated: —
+Status: Built (T-24) · Last updated: 2026-10-07 · T-24
 
-_Not built yet. Intended behavior: SPEC F-21._
+### What it does
+A large widget with what's on now and next: checkboxes that complete and undo without opening the app, and ▶ that turns the widget into the habit's timer.
+
+### Behavior
+- **Gallery:** "Now" — "What's on now and next. Check off tasks and time habits." Large only.
+- **List mode:**
+  - The header is the first group's part: its name, "ends in …" (updating itself) for the part in progress or "from 17:00" for a later part, and "N left" (tasks still to do in that part).
+  - Groups: the part in progress when it has tasks, otherwise the next part with tasks; then the next part with tasks after that, under its own small header; then Anytime. At most 8 rows (the first group's header doesn't count); the rest become "+N more", which opens Today.
+  - One-time and progress rows: a round checkbox and the title (struck through when done) and the fixed time if any. Tapping the checkbox marks the task done, or not done, without opening the app (`ToggleCompletionIntent`, a button that carries the state it sets, D-090).
+  - Duration rows: a timer icon (a check once the target is reached), the title, "10 of 30 min", and ▶ while no timer exists (`StartHabitTimerIntent`), which starts the habit's timer without opening the app.
+  - Footer: "2 missed today ›" (red, with an icon) when today has Missed or Short tasks; it opens the Missed tab.
+  - While a generic timer exists, a line "Timer running · 5:12" (updating itself) sits at the top, and every ▶ is hidden.
+  - "You're free today" when nothing is left today (the missed footer still shows); "No tasks today" when today has no tasks, and tapping opens the editor for today.
+  - Tapping elsewhere opens Today.
+- **Timer mode** (while a habit timer exists, started here, in the app or anywhere else): "Timer", the habit's title, the clock (or "Paused"), a progress bar toward today's target that fills by itself while running, "22 of 30 min today", Pause/Resume, Done and Discard. Done (`FinishHabitTimerIntent`) saves the time without opening the app (nothing under a minute) and returns to the list; Discard (`DiscardTimerIntent`) saves nothing and returns to the list. Tapping elsewhere opens the timer screen. The Timer widget shows the same timer, display only.
+- **Load failure:** "Open Tempo to refresh" (F-17).
+- Checked on a real Home Screen in the iOS 27 simulator: added from the gallery, list mode, and a checkbox tap completing the task in the app.
+
+### Data
+Reads everything through the widget snapshot; writes completions, the timer and time entries through the intents.
+
+### Implementation (iOS)
+- Widget: `TempoWidgets/Widgets/Now/NowWidget`, `NowWidgetView`, `NowListView` (list mode), `NowTimerView` (timer mode); `TempoWidgets/Components/WidgetCheckbox`, `WidgetClock`.
+- Content: `Shared/Widgets/NowWidgetContent`, `NowList`, `NowTimer`.
+- Intents: `Shared/Intents/StartHabitTimerIntent`, `FinishHabitTimerIntent`, `DiscardTimerIntent`, `ToggleCompletionIntent`, `PauseTimerIntent`, `ResumeTimerIntent`.
+
+### Tests
+- `TempoTests/Widgets/NowWidgetTests.swift`: group order, an empty current part, "+N more", free and empty states, checkboxes completing and undoing, ▶ turning the widget into the timer (and the Timer widget showing it), Done saving, Discard, the generic-timer line hiding ▶.
+- `TempoUITests/ScreenshotTests.swift` (`testNowWidgetOnHomeScreen`, `testNowWidgetCheckbox`, screenshots only).
+
+### Known gaps
+- None for F-21.
 
 ## F-22 · Lock Screen widgets
 Status: Not built · Last updated: —
@@ -866,7 +897,9 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | Missed, filters with no results | "No missed tasks match these filters" with "Clear filters" |
 | Stats, with no habits | "Add a habit to see your stats" with "Add a habit" |
 | Task picker, with no duration habits | "No duration tasks yet" with "Add a duration task" and "Discard" |
-| Widgets | Not built yet (T-24 onward) |
+| Now widget, with no tasks | "No tasks today"; tapping opens the editor for today |
+| Now widget, nothing left | "You're free today" |
+| Day, Focus and Lock Screen widgets | Not built yet (T-25 onward) |
 
 ### Implementation (iOS)
 - `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.
