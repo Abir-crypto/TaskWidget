@@ -1,0 +1,58 @@
+# Decisions
+
+Why the app is the way it is. Each entry has an ID that never changes, the date, the decision, the reason, and the spec sections it affects.
+
+**Source** tells you where a decision came from:
+- **Discussed:** agreed in the design discussion.
+- **Proposed:** a reasonable default filled in while writing the spec. Review these.
+- **Agent:** made by the coding agent during the build.
+
+To change a decision, add a new entry that supersedes the old one ("Supersedes D-007"), and mark the old one "Superseded by D-0xx". Never delete entries.
+
+| ID | Date | Source | Decision | Why | Affects |
+|---|---|---|---|---|---|
+| D-001 | 2026-10-06 | Discussed | Tasks are organized by parts of the day (Morning, Noon, Evening, Night), plus fixed times and Anytime, instead of clock ranges. | Matches how the user thinks about the day ("do it in the evening"), and is faster to enter than typing times. | F-02 |
+| D-002 | 2026-10-06 | Discussed | Three task types: one-time, progress habit and duration habit. Only habits carry goals. | One-time tasks have nothing to track; habits need history and stats. | F-01 |
+| D-003 | 2026-10-06 | Proposed | The type can't be changed after creation. | Changing the type would make a habit's history meaningless. | F-01, F-15 |
+| D-004 | 2026-10-06 | Discussed | Part-of-day start times are set by the user in Settings. Defaults are 06:00, 12:00, 17:00 and 21:00. | Everyone's day is different. | F-02, F-16 |
+| D-005 | 2026-10-06 | Proposed | Parts are contiguous, Night ends at midnight, times before Morning belong to Morning, part starts use 15-minute steps, and each part is at least 30 min long. | Four start times are all the user has to set, so there's nothing that can overlap or leave gaps. | F-02 |
+| D-006 | 2026-10-06 | Proposed | Times are stored as floating local time: a day key plus minutes after midnight. | A 9:00 task stays at 9:00 when travelling, and it works the same on every platform. | §5.1, F-26 |
+| D-007 | 2026-10-06 | Discussed | Habits repeat on chosen weekdays. | This is more predictable than "X times a week". It replaced the earlier daily/weekdays/weekly idea. | F-03 |
+| D-008 | 2026-10-06 | Discussed | A habit can have a set length in calendar days (e.g. 30), and shows its result when it ends. | Example: taking medicine for 30 days, then seeing whether the goal was met. | F-03, F-12 |
+| D-009 | 2026-10-06 | Discussed | Duration habits have a daily target. Time beyond it counts, and weekly totals let extra time make up for missed days. Missed days still show as missed. | Running 50 minutes on one day should cover a missed day in the weekly total, without hiding that a day was missed. | F-05, §5.5 |
+| D-010 | 2026-10-06 | Proposed | Habits keep a history of their schedule; an edit applies from today onward. | Editing a habit must not rewrite its past stats, and the habit has to stay a single item across edits. | F-03, §4.2 |
+| D-011 | 2026-10-06 | Discussed | A task is missed when its part of the day ends. Today can still be changed until midnight, and past days are final. | Honest records, with room to fix mistakes made today. | F-04 |
+| D-012 | 2026-10-06 | Proposed | Statuses are computed from the clock and never stored. | They're always correct as time passes, nothing needs to run at boundaries, and there's nothing to conflict when syncing later. | §5.4 |
+| D-013 | 2026-10-06 | Discussed | Missed one-time tasks stay missed. "Move to tomorrow" from Missed keeps the missed record and creates a copy for tomorrow. | Keeps an honest history without letting one-time tasks get forgotten. | F-04, F-08 |
+| D-014 | 2026-10-06 | Proposed | A pending (not missed) one-time task moves instead of being copied. | Nothing was missed, so there's no record to keep. | F-04 |
+| D-015 | 2026-10-06 | Proposed | Future one-time tasks can be completed early; future habit days can't. | Doing a one-time task early is normal. Doing tomorrow's habit today would distort the stats. | F-04 |
+| D-016 | 2026-10-06 | Discussed | Notifications: a summary when each part starts, an ending-soon reminder, a reminder 10 min before fixed-time tasks, and an end-of-day recap. | The user's description of how he'll use the app. | F-07 |
+| D-017 | 2026-10-06 | Proposed | There's one ending-soon notification per part, listing what's left, instead of one per task. | iOS allows only 64 pending notifications, and one per part is less noisy. | F-07 |
+| D-018 | 2026-10-06 | Discussed | The recap is at 23:30 by default, before midnight. | At midnight the day becomes final. At 23:30 the user can still fix things. | F-07 |
+| D-019 | 2026-10-06 | Proposed | Anytime tasks are listed in the Morning summary. | Otherwise they'd only ever appear in the recap. | F-07 |
+| D-020 | 2026-10-06 | Discussed | The Missed tab has a Today section, where tasks can be acted on, and an Earlier section, which is read-only with filters and sorting. | Today is still editable; the past is for review. | F-08 |
+| D-021 | 2026-10-06 | Discussed | The missed popup appears on Today, with "Review missed tasks", instead of switching tabs automatically. It shows each task once, and is skipped when the app is opened from a widget or a notification. | Switching tabs automatically is disorienting, and the popup shouldn't fight the user's intent. | F-08 |
+| D-022 | 2026-10-06 | Discussed | There's one timer at a time, shared by the app and the widgets. Only the widget that started it shows its controls; the others just display it. | Prevents two timers running at once and conflicting controls. | F-06 |
+| D-023 | 2026-10-06 | Discussed | ▶ in the Now widget starts the timer immediately and turns the widget into the timer. Done there saves without opening the app. | Fast and fully interactive, and it works even without the small widget on the Home Screen. | F-06, F-21 |
+| D-024 | 2026-10-06 | Discussed | The Timer widget's Done opens the app to choose a habit for a generic timer. | A widget can't show a picker. | F-06, F-18 |
+| D-025 | 2026-10-06 | Proposed | Time is frozen at the Done tap. Under 1 minute, nothing is saved. Time is saved to the day the timer started. | Choosing a task shouldn't add time, accidental taps shouldn't create entries, and a session belongs to the day it began. | F-06 |
+| D-026 | 2026-10-06 | Proposed | The running-timer alert comes after 2 hours, with Stop and Keep going. | A forgotten timer would corrupt the stats, especially when it isn't visible. | F-06, F-07 |
+| D-027 | 2026-10-06 | Discussed | Widgets: Timer (small); Day and Focus (medium); Now (large); Lock Screen rectangular and inline showing the next task, or "You're free today". | The user's chosen lineup. | F-18 – F-22 |
+| D-028 | 2026-10-06 | Discussed | The Focus widget is information only. | The user's choice. | F-20 |
+| D-029 | 2026-10-06 | Proposed | The Focus widget and the Lock Screen share one next-task rule, and the circular Lock Screen size is skipped. | So they never disagree; a circle has no room for a task and its time. | §5.6, F-22 |
+| D-030 | 2026-10-06 | Proposed | A setting to hide task names on the Lock Screen, off by default. | Anyone can read a locked phone's screen. | F-16, F-22 |
+| D-031 | 2026-10-06 | Discussed | Four tabs: Today, Tasks (Habits and One-time), Missed and Stats. Settings opens from Today, History from Tasks, and there's a floating + on Today and Tasks. | The user's layout. | F-09 |
+| D-032 | 2026-10-06 | Discussed (delegated) | History has One-time and Habits segments and search. Today's completions can be undone there. | The user asked for this to be designed as seen fit. | F-12 |
+| D-033 | 2026-10-06 | Discussed (delegated) | The Stats page layout and its formulas. | The user asked for this to be designed as seen fit. | F-14, §5.7 |
+| D-034 | 2026-10-06 | Proposed | Habits can be stopped with "End habit", which keeps their history, or removed with "Delete with history". | Users need to stop ongoing habits without losing their stats. | F-03 |
+| D-035 | 2026-10-06 | Proposed | Tasks can't be created in the past, or in a part of today that has already ended. | Otherwise they'd be born missed. | F-15 |
+| D-036 | 2026-10-06 | Discussed | A first-launch guide made of swipeable pages, and an empty state with an Add button on every screen. | The user asked for both. | F-23, F-24 |
+| D-037 | 2026-10-06 | Proposed | The guide ends with part-time setup and the notification permission, and Skip can't jump past them. | Reminders depend on both. | F-23 |
+| D-038 | 2026-10-06 | Discussed | iPad uses the same layout as iPhone. | Simpler to build and test. | F-25 |
+| D-039 | 2026-10-06 | Proposed | iPhone runs in portrait only; iPad supports every orientation. | Simplest for a phone layout; iPad multitasking needs every orientation. | ios.md §2 |
+| D-040 | 2026-10-06 | Discussed | No sync in v1. The data model is ready for Supabase or Firebase: flat tables, UUIDs, `updated_at`, soft deletes, and fixed enum strings. | An Android version is possible later. | F-26, §4 |
+| D-041 | 2026-10-06 | Discussed | No iCloud. | iCloud only works on Apple devices, and an Android version is possible. | F-26 |
+| D-042 | 2026-10-06 | Discussed | The spec is platform-neutral, with per-platform files, DOCUMENTATION.md for the as-built detail, plus PROGRESS, DECISIONS and CHANGELOG. | The spec can be reused for Android, and the docs stay in step with the code. | All docs |
+| D-043 | 2026-10-06 | Discussed | iOS architecture: MVVM with `@Observable`, managers, and a pure `Core` package. One folder per screen; managers and utilities in their own folders. | Testable rules and a predictable structure that's easy to review in AI-written code. | ios.md §3, §4 |
+| D-044 | 2026-10-06 | Proposed | No `@Query`, and a fresh `ModelContext` for each operation. App Intents and models live in a shared folder rather than a package. | Reliable on iOS 17 with writes from more than one process (app and widgets). | ios.md §3, §6 |
+| D-045 | 2026-10-06 | Proposed | Notifications are planned 72 hours ahead, keeping the earliest 60. | Stays within iOS's limit of 64 while covering at least 48 hours. | F-07, ios.md §10 |
