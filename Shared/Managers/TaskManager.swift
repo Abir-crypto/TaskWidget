@@ -124,6 +124,17 @@ final class TaskManager {
     /// Move to tomorrow, or Move to next day on a future day (SPEC F-04). A task that isn't missed changes its
     /// date. A task Missed today stays on today as missed, and a copy with the same title and timing is created
     /// for tomorrow. Returns the task that is now on the next day.
+    /// Whether a task missed today has already been copied to tomorrow: a later one-time task there with the
+    /// same title and timing (D-081). Moving it again would only make a duplicate.
+    func hasCopyTomorrow(_ occurrence: Occurrence, in snapshot: Snapshot) -> Bool {
+        guard occurrence.type == .oneTime else { return false }
+        let tomorrow = occurrence.day.adding(days: 1, in: calendar)
+        return snapshot.occurrences(on: tomorrow).contains {
+            $0.type == .oneTime && $0.task.title == occurrence.task.title && $0.timing == occurrence.timing
+                && $0.task.createdAt > occurrence.task.createdAt
+        }
+    }
+
     @discardableResult
     func moveToNextDay(taskID: UUID) throws -> TaskValue {
         let snapshot = try snapshot()

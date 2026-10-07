@@ -279,35 +279,36 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-07._
 
 ## F-08 · Missed tasks
-Status: Partly built (T-03, T-07) · Last updated: 2026-10-07 · T-07
+Status: Partly built (T-03, T-07, T-16) · Last updated: 2026-10-07 · T-16
 
 ### What it does
-The missed queries (SPEC §5.8) exist in `Core`, with the Earlier section's filters and sort orders. The seen list is stored on the device (T-03). There's no Missed tab or popup yet.
+The Missed tab lists today's Missed and Short tasks, which can still be fixed, and every earlier one, read-only, with sort and filters. The missed popup comes in T-17.
 
 ### Behavior
-- **Missed today** (`MissedQueries.missedToday`): today's occurrences whose status is Missed or Short, in day order (`DayOrder`: Morning → Night → Anytime; fixed times first in time order, then part-of-day tasks in creation order).
-- **Missed earlier** (`missedEarlier`): every Missed or Short occurrence before today. Ended habits are included; deleted tasks never appear. Days are sorted newest first (default) or oldest first; within a day, day order.
-- **Each item** (`MissedItem`) carries its occurrence, status, and for duration habits the minutes logged and that day's target ("20 of 30 min").
-- **Filters** (`MissedFilter`):
-  - Date range: All (default), This week (region's first weekday through six days later), This month, or a custom range (inclusive, either order).
-  - Type: any combination of one-time, progress and duration; all by default.
-  - Part of the day: any combination of Morning, Noon, Evening, Night and Anytime; fixed-time tasks count under their part. All by default.
-  - A specific task.
-  - `isActive` is true when any filter differs from its default; sorting doesn't count. `cleared` resets the filters and keeps the sort order.
-- **Unseen** (`unseen`): missed today minus the seen list. A seen list from another day counts as empty.
+- **Today** section: today's Missed and Short occurrences in day order, with the footer "You can still change these". Each row has small buttons where F-04 allows: "Mark done" (one-time and progress), "Log time" (duration; opens the Log time sheet) and "Move to tomorrow" (one-time). A task leaves the section as soon as it's no longer missed. Once a missed task has been copied to tomorrow, "Move to tomorrow" is no longer offered for it, here or on Today (D-081). Empty: "You haven't missed a task today".
+- **Earlier** section: every Missed or Short occurrence before today, read-only, grouped under a date line ("Mon, 5 Oct"). The header shows the count after filters ("10 missed"). Ended habits stay; deleted tasks disappear. Empty: "Nothing missed before today"; with filters that match nothing: "No missed tasks match these filters" with "Clear filters".
+- **Rows:** the type icon, the title, when it was due ("Tue 29 Sep · Noon", "Tue 29 Sep · 12:30", "… · Anytime"), and on the right a red "Missed" with an icon, or the minutes for a Short duration habit ("20 of 30 min", orange).
+- **Sort & filter** (the toolbar button, filled while a filter is on; accessibility "Sort and filter" with "Filters on"/"No filters"): a sheet with Sort (Newest first, Oldest first), Date (All, This week, This month, Custom with From and To up to yesterday), Type toggles, Part of the day toggles (Morning, Noon, Evening, Night, Anytime; fixed-time tasks count under their part), and Task (Any task or one task). "Clear filters" appears in the sheet and under Earlier while a filter is on; it keeps the sort order. Changes apply at once. Filters live only while the app runs and reset on restart.
+- **"See all" from Habit detail** opens this tab with Earlier filtered to that habit.
+- **Badge:** see F-09.
+- The tab updates every minute and after every change.
+- **Queries** (`Core`): missed today, missed earlier with filters and sort, and unseen (for the popup) as described in SPEC §5.8 (`MissedQueries`, `MissedFilter`).
 
 ### Data
-Reads everything through a `Snapshot`; the seen list is `deviceState.missedSeen` (F-26).
+Reads everything through a `Snapshot`; writes completions and copies through `TaskManager`. The popup's seen list is `deviceState.missedSeen` (F-26).
 
 ### Implementation (iOS)
+- Views: `Tempo/Views/Missed/MissedView`, `MissedViewModel`, `MissedGroup`; `Components/MissedRow`, `MissedFilterSheet`.
 - Rules: `Packages/Core/Sources/Core/Missed/` — `MissedQueries`, `MissedFilter`, `MissedDateRange`, `MissedPartFilter`, `MissedSort`, `MissedItem`, `MissedSeenList`; `Core/Schedule/DayOrder`.
+- Manager: `TaskManager.hasCopyTomorrow`.
 
 ### Tests
-- `Packages/Core/Tests/CoreTests/Missed/MissedQueriesTests.swift`: Short in missed today, both sort orders, every filter alone and combined, clearing, ended and deleted tasks, past Short days, unseen with current and stale lists, date bounds.
-- `Packages/Core/Tests/CoreTests/Schedule/DayOrderTests.swift`.
+- `Packages/Core/Tests/CoreTests/Missed/MissedQueriesTests.swift`, `Schedule/DayOrderTests.swift`.
+- `TempoTests/ViewModels/MissedViewModelTests.swift`: today's items and their actions, leaving the section, Move to tomorrow keeping the miss (and not offered twice), date groups and the count, sort and every filter, Clear filters, "See all", filter choices, empty states.
+- `TempoUITests/MissedUITests.swift`: Mark done, filters with no matches and Clear filters, empty states.
 
 ### Known gaps
-- The Missed tab and its badge (T-16) and the popup (T-17).
+- The missed popup and highlighting its tasks here (T-17).
 
 ## F-09 · Navigation and app structure
 Status: Built (T-09) · Last updated: 2026-10-07 · T-09
@@ -332,7 +333,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Missed (T-16), Stats (T-18), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: Stats (T-18), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -375,7 +376,7 @@ The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening,
 - **Tapping a row:** a one-time task opens the editor (read-only for past days); a habit opens Habit detail.
 - **Swipe actions**, only where F-04 allows (D-077):
   - From the left: "Done"/"Undo" (one-time and progress, today; one-time on future days), "Log time" (duration habits, today).
-  - From the right: "Delete", "Edit" (today and later), "Move to tomorrow" on today or "Move to next day" on a future day (one-time tasks that aren't done).
+  - From the right: "Delete", "Edit" (today and later), "Move to tomorrow" on today or "Move to next day" on a future day (one-time tasks that aren't done; not offered again once a missed task has been copied, D-081).
   - Past days have no swipe actions.
 - **Delete:** a one-time task asks "Delete this task?" ("This can't be undone."). A habit asks "End or delete this habit?" with "End habit" and "Delete with history" ("End habit keeps its history and stats. Delete with history removes them for good.").
 - **Floating +:** opens the editor preset to the selected day (today when a past day is selected).
@@ -505,7 +506,6 @@ Reads everything through a `Snapshot`; deletes time entries, ends habits and sta
 
 ### Known gaps
 - ▶ for duration habits, hidden while a timer exists (T-20).
-- Missed tab filtering for "See all" (T-16).
 
 ## F-14 · Stats
 Status: Partly built (T-08) · Last updated: 2026-10-07 · T-08
@@ -683,7 +683,7 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-23._
 
 ## F-24 · Empty states
-Status: Partly built (T-12–T-15) · Last updated: 2026-10-07 · T-15
+Status: Partly built (T-12–T-16) · Last updated: 2026-10-07 · T-16
 
 ### What it does
 Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
@@ -701,7 +701,10 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | History › Habits | "Finished habits will appear here" |
 | History, a search with no results | "No matches" |
 | Habit detail, with no data yet | "No data yet. Check back after its first day." |
-| Everything else | Not built yet (T-16 onward) |
+| Missed › Today | "You haven't missed a task today" |
+| Missed › Earlier | "Nothing missed before today" |
+| Missed, filters with no results | "No missed tasks match these filters" with "Clear filters" |
+| Everything else | Not built yet (T-18 onward) |
 
 ### Implementation (iOS)
 - `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.

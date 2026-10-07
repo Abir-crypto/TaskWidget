@@ -97,4 +97,15 @@ final class ScreenshotTests: XCTestCase {
         app.swipeUp()
         save(app, "habit-3")
     }
+
+    @MainActor
+    func testMissed() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        app.tabBars.buttons["Missed"].tap()
+        _ = app.staticTexts["Stretch"].waitForExistence(timeout: 5)
+        save(app, "missed-1")
+        app.buttons["Sort and filter"].tap()
+        _ = app.navigationBars["Sort & filter"].waitForExistence(timeout: 3)
+        save(app, "missed-2-filter")
+    }
 }

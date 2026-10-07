@@ -129,7 +129,9 @@ final class TodayViewModel {
     }
 
     func canMove(_ item: DayItem) -> Bool {
-        Editability.canMove(item.occurrence, status: item.status, today: today)
+        guard Editability.canMove(item.occurrence, status: item.status, today: today) else { return false }
+        guard item.status == .missed, let snapshot else { return true }
+        return !tasks.hasCopyTomorrow(item.occurrence, in: snapshot)
     }
 
     /// Edit and Delete are offered from today on. Past days are read-only.
