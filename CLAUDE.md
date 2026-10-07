@@ -110,5 +110,9 @@ xcrun simctl list devices available                                       # find
 xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<iPhone>' build test
 xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<iPhone>,OS=17.<x>' test   # the required iOS 17 run
 xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<iPhone>' test -only-testing:TempoTests/<Suite>/<testName>   # one app test
-swift format --in-place --recursive Tempo TempoWidgets Shared Packages    # formatting
+cd Packages/Core && xcodebuild -scheme Core -destination 'platform=iOS Simulator,name=<iPhone>,OS=17.<x>' test   # Core tests on a simulator (the Tempo scheme runs only TempoTests)
+swift format --in-place --recursive Tempo TempoWidgets TempoTests Shared Packages    # formatting
+swift format lint --recursive Tempo TempoWidgets TempoTests Shared Packages          # check formatting
 ```
+
+`xcodebuild` needs full Xcode as the active developer directory. If it reports "requires Xcode", either run `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` or prefix commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.

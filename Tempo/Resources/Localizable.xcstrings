@@ -1,0 +1,13 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Tempo" : {
+      "comment" : "App name, shown as the placeholder screen title.",
+      "shouldTranslate" : false
+    },
+    "The app is being built." : {
+      "comment" : "Placeholder screen message until the real screens exist."
+    }
+  },
+  "version" : "1.0"
+}
