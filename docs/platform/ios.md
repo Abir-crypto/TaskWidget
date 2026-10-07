@@ -51,7 +51,7 @@ Tempo/
 ├── CLAUDE.md
 ├── .swift-format
 ├── .gitignore
-├── Tempo.xcodeproj                       # shared scheme: Tempo (app + TempoTests)
+├── Tempo.xcodeproj                       # shared scheme: Tempo (app + TempoTests + TempoUITests)
 ├── docs/                                 # SPEC, DOCUMENTATION, PROGRESS, DECISIONS, CHANGELOG, platform/
 ├── Packages/
 │   └── Core/                             # pure Swift: no SwiftUI, SwiftData, WidgetKit or UIKit
@@ -134,7 +134,8 @@ Tempo/
 │   │   └── Placeholder/                  # T-01 only; removed when the first real widget lands (T-23)
 │   ├── Components/                       # CheckboxToggleStyle, TaskMark, WidgetRow, …
 │   └── Resources/                        # the extension's own Assets.xcassets and Localizable.xcstrings
-└── TempoTests/                           # app tests: managers with an in-memory store, deep links
+├── TempoTests/                           # app tests: managers with an in-memory store, deep links
+└── TempoUITests/                         # UI tests: launch, navigation, links (the app runs with -ui-testing)
 ```
 
 **Folder rules**
@@ -519,6 +520,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   - Always use a fixed "now". Tuesday 6 Oct 2026 is the reference day.
   - Daylight-saving tests use 29 Mar 2026 (a gap) and 25 Oct 2026 (an overlap) in `Europe/London`.
 - **App:** `TempoTests` covers the managers with `StoreFactory.make(inMemory: true)`, plus `DeepLink`.
+- **UI:** `TempoUITests` (XCTest) checks what unit tests can't reach: tabs, navigation and links in the running app. The app is launched with `-ui-testing`, which gives it an in-memory store and its own device-only state, and optionally `-ui-testing-now <ISO 8601>` to fix its clock (`LaunchOptions`). Keep these few; they're slow.
 - **Command:** `xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<an available iPhone>' test`. List the devices with `xcrun simctl list devices available`.
 - **`Core` on a simulator:** the `Tempo` scheme runs only `TempoTests`, because Xcode ignores a local package's test target in an app scheme. To run the `Core` tests on an iOS simulator (part of the required run on the latest installed iOS, §5), use the package's own scheme from its folder: `cd Packages/Core && xcodebuild -scheme Core -destination 'platform=iOS Simulator,name=<iPhone>,OS=<version>' test`.
 
@@ -571,7 +573,7 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
 - **T-06:** `Core/Duration`.
 - **T-07:** `Core/NextTask` and `Core/Missed`.
 - **T-08:** `Core/Stats`.
-- **T-09:** `TempoApp`, `Views/Root`, `NavigationRouter`, `DeepLink`, `Components/FloatingAddButton`, and the timer bar's slot.
+- **T-09:** `TempoApp`, `Views/Root`, `NavigationRouter`, `DeepLink`, `Components/FloatingAddButton`, and the timer bar's slot. Settings and History are pushed onto their tab's stack; the editor, timer screen and task picker are sheets. `XCUIApplication.open(_:)` in `TempoUITests` opens links without the system's "Open in Tempo?" prompt that `simctl openurl` shows.
 - **T-10:** `Views/Settings` and `Components/MinuteIntervalPicker` (15-minute steps).
 - **T-11:**
   - `Views/TaskEditor`, using `Components/WeekdayPicker` and `MinuteIntervalPicker` (5-minute steps).

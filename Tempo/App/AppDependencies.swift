@@ -1,7 +1,9 @@
 import Core
 import Foundation
+import Observation
 
-/// The app's managers, created once at launch and shared by every screen.
+/// The app's managers, created once at launch and shared by every screen through the environment.
+@Observable
 @MainActor
 final class AppDependencies {
     let clock: any Clock
@@ -10,6 +12,7 @@ final class AppDependencies {
     let refresh: RefreshManager
     let settings: SettingsManager
     let tasks: TaskManager
+    let missed: MissedManager
 
     init(clock: any Clock, store: any TaskStore, deviceState: DeviceState, widgets: any WidgetReloading) {
         self.clock = clock
@@ -18,10 +21,23 @@ final class AppDependencies {
         self.refresh = RefreshManager(widgets: widgets)
         self.settings = SettingsManager(store: store, refresh: refresh)
         self.tasks = TaskManager(store: store, clock: clock, refresh: refresh)
+        self.missed = MissedManager(tasks: tasks, deviceState: deviceState, clock: clock)
     }
 
-    /// The real dependencies: the shared App Group store, the system clock and WidgetKit.
-    static func live() throws -> AppDependencies {
+    /// The real dependencies: the shared App Group store, the system clock and WidgetKit. UI tests get an
+    /// in-memory store and their own device-only state instead (`LaunchOptions`).
+    static func live(options: LaunchOptions = LaunchOptions()) throws -> AppDependencies {
+        if options.isUITesting {
+            let calendar = Calendar.autoupdatingCurrent
+            let clock: any Clock = options.fixedNow.map { FixedClock($0, calendar: calendar) } ?? SystemClock()
+            let deviceState = DeviceState(defaults: UserDefaults(suiteName: "ui-testing") ?? .standard)
+            deviceState.reset()
+            return AppDependencies(
+                clock: clock,
+                store: SwiftDataTaskStore(container: try StoreFactory.make(inMemory: true), clock: clock),
+                deviceState: deviceState,
+                widgets: WidgetManager())
+        }
         let clock = SystemClock()
         let container = try StoreFactory.shared.get()
         return AppDependencies(
@@ -30,6 +46,25 @@ final class AppDependencies {
             deviceState: .shared,
             widgets: WidgetManager()
         )
+    }
+
+    /// In-memory dependencies for previews, at Tuesday 6 Oct 2026, 10:30 in the current time zone.
+    static func preview(hour: Int = 10, minute: Int = 30) -> AppDependencies {
+        let calendar = Calendar.autoupdatingCurrent
+        let now = DayKey(year: 2026, month: 10, day: 6).date(atMinute: hour * 60 + minute, in: calendar)
+        let clock = FixedClock(now, calendar: calendar)
+        let store: any TaskStore
+        do {
+            store = SwiftDataTaskStore(container: try StoreFactory.make(inMemory: true), clock: clock)
+        } catch {
+            preconditionFailure("In-memory store failed: \(error)")
+        }
+        let dependencies = AppDependencies(
+            clock: clock, store: store,
+            deviceState: DeviceState(defaults: UserDefaults(suiteName: "preview") ?? .standard),
+            widgets: WidgetManager())
+        dependencies.prepare()
+        return dependencies
     }
 
     /// Runs once at launch: makes sure the settings row exists (SPEC §4.5).

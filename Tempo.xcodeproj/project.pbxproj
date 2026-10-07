@@ -27,6 +27,13 @@
 			remoteGlobalIDString = 7E5A00000000000000000D01;
 			remoteInfo = Tempo;
 		};
+		7E5A00000000000000000D13 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7E5A00000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7E5A00000000000000000D01;
+			remoteInfo = Tempo;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,6 +54,7 @@
 		7E5A00000000000000000A01 /* Tempo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tempo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E5A00000000000000000A02 /* TempoWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TempoWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E5A00000000000000000A03 /* TempoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TempoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E5A00000000000000000A04 /* TempoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TempoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -93,6 +101,11 @@
 			path = TempoTests;
 			sourceTree = "<group>";
 		};
+		7E5A00000000000000000B05 /* TempoUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = TempoUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +132,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7E5A00000000000000004002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -129,6 +149,7 @@
 				7E5A00000000000000000B01 /* Tempo */,
 				7E5A00000000000000000B02 /* TempoWidgets */,
 				7E5A00000000000000000B04 /* TempoTests */,
+				7E5A00000000000000000B05 /* TempoUITests */,
 				7E5A00000000000000000C01 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -139,6 +160,7 @@
 				7E5A00000000000000000A01 /* Tempo.app */,
 				7E5A00000000000000000A02 /* TempoWidgets.appex */,
 				7E5A00000000000000000A03 /* TempoTests.xctest */,
+				7E5A00000000000000000A04 /* TempoUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -219,6 +241,29 @@
 			productReference = 7E5A00000000000000000A03 /* TempoTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		7E5A00000000000000000D04 /* TempoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E5A00000000000000000C15 /* Build configuration list for PBXNativeTarget "TempoUITests" */;
+			buildPhases = (
+				7E5A00000000000000004001 /* Sources */,
+				7E5A00000000000000004002 /* Frameworks */,
+				7E5A00000000000000004003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7E5A00000000000000000D23 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7E5A00000000000000000B05 /* TempoUITests */,
+			);
+			name = TempoUITests;
+			packageProductDependencies = (
+			);
+			productName = TempoUITests;
+			productReference = 7E5A00000000000000000A04 /* TempoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -236,6 +281,10 @@
 						CreatedOnToolsVersion = 27.0;
 					};
 					7E5A00000000000000000D03 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 7E5A00000000000000000D01;
+					};
+					7E5A00000000000000000D04 = {
 						CreatedOnToolsVersion = 27.0;
 						TestTargetID = 7E5A00000000000000000D01;
 					};
@@ -261,6 +310,7 @@
 				7E5A00000000000000000D01 /* Tempo */,
 				7E5A00000000000000000D02 /* TempoWidgets */,
 				7E5A00000000000000000D03 /* TempoTests */,
+				7E5A00000000000000000D04 /* TempoUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -281,6 +331,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7E5A00000000000000003003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7E5A00000000000000004003 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -311,6 +368,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7E5A00000000000000004001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -323,6 +387,11 @@
 			isa = PBXTargetDependency;
 			target = 7E5A00000000000000000D01 /* Tempo */;
 			targetProxy = 7E5A00000000000000000D12 /* PBXContainerItemProxy */;
+		};
+		7E5A00000000000000000D23 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7E5A00000000000000000D01 /* Tempo */;
+			targetProxy = 7E5A00000000000000000D13 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -618,6 +687,44 @@
 			};
 			name = Release;
 		};
+		7E5A00000000000000000C61 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QAUG82L94Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.applab.tempo.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Tempo;
+			};
+			name = Debug;
+		};
+		7E5A00000000000000000C62 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QAUG82L94Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.applab.tempo.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Tempo;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -653,6 +760,15 @@
 			buildConfigurations = (
 				7E5A00000000000000000C51 /* Debug */,
 				7E5A00000000000000000C52 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7E5A00000000000000000C15 /* Build configuration list for PBXNativeTarget "TempoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7E5A00000000000000000C61 /* Debug */,
+				7E5A00000000000000000C62 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

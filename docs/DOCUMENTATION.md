@@ -49,13 +49,13 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Partly built (T-01) · Last updated: 2026-10-07 · T-03
+Status: Partly built (T-01) · Last updated: 2026-10-07 · T-09
 
 ### What it does
 Only the project skeleton exists. No features are live yet. The app opens to a placeholder screen, and the widget gallery offers one placeholder widget.
 
 ### Behavior
-- **App:** a single centered screen with a clock symbol, the title "Tempo" and the message "The app is being built." There's nothing to tap.
+- **App:** the tab layout from F-09, with placeholder screens.
 - **Widget:** one small widget, listed in the gallery as "Tempo" with the description "A placeholder until the real widgets are built." It shows a clock symbol and "Tempo", and never refreshes.
 - **iPhone** runs in portrait only. **iPad** supports all four orientations.
 
@@ -66,6 +66,7 @@ Only the project skeleton exists. No features are live yet. The app opens to a p
 | App target | `Tempo`, bundle ID `com.applab.tempo`, display name "Tempo" |
 | Widget extension | `TempoWidgets`, bundle ID `com.applab.tempo.widgets`, embedded in the app |
 | App tests | `TempoTests`, bundle ID `com.applab.tempo.tests`, hosted in the app |
+| UI tests | `TempoUITests`, bundle ID `com.applab.tempo.uitests`, in the `Tempo` scheme; the app runs with `-ui-testing` (in-memory store) (D-064) |
 | Logic package | `Packages/Core` (Swift 6 tools, iOS 17 and macOS 14), linked into the app and the extension |
 | Deployment target | iOS 17.0, iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`) |
 | Swift | App, extension and tests use Swift 5 mode with strict concurrency set to `complete` and `InferSendableFromCaptures` on (D-055). Default actor isolation stays `nonisolated` (D-047). |
@@ -77,7 +78,7 @@ Only the project skeleton exists. No features are live yet. The app opens to a p
 The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is kept out of the bundles (D-048). `Tempo/`, `TempoWidgets/`, `Shared/` and `TempoTests/` are folder-synchronized groups: a file added on disk joins its target automatically. `Shared/` belongs to both the app and the extension.
 
 ### Implementation (iOS)
-- App: `Tempo/App/TempoApp.swift` (opens the store, or shows the store error screen; see F-26), `Tempo/Views/Root/RootView.swift` (placeholder until T-09)
+- App: `Tempo/App/TempoApp.swift` (opens the store, or shows the store error screen; see F-26), `Tempo/Views/Root/RootView.swift` (the tabs, F-09)
 - Widget: `TempoWidgets/TempoWidgetsBundle.swift`, `TempoWidgets/Widgets/Placeholder/` (`PlaceholderWidget`, `PlaceholderProvider`, `PlaceholderEntry`; until T-23)
 - Strings: `Tempo/Resources/Localizable.xcstrings` and `TempoWidgets/Resources/Localizable.xcstrings` (D-046)
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
@@ -305,9 +306,49 @@ Reads everything through a `Snapshot`; the seen list is `deviceState.missedSeen`
 - The Missed tab and its badge (T-16) and the popup (T-17).
 
 ## F-09 · Navigation and app structure
-Status: Not built · Last updated: —
+Status: Built (T-09) · Last updated: 2026-10-07 · T-09
 
-_Not built yet. Intended behavior: SPEC F-09._
+### What it does
+The app opens to four tabs. Settings, History, the editor, the timer screen and the task picker open from buttons and from links. Most screens are placeholders that later tasks fill in.
+
+### Behavior
+- **Tabs** (left to right): Today (`sun.max`), Tasks (`checklist`), Missed (`exclamationmark.circle`), Stats (`chart.bar`). The app starts on Today.
+- **Missed badge:** the number of today's Missed and Short tasks; hidden at 0. It's recounted on launch, after every change, when the app becomes active, and every minute (statuses change at part boundaries).
+- **Settings** opens from a gear button (accessibility label "Settings") at the top right of Today, pushed onto Today's navigation stack. **History** opens from a clock button ("History") on Tasks, pushed onto Tasks' stack (D-063).
+- **Floating + button** ("Add task"): bottom right of Today and Tasks only. Today's opens the editor with no presets yet (the selected day comes with T-12); Tasks' presets a progress habit (the segment comes with T-13). Scrolling content on those screens keeps an 88-point bottom margin, so the last row is never under the button.
+- **Timer bar slot:** every tab's root has a bottom safe-area inset for the timer bar, just above the tab bar. It takes no space until a timer exists (T-20).
+- **Presented over the tabs** as sheets: the editor, the timer screen and the task picker (D-063).
+- **Links** (`tempo://`, parsed by `DeepLink`):
+  - `today[?day=yyyymmdd][&part=…][&task=<uuid>]` → the Today tab; the day, part and task are kept in `NavigationRouter.todayFocus` for the Today screen (T-12).
+  - `new[?day=yyyymmdd][&type=one_time|progress|duration]` → the editor with those presets.
+  - `missed` → the Missed tab.
+  - `timer` → the timer screen.
+  - Anything else, or a different scheme, → Today. Unknown or malformed parameters are ignored.
+  - Opening a link first closes whatever was presented (a sheet, Settings or History).
+- **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
+- **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
+- When the app becomes active, open screens reload, in case a widget changed something.
+- **Placeholders** until their tasks: Today (T-12), Tasks (T-13), Missed (T-16), Stats (T-18), Settings (T-10), History (T-14), the editor (T-11, "New task" with Cancel), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+
+### Data
+Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
+
+### Implementation (iOS)
+- App: `Tempo/App/` — `TempoApp`, `AppDependencies` (now `@Observable`, put in the environment), `NavigationRouter`, `AppTab`, `TodayFocus`, `EditorRequest`, `TaskPickerRequest`, `LaunchOptions` (UI-test launch arguments).
+- Views: `Tempo/Views/Root/RootView`, `RootViewModel`; placeholder views in `Views/Today`, `Tasks`, `Missed`, `Stats`, `Settings`, `History`, `TaskEditor`, `TimerScreen`, `TaskPicker`.
+- Components: `Tempo/Components/FloatingAddButton/FloatingAddButton` (with the `floatingAddButton(action:)` modifier), `Tempo/Components/TimerBar/TimerBar` (empty slot).
+- Links: `Shared/DeepLink/DeepLink.swift`.
+- Managers: `Shared/Managers/MissedManager` (badge count); `RefreshManager.revision`, which screens watch to reload.
+
+### Tests
+- `TempoTests/Navigation/DeepLinkTests.swift`: parsing every destination and parameter, unknown and malformed links, URLs that parse back.
+- `TempoTests/Navigation/NavigationRouterTests.swift`: each link's effect, the pending action, closing presented screens, the link flag.
+- `TempoTests/Managers/MissedManagerTests.swift`: the badge count includes Short.
+- `TempoUITests/NavigationUITests.swift`: the four tabs, gear → Settings, clock → History, + on Today and Tasks only, every link destination opened in the running app.
+
+### Known gaps
+- The screens behind the tabs are placeholders until their tasks.
+- The missed popup (T-17) and the timer bar's content (T-20).
 
 ## F-10 · Today screen
 Status: Not built · Last updated: —

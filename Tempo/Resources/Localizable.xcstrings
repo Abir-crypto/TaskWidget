@@ -1,19 +1,21 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Can't open your tasks" : {
-
-    },
-    "Something went wrong while opening Tempo's data. Close the app and open it again." : {
-
-    },
-    "Tempo" : {
-      "comment" : "App name, shown as the placeholder screen title.",
-      "shouldTranslate" : false
-    },
-    "The app is being built." : {
-      "comment" : "Placeholder screen message until the real screens exist."
-    }
+    "Add task" : {},
+    "Can't open your tasks" : {},
+    "Cancel" : {},
+    "Choose a task" : {},
+    "Close" : {},
+    "History" : {},
+    "Missed" : {},
+    "New task" : {},
+    "Settings" : {},
+    "Something went wrong while opening Tempo's data. Close the app and open it again." : {},
+    "Stats" : {},
+    "Tasks" : {},
+    "This screen is being built." : {},
+    "Timer" : {},
+    "Today" : {}
   },
   "version" : "1.0"
 }

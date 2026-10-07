@@ -14,6 +14,12 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · UI tests and navigation details (T-09)
+- Platform: ios.md §3 — new `TempoUITests` target in the `Tempo` scheme (D-064).
+- Platform: ios.md §13 — UI tests, and the `-ui-testing` / `-ui-testing-now` launch arguments.
+- Platform: ios.md §15 T-09 — Settings and History push onto their tab's stack; the editor, timer screen and task picker are sheets (D-063).
+- No changes to SPEC.md.
+
 ## 2026-10-07 · Atomic store writes (T-04)
 - Platform: ios.md §4 — `TaskStore` gains `write(_:)`, which saves several rows in one context so a task and its schedule, or everything deleted with a habit, land together.
 - No changes to SPEC.md. D-058 and D-059 record how F-03's length and start-day edits are applied.

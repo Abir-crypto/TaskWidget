@@ -41,6 +41,17 @@
                ReferencedContainer = "container:Tempo.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "7E5A00000000000000000D04"
+               BuildableName = "TempoUITests.xctest"
+               BlueprintName = "TempoUITests"
+               ReferencedContainer = "container:Tempo.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
