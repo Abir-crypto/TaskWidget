@@ -14,6 +14,12 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Widget foundation details (T-22)
+- Platform: ios.md §3 — `WidgetSnapshot`, `SnapshotLoader` and the new `WidgetTimelinePlan` live in `Shared/Widgets/`, so app tests can test them; `TempoWidgets/Provider/` keeps `TodayTimelineProvider` and `TodayEntry` (D-089).
+- Platform: ios.md §8 — intents use `IntentEnvironment` and `refreshNowAndWait()`; `ToggleCompletionIntent` is a `SetValueIntent`.
+- Platform: ios.md §9 — the provider sample matches the code.
+- No changes to SPEC.md.
+
 ## 2026-10-07 · Notification details (T-21)
 - Platform: ios.md §10 — the delegate holds early responses; the planner returns content and `NotificationText` writes the words.
 - Platform: ios.md §13 — `-ui-testing-finished-timer` (added in T-20).

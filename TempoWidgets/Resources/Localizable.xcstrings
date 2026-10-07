@@ -44,6 +44,9 @@
         }
       }
     },
+    "%lld left today" : {
+
+    },
     "%lld left: %@" : {
       "localizations" : {
         "en" : {
@@ -76,6 +79,12 @@
     "Anytime" : {
 
     },
+    "Day" : {
+
+    },
+    "Done" : {
+
+    },
     "Done once, on one day." : {
 
     },
@@ -97,6 +106,9 @@
     "Keep going" : {
 
     },
+    "Mark Task Done" : {
+
+    },
     "Morning" : {
       "comment" : "Part of the day"
     },
@@ -109,10 +121,16 @@
     "One-time" : {
       "comment" : "Task type"
     },
+    "Open Tempo to refresh" : {
+
+    },
     "Progress" : {
       "comment" : "Task type"
     },
     "Stop" : {
+
+    },
+    "Task" : {
 
     },
     "Tempo" : {

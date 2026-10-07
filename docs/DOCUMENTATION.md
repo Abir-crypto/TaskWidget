@@ -56,7 +56,7 @@ Only the project skeleton exists. No features are live yet. The app opens to a p
 
 ### Behavior
 - **App:** the tab layout from F-09, with placeholder screens.
-- **Widget:** one small widget, listed in the gallery as "Tempo" with the description "A placeholder until the real widgets are built." It shows a clock symbol and "Tempo", and never refreshes.
+- **Widget:** one small widget, listed in the gallery as "Tempo" with the description "A placeholder until the real widgets are built." It shows a clock symbol, "Tempo" and "N left today" from the shared timeline (F-17), until the Timer widget replaces it in T-23.
 - **iPhone** runs in portrait only. **iPad** supports all four orientations.
 
 ### Project and targets
@@ -79,7 +79,7 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 
 ### Implementation (iOS)
 - App: `Tempo/App/TempoApp.swift` (opens the store, or shows the store error screen; see F-26), `Tempo/Views/Root/RootView.swift` (the tabs, F-09)
-- Widget: `TempoWidgets/TempoWidgetsBundle.swift`, `TempoWidgets/Widgets/Placeholder/` (`PlaceholderWidget`, `PlaceholderProvider`, `PlaceholderEntry`; until T-23)
+- Widget: `TempoWidgets/TempoWidgetsBundle.swift`, `TempoWidgets/Widgets/Placeholder/` (`PlaceholderWidget`, `PlaceholderWidgetView`; until T-23), the shared provider in F-17
 - Strings: `Tempo/Resources/Localizable.xcstrings` and `TempoWidgets/Resources/Localizable.xcstrings` (D-046)
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
 
@@ -368,7 +368,7 @@ Reads everything plus `deviceState.timer`; reads the notification permission fro
 
 ### Known gaps
 - Asking for permission on the guide's last page (T-28).
-- Rebuilding from widget buttons (T-22).
+- None beyond the guide's permission page. Widget buttons rebuild notifications since T-22.
 
 ## F-08 · Missed tasks
 Status: Built (T-03, T-07, T-16, T-17) · Last updated: 2026-10-07 · T-17
@@ -732,9 +732,34 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 - **Help › How to use** comes with the guide (T-28).
 
 ## F-17 · Widgets: general rules
-Status: Not built · Last updated: —
+Status: Partly built (T-22) · Last updated: 2026-10-07 · T-22
 
-_Not built yet. Intended behavior: SPEC F-17._
+### What it does
+The foundation every widget shares: one timeline provider that reads the app's store, entries for each moment the widgets must change, a fallback when the data can't be read, and widget buttons (App Intents) that refresh everything after they act.
+
+### Behavior
+- **Data:** each timeline reads a `WidgetSnapshot` — every task row, the settings and the timer — from the App Group store with a fresh context, and the timer from the App Group defaults. It's the same data the app reads (`SnapshotLoader`).
+- **Moments** (`TimelinePlanner`, SPEC §5.10): now, each part's start, an hour before and at each fixed time, and midnight, for today and tomorrow; for a running habit timer also the moment its target is reached. Each entry works out statuses for its own moment, so widgets change exactly at part boundaries, at fixed times and at midnight with the app closed. Counting text updates itself in between.
+- **Next timeline:** after midnight (`TimelinePlanner.nextMidnight`), and the entries already cover tomorrow in case the refresh is late.
+- **Load failure:** a single entry showing "Open Tempo to refresh" with a refresh icon, and another try 15 minutes later.
+- **After any change** — in the app, from a widget button or from a notification action — every widget reloads (`WidgetCenter.reloadAllTimelines`) and the notifications are rebuilt (`RefreshManager`). Widget buttons wait for both before returning (`refreshNowAndWait`), since the extension's process may end right after.
+- **Widget buttons** (`Shared/Intents/`, compiled into the app and the extension, hidden from Shortcuts with `isDiscoverable = false`): `ToggleCompletionIntent` (a `SetValueIntent` for the Now widget's checkboxes) completes or undoes a task by id and day, following F-04. More arrive with each widget.
+- **Placeholder widget** (until T-23): a small "Tempo" widget showing "N left today" from the shared provider, or the fallback.
+
+### Data
+Reads everything; buttons write through the same managers as the app.
+
+### Implementation (iOS)
+- Shared (app and extension): `Shared/Widgets/WidgetSnapshot`, `SnapshotLoader`, `WidgetTimelinePlan`; `Shared/Intents/IntentEnvironment`, `ToggleCompletionIntent` (D-089).
+- Extension: `TempoWidgets/Provider/TodayTimelineProvider`, `TodayEntry`; `TempoWidgets/Components/WidgetFailureView`; `TempoWidgets/Widgets/Placeholder/PlaceholderWidget`, `PlaceholderWidgetView`.
+- Rules: `Packages/Core/Sources/Core/Timeline/TimelinePlanner`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Timeline/TimelinePlannerTests.swift`: part starts and midnight for two days, fixed times and an hour before, custom part times, the timer's target moment, next midnight.
+- `TempoTests/Widgets/WidgetFoundationTests.swift`: a second container on the app's store file (as the extension) reads the same plan; the timeline's moments and refresh time; each moment's statuses; the timer moment; the fallback and 15-minute retry; a widget button completing and undoing, reloading widgets and rebuilding notifications.
+
+### Known gaps
+- The real widgets (T-23–T-27). Dark mode, tinted styles and status icons are checked per widget and again in T-31.
 
 ## F-18 · Timer widget (small)
 Status: Not built · Last updated: —

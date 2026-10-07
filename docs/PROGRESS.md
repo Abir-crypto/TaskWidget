@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-22 · Widget foundation
+**Current task:** T-23 · Timer widget
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -31,7 +31,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-19 | Timer engine | C · Timer | ✅ | 2026-10-07 | `Core/Timer/TimerRules`; `TimerManager` (start, pause, resume, finish, save, discard, next alert) on `DeviceState`; `TaskManager` timer entries to the start day and timer discard on end/delete. 183 `TempoTests` and 163 Core tests pass on iOS 27.0 (no UI changes, so no UI-test run). |
 | T-20 | Timer in the app | C · Timer | ✅ | 2026-10-07 | ▶ on Today and Habit detail, timer bar on every tab, timer screen with earlier progress, task picker (order, Discard, empty state), confirmation with Undo and Change task, timer-discard warnings. 194 `TempoTests`, 32 UI tests and 163 Core tests pass on iOS 27.0. D-084–D-086. Phase C done. |
 | T-21 | Notifications | D · Notifications | ✅ | 2026-10-07 | `Core/Reminders` planner; `NotificationText`; `ReminderManager` (serialized rebuilds after every change, launch, activation, day and time zone changes, background refresh); `AppDelegate` with taps, Stop and Keep going. Verified with unit tests and a fake notification center; real delivery can't be driven from tests. 212 `TempoTests`, 32 UI tests and 176 Core tests pass on iOS 27.0. D-087, D-088. |
-| T-22 | Widget foundation | E · Widgets | ⬜ |  |  |
+| T-22 | Widget foundation | E · Widgets | ✅ | 2026-10-07 | `TimelinePlanner` (Core), `WidgetSnapshot`/`SnapshotLoader`/`WidgetTimelinePlan` (Shared), `TodayTimelineProvider`, fallback view, `IntentEnvironment` and `ToggleCompletionIntent`. Widget rendering on a Home Screen can't be driven from the command line; the timeline and data paths are unit-tested. 217 `TempoTests` and 181 Core tests pass on iOS 27.0. D-089. |
 | T-23 | Timer widget | E · Widgets | ⬜ |  |  |
 | T-24 | Now widget | E · Widgets | ⬜ |  |  |
 | T-25 | Day widget | E · Widgets | ⬜ |  |  |

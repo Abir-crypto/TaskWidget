@@ -85,7 +85,8 @@ Tempo/
 │   │   ├── StoreFactory.swift
 │   │   ├── SwiftDataTaskStore.swift      # implements TaskStore
 │   │   └── DeviceState.swift             # App Group UserDefaults: timer, seen list, pending open action
-│   ├── Intents/                          # every widget button (§8)
+│   ├── Intents/                          # every widget button (§8), plus IntentEnvironment
+│   ├── Widgets/                          # WidgetSnapshot, SnapshotLoader, WidgetTimelinePlan (shared so TempoTests can test them)
 │   ├── DeepLink/
 │   │   └── DeepLink.swift
 │   └── Utilities/
@@ -124,7 +125,7 @@ Tempo/
 │   ├── Info.plist                        # NSExtension; excluded from resources
 │   ├── TempoWidgets.entitlements         # App Group
 │   ├── TempoWidgetsBundle.swift
-│   ├── Provider/                         # WidgetSnapshot, SnapshotLoader, TodayTimelineProvider
+│   ├── Provider/                         # TodayTimelineProvider, TodayEntry
 │   ├── Widgets/
 │   │   ├── Timer/
 │   │   ├── Day/
@@ -319,11 +320,11 @@ Main API. All of it is pure, `Sendable`, and takes `now` and `calendar` as param
 
 ## 8. App Intents (widget buttons)
 
-Every intent lives in `Shared/Intents/`, is compiled into both targets, sets `static let isDiscoverable = false`, and ends by calling `RefreshManager.afterChange()`.
+Every intent lives in `Shared/Intents/`, is compiled into both targets, sets `static let isDiscoverable = false`, builds its managers with `IntentEnvironment.make()`, and ends with `await refresh.refreshNowAndWait()`, so widgets reload and notifications are rebuilt before the extension's process ends. Each intent's logic is in a `run(in:)` method that tests call with an in-memory environment.
 
 | Intent | Used by | Opens app | What it does |
 |---|---|---|---|
-| `ToggleCompletionIntent(taskID, day)` | Now widget checkboxes | No | Completes or undoes, following F-04 |
+| `ToggleCompletionIntent(taskID, day)` | Now widget checkboxes | No | A `SetValueIntent`: completes or undoes, following F-04 |
 | `StartHabitTimerIntent(taskID)` | Now widget ▶ | No | Starts a habit timer |
 | `StartGenericTimerIntent` | Timer widget Start | No | Starts a generic timer |
 | `PauseTimerIntent`, `ResumeTimerIntent` | Timer widget, Now widget | No | |
@@ -377,16 +378,11 @@ struct TempoWidgetsBundle: WidgetBundle {
 
 ```swift
 func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
-    Task { @MainActor in
-        let now = Date()
-        guard let snapshot = try? SnapshotLoader.load(now: now) else {
-            completion(Timeline(entries: [.failed(now)], policy: .after(now.addingTimeInterval(900))))
-            return
-        }
-        let moments = TimelinePlanner.moments(from: now, snapshot: snapshot.core, calendar: .current)
-        completion(Timeline(entries: moments.map { TodayEntry(date: $0, snapshot: snapshot) },
-                            policy: .after(snapshot.nextMidnight)))
-    }
+    // WidgetTimelinePlan (Shared/Widgets) loads the snapshot and picks the moments, or falls back to a single
+    // failed entry with a retry in 15 minutes.
+    let plan = WidgetTimelinePlan.make(now: Date()) { try SnapshotLoader.load() }
+    completion(Timeline(entries: plan.moments.map { TodayEntry(date: $0, snapshot: plan.snapshot) },
+                        policy: .after(plan.refreshAfter)))
 }
 ```
 
