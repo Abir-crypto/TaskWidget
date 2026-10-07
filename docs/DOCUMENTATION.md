@@ -49,7 +49,7 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Partly built (T-01) · Last updated: 2026-10-07 · T-01, D-052
+Status: Partly built (T-01) · Last updated: 2026-10-07 · T-02
 
 ### What it does
 Only the project skeleton exists. No features are live yet. The app opens to a placeholder screen, and the widget gallery offers one placeholder widget.
@@ -81,11 +81,10 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 - Widget: `TempoWidgets/TempoWidgetsBundle.swift`, `TempoWidgets/Widgets/Placeholder/` (`PlaceholderWidget`, `PlaceholderProvider`, `PlaceholderEntry`; until T-23)
 - Strings: `Tempo/Resources/Localizable.xcstrings` and `TempoWidgets/Resources/Localizable.xcstrings` (D-046)
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
-- Core: `Packages/Core/Sources/Core/CorePlaceholder.swift` (until T-02)
 
 ### Tests
 - `TempoTests/ProjectConfigurationTests.swift`: the app's bundle ID, the `tempo` URL scheme, the background refresh settings, the App Group container and the embedded extension's bundle ID.
-- `Packages/Core/Tests/CoreTests/CorePlaceholderTests.swift`: one placeholder test (until T-02).
+- `Core` tests: see the feature sections (T-02 onward).
 
 ### Known gaps
 - Every feature, F-01 to F-26, is still to be built (T-02 onward).
@@ -99,9 +98,35 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-01._
 
 ## F-02 · Timing and parts of the day
-Status: Not built · Last updated: —
+Status: Partly built (T-02) · Last updated: 2026-10-07 · T-02
 
-_Not built yet. Intended behavior: SPEC F-02._
+### What it does
+The rules for days, weekdays and parts of the day exist in `Core`. Nothing in the app uses them yet.
+
+### Behavior
+- **Day keys** are `yyyymmdd` integers (`DayKey`). They convert to the day's first moment and back in any calendar. Adding days, counting days between two keys and finding a day's weekday all go through the calendar, so month ends, year ends, leap days and daylight-saving days work. `DayKey.distantPast` (`0`) is the `effective_from` of one-time schedules.
+- **Weeks** start on the calendar's `firstWeekday`, which comes from the user's region (`startOfWeek`, `week`).
+- **Minute of day → moment** (`DayKey.date(atMinute:in:)`, `LocalTime`): builds the wall-clock time in the calendar's time zone. A time inside a daylight-saving gap becomes the first moment after the gap (01:30 on 29 Mar 2026 in London → 02:00 BST, D-053). A repeated time uses its first occurrence (01:30 BST on 25 Oct 2026). Minute 1440 is the next day's midnight.
+- **Weekday mask** (`Weekdays`): Mon=1, Tue=2, Wed=4, Thu=8, Fri=16, Sat=32, Sun=64. Mon/Wed/Fri is 21, every day is 127, and one-time tasks store 0.
+- **Parts of the day** (`PartSettings`, `DayPart`): defaults Morning 06:00 (360), Noon 12:00 (720), Evening 17:00 (1020), Night 21:00 (1260). Each part ends where the next starts, and Night ends at 1440. `part(containing:)` puts minutes before Morning's start into Morning. `window(of:)` is `[start, end)`.
+- **Validation** (`validationError`), checked in this order: every start is within 0–1439 (`outOfRange`), on a 15-minute step (`notOnStep`), later than the previous part's start (`outOfOrder`), and every part lasts at least 30 minutes (`tooShort`), so Night can start no later than 23:30. Morning may start as early as 00:00.
+- **Allowed choices** (`allowedStarts(for:)`): the quarter-hour starts a part can take while the other three stay put, keeping every part at least 30 minutes long. Settings (T-10) and the guide (T-28) will use it so invalid times can't be picked.
+
+### Data
+None yet. `PartSettings` mirrors the four `*_start` columns of `settings` (SPEC §4.5).
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Calendar/` — `DayKey`, `LocalTime`, `Weekday`, `Weekdays`, `DayPart`, `PartSettings` (with `PartSettingsError`).
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Calendar/DayKeyTests.swift`: conversions, day arithmetic across month and year ends, leap days and both London daylight-saving changes, weekdays, week starts by region, gap and overlap moments, midnight, validity, JSON encoding, `LocalTime`.
+- `Packages/Core/Tests/CoreTests/Calendar/WeekdaysTests.swift`: the bitmask values (21, 127), calendar weekday numbers, region ordering.
+- `Packages/Core/Tests/CoreTests/Calendar/PartSettingsTests.swift`: `partOf` with the defaults, windows, custom times, every validation error, allowed starts.
+- `Packages/Core/Tests/CoreTests/Support/TestCalendar.swift`: the fixed Europe/London calendar and Tuesday 6 Oct 2026 reference day (ios.md §13).
+
+### Known gaps
+- Timing (fixed time, part, anytime) on tasks arrives with the data model (T-03) and occurrences (T-04).
+- Setting the start times in the app comes in Settings (T-10) and the guide (T-28).
 
 ## F-03 · Habit schedules and goals
 Status: Not built · Last updated: —

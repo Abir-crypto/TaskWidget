@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-02 · Days, weekdays and parts of the day
+**Current task:** T-03 · Data model and storage
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -11,7 +11,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | Task | Title | Phase | Status | Finished | Notes |
 |---|---|---|---|---|---|
 | T-01 | Project skeleton | A · Foundation | ✅ | 2026-10-07 | All four acceptance items pass on iOS 26.5 and 27.0 (iPhone 17, iPad Pro 11-inch). Widget registration was checked with `pluginkit`. Unblocked by D-052: the required run is now on the latest installed simulator (iOS 27.0), and the iOS 17.0 deployment target stays. Re-run on iOS 27.0: `TempoTests` 5/5, `Core` 1/1 on the simulator and with `swift test`. |
-| T-02 | Days, weekdays and parts of the day | A · Foundation | ⬜ |  |  |
+| T-02 | Days, weekdays and parts of the day | A · Foundation | ✅ | 2026-10-07 | `Core/Calendar`: `DayKey`, `LocalTime`, `Weekday`, `Weekdays`, `DayPart`, `PartSettings`. 33 Core tests pass with `swift test` and on the iOS 27.0 simulator; `TempoTests` pass. Placeholders `CorePlaceholder` and its test removed. D-053 (daylight-saving gap). |
 | T-03 | Data model and storage | A · Foundation | ⬜ |  |  |
 | T-04 | Occurrences and schedule history | A · Foundation | ⬜ |  |  |
 | T-05 | Status and the daily cycle | A · Foundation | ⬜ |  |  |
