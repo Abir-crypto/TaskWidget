@@ -56,4 +56,46 @@ public struct SettingsValue: Hashable, Codable, Sendable {
     public static let timerAlertChoices = [60, 120, 180]
     /// The latest recap time, 23:45.
     public static let latestRecapMinute = 1425
+    /// Recap times use 15-minute steps.
+    public static let recapStep = 15
+
+    /// The recap times that can be chosen: 15-minute steps from Night's start to 23:45 (SPEC F-16).
+    public var recapChoices: [Int] {
+        let first = (parts.nightStart + Self.recapStep - 1) / Self.recapStep * Self.recapStep
+        guard first <= Self.latestRecapMinute else { return [] }
+        return Array(stride(from: first, through: Self.latestRecapMinute, by: Self.recapStep))
+    }
+
+    /// The first rule the settings break, or `nil` when they're valid (SPEC F-02, F-16).
+    public var validationError: SettingsValidationError? {
+        if let error = parts.validationError { return .parts(error) }
+        if !Self.endingSoonLeadChoices.contains(endingSoonLead) { return .endingSoonLead }
+        if !Self.fixedLeadChoices.contains(fixedLead) { return .fixedLead }
+        if !Self.timerAlertChoices.contains(timerAlertMinutes) { return .timerAlert }
+        if !recapChoices.contains(recapMinute) { return .recapMinute }
+        return nil
+    }
+
+    /// The same settings with the recap moved into its allowed range, for when Night's start moves past it:
+    /// the recap becomes the first allowed time at or after it, or the last allowed time (D-066).
+    public func keepingRecapInRange() -> SettingsValue {
+        let choices = recapChoices
+        guard !choices.isEmpty, !choices.contains(recapMinute) else { return self }
+        var copy = self
+        copy.recapMinute = choices.first { $0 >= recapMinute } ?? choices[choices.count - 1]
+        return copy
+    }
+}
+
+/// Why settings were rejected.
+public enum SettingsValidationError: Error, Hashable, Sendable {
+    case parts(PartSettingsError)
+    /// Not 15, 30, 45 or 60 minutes.
+    case endingSoonLead
+    /// Not 5, 10, 15 or 30 minutes.
+    case fixedLead
+    /// Not 1, 2 or 3 hours.
+    case timerAlert
+    /// Not a 15-minute step from Night's start to 23:45.
+    case recapMinute
 }

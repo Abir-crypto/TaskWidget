@@ -9,15 +9,23 @@ final class AppDependencies {
     let clock: any Clock
     let store: any TaskStore
     let deviceState: DeviceState
+    let notifications: any NotificationScheduling
     let refresh: RefreshManager
     let settings: SettingsManager
     let tasks: TaskManager
     let missed: MissedManager
 
-    init(clock: any Clock, store: any TaskStore, deviceState: DeviceState, widgets: any WidgetReloading) {
+    init(
+        clock: any Clock,
+        store: any TaskStore,
+        deviceState: DeviceState,
+        notifications: any NotificationScheduling,
+        widgets: any WidgetReloading
+    ) {
         self.clock = clock
         self.store = store
         self.deviceState = deviceState
+        self.notifications = notifications
         self.refresh = RefreshManager(widgets: widgets)
         self.settings = SettingsManager(store: store, refresh: refresh)
         self.tasks = TaskManager(store: store, clock: clock, refresh: refresh)
@@ -36,6 +44,7 @@ final class AppDependencies {
                 clock: clock,
                 store: SwiftDataTaskStore(container: try StoreFactory.make(inMemory: true), clock: clock),
                 deviceState: deviceState,
+                notifications: FixedNotificationScheduler(permission: .allowed),
                 widgets: WidgetManager())
         }
         let clock = SystemClock()
@@ -44,6 +53,7 @@ final class AppDependencies {
             clock: clock,
             store: SwiftDataTaskStore(container: container, clock: clock),
             deviceState: .shared,
+            notifications: SystemNotificationScheduler(),
             widgets: WidgetManager()
         )
     }
@@ -62,6 +72,7 @@ final class AppDependencies {
         let dependencies = AppDependencies(
             clock: clock, store: store,
             deviceState: DeviceState(defaults: UserDefaults(suiteName: "preview") ?? .standard),
+            notifications: FixedNotificationScheduler(permission: .allowed),
             widgets: WidgetManager())
         dependencies.prepare()
         return dependencies

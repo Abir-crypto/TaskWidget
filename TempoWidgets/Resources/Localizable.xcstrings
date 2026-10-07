@@ -4,6 +4,18 @@
     "A placeholder until the real widgets are built." : {
       "comment" : "Widget gallery description of the placeholder widget."
     },
+    "Evening" : {
+      "comment" : "Part of the day"
+    },
+    "Morning" : {
+      "comment" : "Part of the day"
+    },
+    "Night" : {
+      "comment" : "Part of the day"
+    },
+    "Noon" : {
+      "comment" : "Part of the day"
+    },
     "Tempo" : {
       "comment" : "App name, shown in the placeholder widget and its gallery title.",
       "shouldTranslate" : false

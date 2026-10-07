@@ -328,7 +328,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Today (T-12), Tasks (T-13), Missed (T-16), Stats (T-18), Settings (T-10), History (T-14), the editor (T-11, "New task" with Cancel), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: Today (T-12), Tasks (T-13), Missed (T-16), Stats (T-18), History (T-14), the editor (T-11, "New task" with Cancel), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -405,9 +405,45 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-15._
 
 ## F-16 · Settings
-Status: Not built · Last updated: —
+Status: Partly built (T-10) · Last updated: 2026-10-07 · T-10
 
-_Not built yet. Intended behavior: SPEC F-16._
+### What it does
+Settings is pushed from the gear on Today. Every change is saved as soon as it's made and keeps its value after a restart.
+
+### Behavior
+- **Parts of the day:** Morning, Noon, Evening and Night, each with a compact time picker in 15-minute steps (`MinuteIntervalPicker`). Each picker only offers start times that keep the parts in order and at least 30 minutes long (`PartSettings.allowedStarts`), so invalid times can't be chosen. Footer: "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." If Night moves past the recap time, the recap moves to the first allowed time (D-066).
+- **Reminders**, all on by default:
+  - "Part starts" (on/off).
+  - "Ending soon" (on/off), and when on, "Before the part ends": 15, 30 (default), 45 or 60 min.
+  - "Fixed-time tasks" (on/off), and when on, "Before the task": 5, 10 (default), 15 or 30 min.
+  - "End-of-day recap" (on/off), and when on, "Recap time": 15-minute steps from Night's start to 23:45, 23:30 by default.
+  - "Running timer alert" (on/off), and when on, "Alert after": 1, 2 (default) or 3 hours.
+  - Footer: "A summary when each part starts, a reminder before a part ends, a reminder before fixed-time tasks, a recap of the day, and an alert when a timer has been running a long time."
+- **Notifications** status row: "On"; "Off" with an "Open Settings" button that opens the app's notification settings in the system Settings app, and the footer "Notifications are off for Tempo, so no reminders are sent. Turn them on in the Settings app."; or "Not allowed yet" with an "Allow notifications" button that asks for permission (D-067). The status is re-read whenever the app becomes active.
+- **Privacy:** "Hide task names on the Lock Screen", off by default. Footer: "Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked."
+- **About:** "Version" shows the marketing version and build, e.g. "1.0 (1)".
+- **Validation** (`SettingsValue.validationError`): part times follow F-02; leads and the alert period must be one of their choices; the recap must be a 15-minute step from Night's start to 23:45. A change that breaks a rule isn't saved, and the screen reloads what's stored.
+- Times show in the user's 12- or 24-hour format (`TimeOfDayFormatter`).
+- Saving refreshes the widgets (and, from T-21, the notifications) through `RefreshManager`.
+
+### Data
+`settings` (every column). Reads the notification permission from the system.
+
+### Implementation (iOS)
+- Views: `Tempo/Views/Settings/SettingsView`, `SettingsViewModel`.
+- Components: `Tempo/Components/MinuteIntervalPicker/MinuteIntervalPicker` (wraps `UIDatePicker`; minutes are shown on a fixed UTC day so daylight saving never shifts them).
+- Managers: `Shared/Managers/SettingsManager` (full validation, `SettingsError.invalid`), `NotificationScheduling` with `SystemNotificationScheduler` and `FixedNotificationScheduler` (previews and tests), `NotificationPermission`.
+- Rules: `Packages/Core/Sources/Core/Models/SettingsValue.swift` (`validationError`, `recapChoices`, `keepingRecapInRange`).
+- Utilities: `Shared/Utilities/Formatters/TimeOfDayFormatter`, `Shared/Utilities/Extensions/DayPart+Title`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Calendar/SettingsValueTests.swift`: defaults, recap choices, every validation error, the recap following Night.
+- `TempoTests/ViewModels/SettingsViewModelTests.swift`: defaults and permission, every setting saved and read back from a new container on the same file (a restart), invalid part times not saved, picker ranges, the recap following Night, asking for permission, "off" status.
+- `TempoUITests/SettingsUITests.swift`: every setting is on screen.
+
+### Known gaps
+- **Help › How to use** comes with the guide (T-28).
+- Settings changes rebuild notifications once they exist (T-21).
 
 ## F-17 · Widgets: general rules
 Status: Not built · Last updated: —

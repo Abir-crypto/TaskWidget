@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-10 · Settings
+**Current task:** T-11 · Task editor
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -19,7 +19,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-07 | Next-task rule and missed queries | A · Foundation | ✅ | 2026-10-07 | `Core/NextTask` (`NextTaskRule`, `NextTask`, `NextTaskKind`), `Core/Missed` (`MissedQueries`, `MissedFilter` and its parts), `DayOrder`. 116 Core tests (Mac and iOS 27.0) and 76 `TempoTests` pass. D-061. |
 | T-08 | Stats calculations | A · Foundation | ✅ | 2026-10-07 | `Core/Stats`: `StatsCalculator` → `StatsSnapshot`, `StatsRange`, `CompletionRate`, `Streak`. 136 Core tests (Mac and iOS 27.0) and 76 `TempoTests` pass. D-062. Phase A done. |
 | T-09 | App structure and navigation | B · App screens | ✅ | 2026-10-07 | Tabs, router, deep links, floating +, timer bar slot, Missed badge, placeholder screens. New `TempoUITests` target: 6 UI tests check tabs, buttons and every link in the running app. 90 `TempoTests`, 6 UI tests and 136 Core tests pass on iOS 27.0. D-063–D-065. |
-| T-10 | Settings | B · App screens | ⬜ |  |  |
+| T-10 | Settings | B · App screens | ✅ | 2026-10-07 | Settings screen with every F-16 setting, 15-minute `MinuteIntervalPicker` limited to valid part times, notification status with the system link. Help › How to use is added with the guide (T-28). 97 `TempoTests`, 7 UI tests and 140 Core tests pass on iOS 27.0. D-066, D-067. |
 | T-11 | Task editor | B · App screens | ⬜ |  |  |
 | T-12 | Today screen and Log time | B · App screens | ⬜ |  |  |
 | T-13 | Tasks tab | B · App screens | ⬜ |  |  |

@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Settings details (T-10)
+- Platform: ios.md §13 — `ScreenshotTests` in `TempoUITests`, run only with `TEST_RUNNER_TEMPO_SCREENSHOTS`.
+- No changes to SPEC.md. D-066 (the recap follows Night) and D-067 (asking for permission from Settings) fill gaps in F-16.
+
 ## 2026-10-07 · UI tests and navigation details (T-09)
 - Platform: ios.md §3 — new `TempoUITests` target in the `Tempo` scheme (D-064).
 - Platform: ios.md §13 — UI tests, and the `-ui-testing` / `-ui-testing-now` launch arguments.

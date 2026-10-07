@@ -22,11 +22,11 @@ final class SettingsManager {
         return try store.save(SettingsValue.defaults)
     }
 
-    /// Saves new settings. Part start times must follow the rules in SPEC F-02.
+    /// Saves new settings. They must follow the rules in SPEC F-02 and F-16.
     @discardableResult
     func update(_ settings: SettingsValue) throws -> SettingsValue {
-        if let error = settings.parts.validationError {
-            throw SettingsError.invalidParts(error)
+        if let error = settings.validationError {
+            throw SettingsError.invalid(error)
         }
         let saved = try store.save(settings)
         refresh.afterChange()

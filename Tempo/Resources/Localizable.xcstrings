@@ -1,21 +1,147 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Add task" : {},
-    "Can't open your tasks" : {},
-    "Cancel" : {},
-    "Choose a task" : {},
-    "Close" : {},
-    "History" : {},
-    "Missed" : {},
-    "New task" : {},
-    "Settings" : {},
-    "Something went wrong while opening Tempo's data. Close the app and open it again." : {},
-    "Stats" : {},
-    "Tasks" : {},
-    "This screen is being built." : {},
-    "Timer" : {},
-    "Today" : {}
+    "%@ starts at" : {
+
+    },
+    "%lld min" : {
+
+    },
+    "A summary when each part starts, a reminder before a part ends, a reminder before fixed-time tasks, a recap of the day, and an alert when a timer has been running a long time." : {
+
+    },
+    "About" : {
+
+    },
+    "Add task" : {
+
+    },
+    "Alert after" : {
+
+    },
+    "Allow notifications" : {
+
+    },
+    "Before the part ends" : {
+
+    },
+    "Before the task" : {
+
+    },
+    "Can't open your tasks" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Choose a task" : {
+
+    },
+    "Close" : {
+
+    },
+    "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." : {
+
+    },
+    "End-of-day recap" : {
+
+    },
+    "Ending soon" : {
+
+    },
+    "Evening" : {
+      "comment" : "Part of the day"
+    },
+    "Fixed-time tasks" : {
+
+    },
+    "Hide task names on the Lock Screen" : {
+
+    },
+    "History" : {
+
+    },
+    "Missed" : {
+
+    },
+    "Morning" : {
+      "comment" : "Part of the day"
+    },
+    "New task" : {
+
+    },
+    "Night" : {
+      "comment" : "Part of the day"
+    },
+    "Noon" : {
+      "comment" : "Part of the day"
+    },
+    "Not allowed yet" : {
+
+    },
+    "Notifications" : {
+
+    },
+    "Notifications are off for Tempo, so no reminders are sent. Turn them on in the Settings app." : {
+
+    },
+    "Off" : {
+
+    },
+    "On" : {
+
+    },
+    "Open Settings" : {
+
+    },
+    "Part starts" : {
+
+    },
+    "Parts of the day" : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Recap time" : {
+
+    },
+    "Reminders" : {
+
+    },
+    "Running timer alert" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Something went wrong while opening Tempo's data. Close the app and open it again." : {
+
+    },
+    "Stats" : {
+
+    },
+    "Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked." : {
+
+    },
+    "Tasks" : {
+
+    },
+    "This screen is being built." : {
+
+    },
+    "Timer" : {
+
+    },
+    "Today" : {
+
+    },
+    "Version" : {
+
+    },
+    "^[%lld hour](inflect: true)" : {
+
+    }
   },
   "version" : "1.0"
 }

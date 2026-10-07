@@ -35,7 +35,7 @@ struct SettingsManagerTests {
     @Test func invalidPartTimesAreRejected() throws {
         var settings = try manager.loadOrCreate()
         settings.parts = settings.parts.setting(.noon, to: 365)
-        #expect(throws: SettingsError.invalidParts(.notOnStep(.noon))) {
+        #expect(throws: SettingsError.invalid(.parts(.notOnStep(.noon)))) {
             try manager.update(settings)
         }
         #expect(try store.settings()?.parts == .defaults)
