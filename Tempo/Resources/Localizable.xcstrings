@@ -382,6 +382,9 @@
     "Not allowed yet" : {
 
     },
+    "Not now" : {
+
+    },
     "Not scheduled" : {
 
     },
@@ -501,6 +504,9 @@
 
     },
     "Repeat on" : {
+
+    },
+    "Review missed tasks" : {
 
     },
     "Running timer alert" : {
@@ -657,6 +663,9 @@
 
     },
     "You haven't missed a task today" : {
+
+    },
+    "You missed ^[%lld task](inflect: true) today" : {
 
     },
     "^[%lld day](inflect: true)" : {

@@ -42,12 +42,16 @@ final class AppDependencies {
             deviceState.reset()
             let store = SwiftDataTaskStore(container: try StoreFactory.make(inMemory: true), clock: clock)
             if options.usesSampleData { SampleData.populate(store: store, clock: clock) }
-            return AppDependencies(
+            let dependencies = AppDependencies(
                 clock: clock,
                 store: store,
                 deviceState: deviceState,
                 notifications: FixedNotificationScheduler(permission: .allowed),
                 widgets: WidgetManager())
+            if options.suppressesMissedPopup, let unseen = try? dependencies.missed.unseenToday() {
+                dependencies.missed.markSeen(unseen.map(\.id))
+            }
+            return dependencies
         }
         let clock = SystemClock()
         let container = try StoreFactory.shared.get()

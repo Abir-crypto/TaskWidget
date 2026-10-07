@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-17 · Missed popup
+**Current task:** T-18 · Stats screen
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -26,7 +26,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-14 | History | B · App screens | ✅ | 2026-10-07 | One-time (by completion day, undo today only) and Habits (results, Start again) with search and empty states. Sample data gains an ended habit. 142 `TempoTests`, 20 UI tests and 153 Core tests pass on iOS 27.0. D-079. |
 | T-15 | Habit detail | B · App screens | ✅ | 2026-10-07 | Header, buttons (Log time, End habit/Start again, Edit), week dots, month calendar, stats, streak, today's entries, recent missed days with See all, no-data state. ▶ waits for the timer (T-20). Debounce tests now poll. 152 `TempoTests`, 23 UI tests and 153 Core tests pass on iOS 27.0. D-080. |
 | T-16 | Missed tab | B · App screens | ✅ | 2026-10-07 | Today section with Mark done / Log time / Move to tomorrow, Earlier grouped by date with count, sort & filter sheet, Clear filters, See all filter, empty states. 159 `TempoTests`, 25 UI tests and 153 Core tests pass on iOS 27.0. D-081. |
-| T-17 | Missed popup | B · App screens | ⬜ |  |  |
+| T-17 | Missed popup | B · App screens | ✅ | 2026-10-07 | Popup on normal opens (0.5 s after active), Review highlights in Missed, Not now; seen list per day; skipped when opened from a link. 164 `TempoTests`, 27 UI tests and 153 Core tests pass on iOS 27.0. D-082. |
 | T-18 | Stats screen | B · App screens | ⬜ |  |  |
 | T-19 | Timer engine | C · Timer | ⬜ |  |  |
 | T-20 | Timer in the app | C · Timer | ⬜ |  |  |

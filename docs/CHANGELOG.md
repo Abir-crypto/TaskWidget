@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Missed popup details (T-17)
+- Platform: ios.md §13 — `-ui-testing-no-popup` keeps the missed popup out of UI tests that aren't about it.
+- No changes to SPEC.md. D-082: swiping the popup away counts as seen, like its buttons.
+
 ## 2026-10-07 · Today screen details (T-12)
 - Platform: ios.md §13 — `-ui-testing-sample` starts UI tests with sample data.
 - No changes to SPEC.md. D-073 to D-077 fill gaps in F-05, F-10 and F-24: Log time's starting value, empty-part wording, folding ended parts, red dots only for today and past days, and the layout of swipe actions.

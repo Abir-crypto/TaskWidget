@@ -108,4 +108,11 @@ final class ScreenshotTests: XCTestCase {
         _ = app.navigationBars["Sort & filter"].waitForExistence(timeout: 3)
         save(app, "missed-2-filter")
     }
+
+    @MainActor
+    func testMissedPopup() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true, missedPopup: true)
+        _ = app.buttons["Not now"].waitForExistence(timeout: 5)
+        save(app, "missed-popup")
+    }
 }

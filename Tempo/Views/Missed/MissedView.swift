@@ -50,6 +50,15 @@ struct MissedView: View {
             model.showOnly(taskID: taskID)
             router.missedTaskFilter = nil
         }
+        .onChange(of: router.missedHighlight, initial: true) { _, ids in
+            // "Review missed tasks" from the popup highlights its tasks until the tab is left.
+            guard !ids.isEmpty else { return }
+            model.highlighted = ids
+            router.missedHighlight = []
+        }
+        .onChange(of: router.selectedTab) { _, tab in
+            if tab != .missed { model.highlighted = [] }
+        }
         .alert(
             "Couldn't change the task",
             isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } }),

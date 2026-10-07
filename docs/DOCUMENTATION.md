@@ -279,10 +279,10 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-07._
 
 ## F-08 · Missed tasks
-Status: Partly built (T-03, T-07, T-16) · Last updated: 2026-10-07 · T-16
+Status: Built (T-03, T-07, T-16, T-17) · Last updated: 2026-10-07 · T-17
 
 ### What it does
-The Missed tab lists today's Missed and Short tasks, which can still be fixed, and every earlier one, read-only, with sort and filters. The missed popup comes in T-17.
+The Missed tab lists today's Missed and Short tasks, which can still be fixed, and every earlier one, read-only, with sort and filters. A popup points out new missed tasks when the app is opened normally.
 
 ### Behavior
 - **Today** section: today's Missed and Short occurrences in day order, with the footer "You can still change these". Each row has small buttons where F-04 allows: "Mark done" (one-time and progress), "Log time" (duration; opens the Log time sheet) and "Move to tomorrow" (one-time). A task leaves the section as soon as it's no longer missed. Once a missed task has been copied to tomorrow, "Move to tomorrow" is no longer offered for it, here or on Today (D-081). Empty: "You haven't missed a task today".
@@ -298,7 +298,9 @@ The Missed tab lists today's Missed and Short tasks, which can still be fixed, a
 Reads everything through a `Snapshot`; writes completions and copies through `TaskManager`. The popup's seen list is `deviceState.missedSeen` (F-26).
 
 ### Implementation (iOS)
-- Views: `Tempo/Views/Missed/MissedView`, `MissedViewModel`, `MissedGroup`; `Components/MissedRow`, `MissedFilterSheet`.
+- Views: `Tempo/Views/Missed/MissedView`, `MissedViewModel`, `MissedGroup`; `Components/MissedRow`, `MissedFilterSheet`; `Tempo/Views/MissedPopup/MissedPopupView`.
+- Popup timing: `Tempo/Views/Root/RootView` (`showMissedPopupIfNeeded`, `markPopupSeen`), `Tempo/App/MissedPopupContent`, `NavigationRouter.missedPopup`, `reviewMissed`, `missedHighlight`.
+- Manager: `MissedManager.unseenToday`, `popupItems(openedFromLink:)`, `markSeen`.
 - Rules: `Packages/Core/Sources/Core/Missed/` — `MissedQueries`, `MissedFilter`, `MissedDateRange`, `MissedPartFilter`, `MissedSort`, `MissedItem`, `MissedSeenList`; `Core/Schedule/DayOrder`.
 - Manager: `TaskManager.hasCopyTomorrow`.
 
@@ -306,9 +308,17 @@ Reads everything through a `Snapshot`; writes completions and copies through `Ta
 - `Packages/Core/Tests/CoreTests/Missed/MissedQueriesTests.swift`, `Schedule/DayOrderTests.swift`.
 - `TempoTests/ViewModels/MissedViewModelTests.swift`: today's items and their actions, leaving the section, Move to tomorrow keeping the miss (and not offered twice), date groups and the count, sort and every filter, Clear filters, "See all", filter choices, empty states.
 - `TempoUITests/MissedUITests.swift`: Mark done, filters with no matches and Clear filters, empty states.
+- `TempoTests/Managers/MissedManagerTests.swift` (`MissedPopupTests`): unseen tasks on a normal open, nothing from a link and the next normal open showing them, seen tasks never shown again, the list resetting the next day, Review.
+- `TempoUITests/MissedPopupUITests.swift`: the popup on a normal open, Not now, no popup after returning from the background, Review opening Missed. Other UI tests launch with `-ui-testing-no-popup`.
+
+- **Missed popup** (T-17): when the app is opened normally and today has Missed or Short tasks it hasn't shown yet, a half-height sheet appears over the current screen 0.5 s after the app becomes active (so a widget or notification link that arrives late still counts). It says "You missed 2 tasks today" (grammar-agreed), lists each task with its type icon and timing, and offers "Review missed tasks" and "Not now".
+  - Review switches to the Missed tab and highlights those tasks in its Today section (an accent tint) until another tab is chosen.
+  - Either button, or swiping the sheet away, counts as having seen its tasks (D-082). Each task appears in the popup only once; the seen list is kept on the device (`deviceState.missedSeen`) and starts over each day.
+  - Opening from a widget, a notification or a pending widget action skips the popup until the next normal open; the badge still shows.
+  - A link that arrives while the popup is open closes it.
 
 ### Known gaps
-- The missed popup and highlighting its tasks here (T-17).
+- The end-of-day recap that lists all of today's missed tasks comes with notifications (T-21).
 
 ## F-09 · Navigation and app structure
 Status: Built (T-09) · Last updated: 2026-10-07 · T-09

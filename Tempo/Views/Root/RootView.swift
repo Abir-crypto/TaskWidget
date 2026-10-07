@@ -5,6 +5,8 @@ struct RootView: View {
     let dependencies: AppDependencies
     @Bindable var router: NavigationRouter
     @State private var model: RootViewModel
+    /// The popup content on screen, kept so it can be marked seen when the popup closes.
+    @State private var shownPopup: MissedPopupContent?
     @Environment(\.scenePhase) private var scenePhase
 
     init(dependencies: AppDependencies, router: NavigationRouter) {
@@ -51,6 +53,12 @@ struct RootView: View {
         .onOpenURL { url in
             router.open(DeepLink(url: url))
         }
+        .sheet(item: $router.missedPopup, onDismiss: markPopupSeen) { content in
+            MissedPopupView(
+                content: content,
+                onReview: { router.reviewMissed(content.occurrenceIDs) },
+                onNotNow: { router.missedPopup = nil })
+        }
         .onChange(of: scenePhase, initial: true) { _, phase in
             switch phase {
             case .active:
@@ -60,6 +68,7 @@ struct RootView: View {
                 }
                 // A widget may have changed data while the app was in the background.
                 dependencies.refresh.dataMayHaveChanged()
+                showMissedPopupIfNeeded()
             case .background:
                 router.didEnterBackground()
             default:
@@ -67,8 +76,29 @@ struct RootView: View {
             }
         }
     }
+
+    /// Shows the missed popup on a normal open, when today has missed tasks it hasn't shown (SPEC F-08).
+    /// A link from a widget or notification can arrive slightly after the app becomes active, so it waits
+    /// briefly first (ios.md §11).
+    private func showMissedPopupIfNeeded() {
+        Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard router.missedPopup == nil else { return }
+            let items = dependencies.missed.popupItems(openedFromLink: router.openedFromLinkThisActivation)
+            guard !items.isEmpty else { return }
+            shownPopup = MissedPopupContent(items: items)
+            router.missedPopup = shownPopup
+        }
+    }
+
+    /// Either button, or swiping the popup away, counts as having seen its tasks (SPEC F-08, D-082).
+    private func markPopupSeen() {
+        guard let shownPopup else { return }
+        dependencies.missed.markSeen(shownPopup.occurrenceIDs)
+        self.shownPopup = nil
+    }
 }
 
 #Preview {
-    RootView(dependencies: .preview(), router: NavigationRouter())
+    RootView(dependencies: .preview(hour: 13, sample: true), router: NavigationRouter())
 }

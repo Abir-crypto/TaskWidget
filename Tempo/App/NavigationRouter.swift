@@ -11,6 +11,10 @@ final class NavigationRouter {
     var todayFocus: TodayFocus?
     /// Set by Habit detail's "See all"; the Missed tab filters Earlier to this habit and clears it.
     var missedTaskFilter: UUID?
+    /// The missed popup, when it's showing (SPEC F-08).
+    var missedPopup: MissedPopupContent?
+    /// Occurrences the popup's "Review missed tasks" asked the Missed tab to highlight.
+    var missedHighlight: Set<String> = []
     var editor: EditorRequest?
     var isTimerScreenPresented = false
     var taskPicker: TaskPickerRequest?
@@ -59,11 +63,19 @@ final class NavigationRouter {
         selectedTab = .missed
     }
 
+    /// "Review missed tasks": switches to the Missed tab and highlights the popup's tasks (SPEC F-08).
+    func reviewMissed(_ occurrenceIDs: [String]) {
+        missedPopup = nil
+        missedHighlight = Set(occurrenceIDs)
+        selectedTab = .missed
+    }
+
     func didEnterBackground() {
         openedFromLinkThisActivation = false
     }
 
     private func dismissPresented() {
+        missedPopup = nil
         editor = nil
         isTimerScreenPresented = false
         taskPicker = nil
