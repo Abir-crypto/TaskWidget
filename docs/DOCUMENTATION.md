@@ -274,9 +274,35 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-07._
 
 ## F-08 · Missed tasks
-Status: Not built · Last updated: —
+Status: Partly built (T-03, T-07) · Last updated: 2026-10-07 · T-07
 
-_Not built yet. Intended behavior: SPEC F-08._
+### What it does
+The missed queries (SPEC §5.8) exist in `Core`, with the Earlier section's filters and sort orders. The seen list is stored on the device (T-03). There's no Missed tab or popup yet.
+
+### Behavior
+- **Missed today** (`MissedQueries.missedToday`): today's occurrences whose status is Missed or Short, in day order (`DayOrder`: Morning → Night → Anytime; fixed times first in time order, then part-of-day tasks in creation order).
+- **Missed earlier** (`missedEarlier`): every Missed or Short occurrence before today. Ended habits are included; deleted tasks never appear. Days are sorted newest first (default) or oldest first; within a day, day order.
+- **Each item** (`MissedItem`) carries its occurrence, status, and for duration habits the minutes logged and that day's target ("20 of 30 min").
+- **Filters** (`MissedFilter`):
+  - Date range: All (default), This week (region's first weekday through six days later), This month, or a custom range (inclusive, either order).
+  - Type: any combination of one-time, progress and duration; all by default.
+  - Part of the day: any combination of Morning, Noon, Evening, Night and Anytime; fixed-time tasks count under their part. All by default.
+  - A specific task.
+  - `isActive` is true when any filter differs from its default; sorting doesn't count. `cleared` resets the filters and keeps the sort order.
+- **Unseen** (`unseen`): missed today minus the seen list. A seen list from another day counts as empty.
+
+### Data
+Reads everything through a `Snapshot`; the seen list is `deviceState.missedSeen` (F-26).
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Missed/` — `MissedQueries`, `MissedFilter`, `MissedDateRange`, `MissedPartFilter`, `MissedSort`, `MissedItem`, `MissedSeenList`; `Core/Schedule/DayOrder`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Missed/MissedQueriesTests.swift`: Short in missed today, both sort orders, every filter alone and combined, clearing, ended and deleted tasks, past Short days, unseen with current and stale lists, date bounds.
+- `Packages/Core/Tests/CoreTests/Schedule/DayOrderTests.swift`.
+
+### Known gaps
+- The Missed tab and its badge (T-16) and the popup (T-17).
 
 ## F-09 · Navigation and app structure
 Status: Not built · Last updated: —
@@ -334,9 +360,30 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-19._
 
 ## F-20 · Focus widget (medium)
-Status: Not built · Last updated: —
+Status: Partly built (T-07) · Last updated: 2026-10-07 · T-07
 
-_Not built yet. Intended behavior: SPEC F-20._
+### What it does
+The next-task rule (SPEC §5.6), shared by this widget and the Lock Screen widgets, exists in `Core`. The widget itself comes in T-26.
+
+### Behavior
+- **Candidates:** today's occurrences that are Upcoming or Open, in creation order.
+- **The part in progress** is the part whose window contains now. Before Morning's start there's none, so Morning tasks count as a later part ("from 06:00") (D-061).
+- **Rules, in order** (`NextTaskRule.pick`):
+  1. A fixed-time candidate whose time is now or within the next 60 minutes, earliest first → kind `.fixed(minute:)`.
+  2. A candidate in the part in progress: fixed times already passed (earliest first), then part-of-day tasks in creation order. Fixed times more than 60 minutes ahead don't count → `.currentPart(part)`.
+  3. The earliest coming item: remaining fixed times at their time (`.fixed`), part-of-day tasks of later parts at their part's start (`.laterPart`). A tie goes to the fixed time, then to creation order.
+  4. An Anytime candidate, in creation order → `.anytime`.
+  5. Nothing → `nil` ("You're free today").
+- **"Then:"** (`NextTaskRule.then`) applies the rule again with the first result removed.
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/NextTask/` — `NextTaskRule`, `NextTask`, `NextTaskKind`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/NextTask/NextTaskRuleTests.swift`: the four T-07 cases and their "Then", passed fixed times, creation order, tie-breaking, before Morning, non-candidates, other days.
+
+### Known gaps
+- The widget's views, "when" line and "All N tasks done" (T-26).
 
 ## F-21 · Now widget (large)
 Status: Not built · Last updated: —
