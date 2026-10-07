@@ -332,7 +332,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Habit detail (T-15), Missed (T-16), Stats (T-18), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: Missed (T-16), Stats (T-18), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -372,7 +372,7 @@ The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening,
   - One-time tasks and progress habits: a checkbox (accessibility "Mark done"/"Mark not done" with the title), the title (struck through and grey when done), "Habit" with a repeat icon for progress habits, the fixed time on the right if there is one, and a red "Missed" label when missed. The checkbox is disabled where F-04 doesn't allow completing.
   - Duration habits: a progress ring, the title, "10 of 30 min", the fixed time if any, and "Done", "Short" or "Missed" with an icon once final. Time can still be added after Done.
   - Statuses always come with text and an icon.
-- **Tapping a row:** a one-time task opens the editor (read-only for past days); a habit opens Habit detail (a placeholder until T-15).
+- **Tapping a row:** a one-time task opens the editor (read-only for past days); a habit opens Habit detail.
 - **Swipe actions**, only where F-04 allows (D-077):
   - From the left: "Done"/"Undo" (one-time and progress, today; one-time on future days), "Log time" (duration habits, today).
   - From the right: "Delete", "Edit" (today and later), "Move to tomorrow" on today or "Move to next day" on a future day (one-time tasks that aren't done).
@@ -419,7 +419,7 @@ Two lists behind a segmented control: active habits with their progress, and upc
   - progress habits: "4 of 5 this week" (done scheduled days of this week out of its scheduled days, within the habit's start and last day), or "Day 12 of 30" when it has a set length;
   - duration habits: "2h 10m of 3h 30m this week" (weekly total against the weekly goal, SPEC §5.5);
   - a habit that hasn't started: "Starts Thu 8 Oct" (D-078).
-  - Tapping a row opens Habit detail (placeholder until T-15).
+  - Tapping a row opens Habit detail.
 - **One-time:** every one-time task dated today or later that isn't done and isn't missed, grouped under "Today", "Tomorrow" or a short date, in day order within a date. Each row shows the title and its timing. Tapping opens the editor. Today's missed tasks are in the Missed tab instead.
 - **Floating +:** opens the editor with a progress habit preset on Habits (it can still be changed), or a one-time task on One-time.
 - **Clock button:** opens History.
@@ -473,9 +473,39 @@ Reads completions, tasks and time entries; writes completions (undo) and new hab
 - None for F-12.
 
 ## F-13 · Habit detail
-Status: Not built · Last updated: —
+Status: Partly built (T-15) · Last updated: 2026-10-07 · T-15
 
-_Not built yet. Intended behavior: SPEC F-13._
+### What it does
+Pushed from a habit row in Today, Tasks or History, it shows one habit's schedule, this week, a month calendar, stats, streak, today's time entries and recent missed days.
+
+### Behavior
+- **Title bar:** the habit's title, and "Edit" (opens the editor) on the right.
+- **Header:** the type with its icon, the title, the schedule summary ("Every day · Evening"), and for duration habits the target ("30 min a day"), then the length: "Day 12 of 30", "Ongoing", "Starts Thu 8 Oct" or "Ended Sat 26 Sep".
+- **Buttons:** "Log time" (duration habits, when time can be logged today; opens the Log time sheet), and "End habit" (with the confirmation "End this habit?" / "It moves to History with its stats, and you can start it again later.") for an active habit, or "Start again" for an ended one (confirmed with "Started again").
+- **This week:** seven days in the region's order, each with an icon and color: done (filled check), short (half circle), missed (filled x), upcoming (empty circle, including today while open), not scheduled (dash). VoiceOver reads the weekday and the result.
+- **Month calendar:** the month's grid starting on the region's first weekday. Done days are green, missed red, short pale orange, upcoming outlined; today has an accent ring. Arrows move between months, from the habit's start month up to the current month. A legend (Done, Short, Missed, Upcoming) with icons sits under it. Each day reads its date and result to VoiceOver.
+- **Stats:** "This week", "This month" and "This year", each with the completion rate ("—" with no counted days, SPEC §5.7). Duration habits add the time: this week "1h 5m of 3h 30m" (against the weekly goal), the month and year "2h 20m total".
+- **Streak:** "Current" and "Best", in days (§5.7).
+- **Today's time** (duration habits): each of today's entries with its source ("Timer" or "Logged by hand") and minutes; swipe to delete. "No time logged today" when empty. Past entries never appear here, so they can't be deleted.
+- **Recent missed days:** up to 10 Missed or Short days, newest first, including today's (D-080). Short days show "20 of 30 min"; missed days show a red "Missed" with an icon. "See all" switches to the Missed tab with Earlier filtered to this habit (the filter is applied by the Missed tab, T-16).
+- **No data yet** (F-24): until the habit has a counted day or any time logged, the week, calendar, stats, streak and missed sections are replaced by "No data yet. Check back after its first day."
+- If the habit was deleted, the screen says "This habit no longer exists".
+
+### Data
+Reads everything through a `Snapshot`; deletes time entries, ends habits and starts them again through `TaskManager`.
+
+### Implementation (iOS)
+- Views: `Tempo/Views/HabitDetail/HabitDetailView`, `HabitDetailViewModel`, `DayResult`, `RangeStat`; `Components/WeekDots`, `MonthCalendar`, `DayResultMark`.
+- Rules: `StatsCalculator` (`statuses`, `rate`, `streak`), `DurationMath`, `MissedQueries`, `HabitProgress`.
+- App: `NavigationRouter.showMissed(for:)` and `missedTaskFilter`.
+
+### Tests
+- `TempoTests/ViewModels/HabitDetailViewModelTests.swift`: week dots, the month calendar and its limits, stats and streak, recent missed days (order and the limit of 10), duration time and weekly goal, deleting today's but not past entries, header texts and buttons, no data yet, "See all".
+- `TempoUITests/HabitDetailUITests.swift`: opening from Today with its sections, End habit confirming first, "See all" opening Missed.
+
+### Known gaps
+- ▶ for duration habits, hidden while a timer exists (T-20).
+- Missed tab filtering for "See all" (T-16).
 
 ## F-14 · Stats
 Status: Partly built (T-08) · Last updated: 2026-10-07 · T-08
@@ -653,7 +683,7 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-23._
 
 ## F-24 · Empty states
-Status: Partly built (T-12–T-14) · Last updated: 2026-10-07 · T-14
+Status: Partly built (T-12–T-15) · Last updated: 2026-10-07 · T-15
 
 ### What it does
 Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
@@ -670,7 +700,8 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | History › One-time | "Nothing completed yet" |
 | History › Habits | "Finished habits will appear here" |
 | History, a search with no results | "No matches" |
-| Everything else | Not built yet (T-15 onward) |
+| Habit detail, with no data yet | "No data yet. Check back after its first day." |
+| Everything else | Not built yet (T-16 onward) |
 
 ### Implementation (iOS)
 - `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.

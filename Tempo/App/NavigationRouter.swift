@@ -9,6 +9,8 @@ final class NavigationRouter {
     var selectedTab: AppTab = .today
     /// Set by links to Today; the Today screen scrolls to it and clears it.
     var todayFocus: TodayFocus?
+    /// Set by Habit detail's "See all"; the Missed tab filters Earlier to this habit and clears it.
+    var missedTaskFilter: UUID?
     var editor: EditorRequest?
     var isTimerScreenPresented = false
     var taskPicker: TaskPickerRequest?
@@ -49,6 +51,12 @@ final class NavigationRouter {
 
     func openEditor(_ request: EditorRequest) {
         editor = request
+    }
+
+    /// Opens the Missed tab with Earlier filtered to one habit (SPEC F-13 "See all").
+    func showMissed(for taskID: UUID) {
+        missedTaskFilter = taskID
+        selectedTab = .missed
     }
 
     func didEnterBackground() {

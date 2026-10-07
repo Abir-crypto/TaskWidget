@@ -12,7 +12,9 @@ struct RefreshManagerTests {
         refresh.afterChange()
         refresh.afterChange()
         #expect(widgets.count == 0)
-        try await Task.sleep(for: .milliseconds(800))
+        #expect(await eventually { widgets.count == 1 })
+        // No second reload follows.
+        try await Task.sleep(for: .milliseconds(700))
         #expect(widgets.count == 1)
     }
 

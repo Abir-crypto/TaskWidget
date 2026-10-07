@@ -45,7 +45,6 @@ struct SettingsManagerTests {
         var settings = try manager.loadOrCreate()
         settings.hideLockScreenTitles = true
         try manager.update(settings)
-        try await Task.sleep(for: .milliseconds(800))
-        #expect(widgets.count == 1)
+        #expect(await eventually { widgets.count == 1 })
     }
 }

@@ -85,4 +85,16 @@ final class ScreenshotTests: XCTestCase {
         _ = app.staticTexts["Meditate"].waitForExistence(timeout: 5)
         save(app, "history-habits")
     }
+
+    @MainActor
+    func testHabitDetail() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read'")).firstMatch.tap()
+        _ = app.staticTexts["This week"].waitForExistence(timeout: 5)
+        save(app, "habit-1")
+        app.swipeUp()
+        save(app, "habit-2")
+        app.swipeUp()
+        save(app, "habit-3")
+    }
 }

@@ -4,6 +4,16 @@
     "" : {
 
     },
+    "%@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$@"
+          }
+        }
+      }
+    },
     "%@ of %@ this week" : {
       "localizations" : {
         "en" : {
@@ -17,10 +27,16 @@
     "%@ starts at" : {
 
     },
+    "%@ total" : {
+
+    },
     "%lld done" : {
 
     },
     "%lld min" : {
+
+    },
+    "%lld min a day" : {
 
     },
     "%lld missed" : {
@@ -45,6 +61,9 @@
           }
         }
       }
+    },
+    "%lld%%" : {
+
     },
     "A habit measured in minutes against a daily target." : {
 
@@ -97,6 +116,9 @@
     "Before the task" : {
 
     },
+    "Best" : {
+
+    },
     "Can't open your tasks" : {
 
     },
@@ -115,6 +137,9 @@
     "Close" : {
 
     },
+    "Couldn't change the habit" : {
+
+    },
     "Couldn't change the task" : {
 
     },
@@ -125,6 +150,9 @@
 
     },
     "Creates the same habit again, starting today" : {
+
+    },
+    "Current" : {
 
     },
     "Daily target" : {
@@ -252,6 +280,9 @@
     "Log time" : {
 
     },
+    "Logged by hand" : {
+
+    },
     "Mark done" : {
 
     },
@@ -276,6 +307,9 @@
     "New task" : {
 
     },
+    "Next month" : {
+
+    },
     "Next week" : {
 
     },
@@ -285,16 +319,28 @@
     "No anytime tasks" : {
 
     },
+    "No data yet" : {
+
+    },
+    "No data yet. Check back after its first day." : {
+
+    },
     "No habits yet" : {
 
     },
     "No matches" : {
 
     },
+    "No missed days" : {
+
+    },
     "No tasks" : {
 
     },
     "No tasks today" : {
+
+    },
+    "No time logged today" : {
 
     },
     "No upcoming tasks" : {
@@ -304,6 +350,9 @@
       "comment" : "Part of the day"
     },
     "Not allowed yet" : {
+
+    },
+    "Not scheduled" : {
 
     },
     "Nothing at night" : {
@@ -364,6 +413,9 @@
     "One-time" : {
       "comment" : "Task type"
     },
+    "Ongoing" : {
+
+    },
     "Ongoing until you end it." : {
 
     },
@@ -385,6 +437,9 @@
     "Pick today or a later day." : {
 
     },
+    "Previous month" : {
+
+    },
     "Previous week" : {
 
     },
@@ -395,6 +450,9 @@
       "comment" : "Task type"
     },
     "Recap time" : {
+
+    },
+    "Recent missed days" : {
 
     },
     "Reminders" : {
@@ -413,6 +471,9 @@
 
     },
     "Search" : {
+
+    },
+    "See all" : {
 
     },
     "Set length" : {
@@ -448,6 +509,9 @@
     "Stats" : {
 
     },
+    "Streak" : {
+
+    },
     "Task" : {
 
     },
@@ -466,6 +530,12 @@
     "This can't be undone." : {
 
     },
+    "This habit no longer exists" : {
+
+    },
+    "This month" : {
+
+    },
     "This screen is being built." : {
 
     },
@@ -476,6 +546,12 @@
 
     },
     "This task no longer exists." : {
+
+    },
+    "This week" : {
+
+    },
+    "This year" : {
 
     },
     "Time" : {
@@ -493,6 +569,9 @@
     "Today" : {
 
     },
+    "Today's time" : {
+
+    },
     "Tomorrow" : {
 
     },
@@ -500,6 +579,9 @@
 
     },
     "Undo" : {
+
+    },
+    "Upcoming" : {
 
     },
     "Version" : {
@@ -524,6 +606,9 @@
 
     },
     "ends in %@" : {
+
+    },
+    "—" : {
 
     },
     "“%@” starts again today. You'll find it in Tasks." : {
