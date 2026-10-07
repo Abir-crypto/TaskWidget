@@ -25,7 +25,7 @@ Read them when a task needs them. Don't load every document every session.
 3. **When you start a task,** mark it 🔄 in `PROGRESS.md`.
 4. **A task is done** only when all of these hold:
    - the build passes with no new warnings;
-   - all tests pass, run on an iOS 17 simulator and on the latest one;
+   - all tests pass, run on the latest iOS simulator installed (currently iOS 27.0). The deployment target stays iOS 17.0 (D-052);
    - every acceptance item is checked;
    - `docs/DOCUMENTATION.md` is updated;
    - `docs/PROGRESS.md` is updated, with ✅, the date and notes.
@@ -108,9 +108,9 @@ swift test --package-path Packages/Core                                   # Core
 swift test --package-path Packages/Core --filter <SuiteOrTestName>       # one Core test
 xcrun simctl list devices available                                       # find a simulator name
 xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<iPhone>' build test
-xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<iPhone>,OS=17.<x>' test   # the required iOS 17 run
+xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<iPhone>,OS=<latest>' test   # the required run, on the latest installed iOS (D-052)
 xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<iPhone>' test -only-testing:TempoTests/<Suite>/<testName>   # one app test
-cd Packages/Core && xcodebuild -scheme Core -destination 'platform=iOS Simulator,name=<iPhone>,OS=17.<x>' test   # Core tests on a simulator (the Tempo scheme runs only TempoTests)
+cd Packages/Core && xcodebuild -scheme Core -destination 'platform=iOS Simulator,name=<iPhone>,OS=<latest>' test   # Core tests on a simulator (the Tempo scheme runs only TempoTests)
 swift format --in-place --recursive Tempo TempoWidgets TempoTests Shared Packages    # formatting
 swift format lint --recursive Tempo TempoWidgets TempoTests Shared Packages          # check formatting
 ```

@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-01 · Project skeleton
+**Current task:** T-02 · Days, weekdays and parts of the day
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -10,7 +10,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 
 | Task | Title | Phase | Status | Finished | Notes |
 |---|---|---|---|---|---|
-| T-01 | Project skeleton | A · Foundation | ⛔ |  | All four acceptance items pass on iOS 26.5 and 27.0 (iPhone 17, iPad Pro 11-inch). Widget registration was checked with `pluginkit`. Only the required iOS 17 run is missing; see Blocked. |
+| T-01 | Project skeleton | A · Foundation | ✅ | 2026-10-07 | All four acceptance items pass on iOS 26.5 and 27.0 (iPhone 17, iPad Pro 11-inch). Widget registration was checked with `pluginkit`. Unblocked by D-052: the required run is now on the latest installed simulator (iOS 27.0), and the iOS 17.0 deployment target stays. Re-run on iOS 27.0: `TempoTests` 5/5, `Core` 1/1 on the simulator and with `swift test`. |
 | T-02 | Days, weekdays and parts of the day | A · Foundation | ⬜ |  |  |
 | T-03 | Data model and storage | A · Foundation | ⬜ |  |  |
 | T-04 | Occurrences and schedule history | A · Foundation | ⬜ |  |  |
@@ -45,11 +45,14 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 
 ## Blocked
 
-- **T-01 · iOS 17 test run (2026-10-07).** No iOS 17 simulator runtime is installed; only iOS 26.5 and 27.0 are. `CLAUDE.md` requires every task to be tested on iOS 17. Everything else in T-01 is done and committed. To unblock: install an iOS 17 runtime, for example with `xcodebuild -downloadPlatform iOS -buildVersion 17.5` (several GB), then run the `Tempo` and `Core` test commands with `OS=17.x`. Waiting for the owner to decide.
+Nothing is blocked.
+
+- ~~**T-01 · iOS 17 test run (2026-10-07).**~~ Resolved 2026-10-07: Xcode 27 can't download iOS 17 or 18 runtimes (`xcodebuild -downloadPlatform` reports them unavailable). The owner chose to test on the latest installed simulator and keep the iOS 17.0 deployment target (D-052).
 
 ## Session log
 
 Add one line per work session, newest first: the date, what was done, and anything the next session needs to know.
 
+- 2026-10-07 — T-01 unblocked (D-052): tests now run on the latest installed iOS simulator (iOS 27.0, iPhone 17); the deployment target stays iOS 17.0. `xcode-select` now points to Xcode, so `DEVELOPER_DIR` is no longer needed.
 - 2026-10-07 — T-01 skeleton built: git repo, docs moved to `docs/`, `Tempo.xcodeproj` (app, widget extension, tests), `Packages/Core`, the ios.md §3 folder tree, App Group, URL scheme, background fetch, string catalogs and `.swift-format`. Tests pass on iOS 26.5 and 27.0. Blocked on the iOS 17 runtime. The Mac's `xcode-select` points to the Command Line Tools, so `xcodebuild` needs `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` until it's switched.
 - 2026-10-06 — Spec v1.0 and supporting docs written. No code yet. Next: T-01.

@@ -206,7 +206,8 @@ final class TodayViewModel {
 
 - **Use freely:** SwiftData, Observation, interactive widgets (`Button(intent:)`, `Toggle(isOn:intent:)`), `containerBackground(for:)`, `ContentUnavailableView`, `sensoryFeedback`, `TimelineView`, `.contentMargins`, `#Preview` for widgets, and Swift Charts.
 - **Don't use APIs introduced in iOS 18 or later,** even behind `#available`, unless this file says so. That includes `#Index`, `#Unique`, SwiftData history, Control widgets, `.tabViewStyle(.sidebarAdaptable)` and widget push updates.
-- **Before closing each task,** run on an iOS 17 simulator as well as the latest one.
+- **Before closing each task,** run the tests on the latest iOS simulator installed (currently iOS 27.0). Xcode 27 can't install iOS 17 or 18 simulator runtimes, so there's no iOS 17 run (D-052).
+- **The deployment target stays iOS 17.0.** The compiler checks every API against it, so an iOS 18+ API used without `#available` fails the build. That check, together with the rules above, is what keeps the app iOS 17-compatible.
 
 ---
 
@@ -513,7 +514,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   - Daylight-saving tests use 29 Mar 2026 (a gap) and 25 Oct 2026 (an overlap) in `Europe/London`.
 - **App:** `TempoTests` covers the managers with `StoreFactory.make(inMemory: true)`, plus `DeepLink`.
 - **Command:** `xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<an available iPhone>' test`. List the devices with `xcrun simctl list devices available`.
-- **`Core` on a simulator:** the `Tempo` scheme runs only `TempoTests`, because Xcode ignores a local package's test target in an app scheme. To run the `Core` tests on an iOS simulator (needed for the iOS 17 run), use the package's own scheme from its folder: `cd Packages/Core && xcodebuild -scheme Core -destination 'platform=iOS Simulator,name=<iPhone>,OS=<version>' test`.
+- **`Core` on a simulator:** the `Tempo` scheme runs only `TempoTests`, because Xcode ignores a local package's test target in an app scheme. To run the `Core` tests on an iOS simulator (part of the required run on the latest installed iOS, §5), use the package's own scheme from its folder: `cd Packages/Core && xcodebuild -scheme Core -destination 'platform=iOS Simulator,name=<iPhone>,OS=<version>' test`.
 
 **Manual QA checklist (T-32)**
 - [ ] With the app closed, the widgets switch at every part boundary, at fixed times and at midnight.
@@ -525,7 +526,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
 - [ ] The missed popup appears once per task, and not when the app is opened from a widget.
 - [ ] Changing the time zone keeps tasks at their wall-clock times.
 - [ ] iPad: rotation, Split View and Stage Manager.
-- [ ] A full pass on an iOS 17 simulator.
+- [ ] A full pass on the latest iOS simulator installed (§5, D-052).
 
 ---
 

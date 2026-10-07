@@ -49,7 +49,7 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Partly built (T-01) · Last updated: 2026-10-07 · T-01
+Status: Partly built (T-01) · Last updated: 2026-10-07 · T-01, D-052
 
 ### What it does
 Only the project skeleton exists. No features are live yet. The app opens to a placeholder screen, and the widget gallery offers one placeholder widget.
@@ -89,7 +89,7 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 
 ### Known gaps
 - Every feature, F-01 to F-26, is still to be built (T-02 onward).
-- Not yet run on an iOS 17 simulator, because no iOS 17 runtime is installed. See `PROGRESS.md` → Blocked.
+- Tests run on the latest installed simulator (iOS 27.0), not on iOS 17, because Xcode 27 can't install iOS 17 runtimes (D-052). The deployment target is still iOS 17.0, so the compiler rejects newer APIs used without an availability check.
 
 ---
 
