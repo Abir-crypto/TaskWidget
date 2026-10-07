@@ -65,7 +65,7 @@ struct NowListView: View {
                 .font(.headline)
                 .widgetAccentable()
             if group.section.phase == .current, group.section.part != nil {
-                Text("ends") + Text(" ") + Text(endDate(of: group.section), style: .relative)
+                Text("ends in ") + Text(endDate(of: group.section), style: .relative)
             } else if let part = group.section.part {
                 Text("from \(TimeOfDayFormatter.string(minute: group.section.window.lowerBound))")
                     .accessibilityLabel(

@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    " " : {
+    " · " : {
 
     },
     "%@ and %lld more" : {
@@ -115,6 +115,9 @@
     "A habit you check off on the days it repeats." : {
 
     },
+    "All ^[%lld task](inflect: true) done" : {
+
+    },
     "Anytime" : {
 
     },
@@ -151,6 +154,9 @@
     "Finish Timer" : {
 
     },
+    "Focus" : {
+
+    },
     "Habit" : {
 
     },
@@ -174,6 +180,9 @@
     },
     "Morning" : {
       "comment" : "Part of the day"
+    },
+    "Next" : {
+
     },
     "Night" : {
       "comment" : "Part of the day"
@@ -238,6 +247,12 @@
     "Task" : {
 
     },
+    "The one thing to do next, and what comes after." : {
+
+    },
+    "Then: " : {
+
+    },
     "Timer" : {
 
     },
@@ -293,10 +308,16 @@
     "done" : {
 
     },
-    "ends" : {
+    "ends in " : {
 
     },
     "from %@" : {
+
+    },
+    "in " : {
+
+    },
+    "until %@" : {
 
     }
   },

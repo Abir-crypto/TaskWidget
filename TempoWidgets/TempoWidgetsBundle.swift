@@ -6,6 +6,7 @@ struct TempoWidgetsBundle: WidgetBundle {
     var body: some Widget {
         TimerWidget()  // .systemSmall
         DayWidget()  // .systemMedium
+        FocusWidget()  // .systemMedium
         NowWidget()  // .systemLarge
     }
 }

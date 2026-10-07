@@ -963,6 +963,9 @@
     "ends in %@" : {
 
     },
+    "from %@" : {
+
+    },
     "last month" : {
 
     },
@@ -976,6 +979,9 @@
 
     },
     "today" : {
+
+    },
+    "until %@" : {
 
     },
     "up %lld points from %@" : {

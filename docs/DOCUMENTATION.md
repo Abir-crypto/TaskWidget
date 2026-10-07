@@ -826,33 +826,44 @@ A medium widget showing today part by part: a column of marks for Morning, Noon,
 - None for F-19.
 
 ## F-20 · Focus widget (medium)
-Status: Partly built (T-07) · Last updated: 2026-10-07 · T-07
+Status: Built (T-07, T-26) · Last updated: 2026-10-07 · T-26
 
 ### What it does
-The next-task rule (SPEC §5.6), shared by this widget and the Lock Screen widgets, exists in `Core`. The widget itself comes in T-26.
+A medium widget with the one thing to do next, from the next-task rule (SPEC §5.6), and what comes after it. Information only, with no buttons.
 
 ### Behavior
-- **Candidates:** today's occurrences that are Upcoming or Open, in creation order.
-- **The part in progress** is the part whose window contains now. Before Morning's start there's none, so Morning tasks count as a later part ("from 06:00") (D-061).
-- **Rules, in order** (`NextTaskRule.pick`):
-  1. A fixed-time candidate whose time is now or within the next 60 minutes, earliest first → kind `.fixed(minute:)`.
-  2. A candidate in the part in progress: fixed times already passed (earliest first), then part-of-day tasks in creation order. Fixed times more than 60 minutes ahead don't count → `.currentPart(part)`.
-  3. The earliest coming item: remaining fixed times at their time (`.fixed`), part-of-day tasks of later parts at their part's start (`.laterPart`). A tie goes to the fixed time, then to creation order.
-  4. An Anytime candidate, in creation order → `.anytime`.
-  5. Nothing → `nil` ("You're free today").
-- **"Then:"** (`NextTaskRule.then`) applies the rule again with the first result removed.
+- **Gallery:** "Focus" — "The one thing to do next, and what comes after." Medium only.
+- **Top line** (bold, accent color), from the rule's reason:
+  - a fixed-time task: "NEXT · 12:30 · in 45 min", where "in 45 min" counts down by itself;
+  - a task in the part in progress: "NOON · until 17:00";
+  - a task in a later part: "EVENING · from 17:00";
+  - an Anytime task: "ANYTIME".
+  Times follow the user's 12- or 24-hour setting.
+- **Title,** large, up to two lines.
+- **Duration habits:** "10 of 30 min" with a timer icon.
+- **"Then:"** and the title of the next item after it (the rule applied again without the first), when there is one.
+- **Nothing left:** "You're free today", plus "All 6 tasks done" when today had tasks and every one is done. If some were missed, only "You're free today" shows (D-091).
+- **Tapping** opens Today at the task shown, or Today when free.
+- **Updates on its own:** the timeline has entries at each part's start and an hour before and at each fixed time (F-17), so the shown task changes at those moments; the countdown updates in between.
+- **The rule** (`NextTaskRule`, T-07): candidates are today's Upcoming or Open occurrences; (1) a fixed time within the next 60 minutes, earliest first; (2) the part in progress — passed fixed times first, then part-of-day tasks in creation order; (3) the earliest coming item, fixed times at their time and later parts at their start, a tie going to the fixed time; (4) Anytime in creation order; (5) nothing. Before Morning's start, no part is in progress (D-061).
+- **Load failure:** "Open Tempo to refresh" (F-17).
+- Checked on a real Home Screen in the iOS 27 simulator.
 
 ### Implementation (iOS)
+- Widget: `TempoWidgets/Widgets/Focus/FocusWidget`, `FocusWidgetView`.
+- Content: `Shared/Widgets/FocusWidgetContent`, `FocusItem`, `FocusWhen`.
 - Rules: `Packages/Core/Sources/Core/NextTask/` — `NextTaskRule`, `NextTask`, `NextTaskKind`.
 
 ### Tests
-- `Packages/Core/Tests/CoreTests/NextTask/NextTaskRuleTests.swift`: the four T-07 cases and their "Then", passed fixed times, creation order, tie-breaking, before Morning, non-candidates, other days.
+- `Packages/Core/Tests/CoreTests/NextTask/NextTaskRuleTests.swift` (the rule).
+- `TempoTests/Widgets/FocusWidgetTests.swift`: the four "when" lines with their "Then:", duration progress, the free state with and without "All N tasks done", the tap link, and the shown task changing across the timeline's moments.
+- `TempoUITests/ScreenshotTests.swift` (`testFocusWidgetOnHomeScreen`, screenshots only).
 
 ### Known gaps
-- The widget's views, "when" line and "All N tasks done" (T-26).
+- None for F-20. The Lock Screen widgets (T-27) use the same rule.
 
 ## F-21 · Now widget (large)
-Status: Built (T-24) · Last updated: 2026-10-07 · T-24
+Status: Built (T-24) · Last updated: 2026-10-07 · T-26
 
 ### What it does
 A large widget with what's on now and next: checkboxes that complete and undo without opening the app, and ▶ that turns the widget into the habit's timer.
@@ -860,7 +871,7 @@ A large widget with what's on now and next: checkboxes that complete and undo wi
 ### Behavior
 - **Gallery:** "Now" — "What's on now and next. Check off tasks and time habits." Large only.
 - **List mode:**
-  - The header is the first group's part: its name, "ends in …" (updating itself) for the part in progress or "from 17:00" for a later part, and "N left" (tasks still to do in that part).
+  - The header is the first group's part: its name, "ends in 3 hr, 50 min" (updating itself) for the part in progress or "from 17:00" for a later part, and "N left" (tasks still to do in that part). (T-26 fixed a missing "in".)
   - Groups: the part in progress when it has tasks, otherwise the next part with tasks; then the next part with tasks after that, under its own small header; then Anytime. At most 8 rows (the first group's header doesn't count); the rest become "+N more", which opens Today.
   - One-time and progress rows: a round checkbox and the title (struck through when done) and the fixed time if any. Tapping the checkbox marks the task done, or not done, without opening the app (`ToggleCompletionIntent`, a button that carries the state it sets, D-090).
   - Duration rows: a timer icon (a check once the target is reached), the title, "10 of 30 min", and ▶ while no timer exists (`StartHabitTimerIntent`), which starts the habit's timer without opening the app.
@@ -925,7 +936,8 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | Now widget, nothing left | "You're free today" |
 | Day widget, with no tasks | "No tasks today"; tapping opens the editor for today |
 | Day widget, everything done | Every mark ✓ and "You're free today" |
-| Focus and Lock Screen widgets | Not built yet (T-26, T-27) |
+| Focus widget, nothing left | "You're free today", plus "All N tasks done" when every task was done |
+| Lock Screen widgets | Not built yet (T-27) |
 
 ### Implementation (iOS)
 - `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.
