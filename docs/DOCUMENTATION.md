@@ -49,7 +49,7 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Partly built (T-01) · Last updated: 2026-10-07 · T-02
+Status: Partly built (T-01) · Last updated: 2026-10-07 · T-03
 
 ### What it does
 Only the project skeleton exists. No features are live yet. The app opens to a placeholder screen, and the widget gallery offers one placeholder widget.
@@ -68,7 +68,7 @@ Only the project skeleton exists. No features are live yet. The app opens to a p
 | App tests | `TempoTests`, bundle ID `com.applab.tempo.tests`, hosted in the app |
 | Logic package | `Packages/Core` (Swift 6 tools, iOS 17 and macOS 14), linked into the app and the extension |
 | Deployment target | iOS 17.0, iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`) |
-| Swift | App, extension and tests use Swift 5 mode with strict concurrency set to `complete`. Default actor isolation stays `nonisolated` (D-047). |
+| Swift | App, extension and tests use Swift 5 mode with strict concurrency set to `complete` and `InferSendableFromCaptures` on (D-055). Default actor isolation stays `nonisolated` (D-047). |
 | App Group | `group.com.applab.tempo`, in both targets' entitlements |
 | URL scheme | `tempo` (app `Info.plist`) |
 | Background refresh | `UIBackgroundModes = [fetch]` and `BGTaskSchedulerPermittedIdentifiers = [com.applab.tempo.refresh]`. Nothing is registered yet; that comes in T-21. |
@@ -77,7 +77,7 @@ Only the project skeleton exists. No features are live yet. The app opens to a p
 The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is kept out of the bundles (D-048). `Tempo/`, `TempoWidgets/`, `Shared/` and `TempoTests/` are folder-synchronized groups: a file added on disk joins its target automatically. `Shared/` belongs to both the app and the extension.
 
 ### Implementation (iOS)
-- App: `Tempo/App/TempoApp.swift`, `Tempo/Views/Root/RootView.swift` (placeholder until T-09)
+- App: `Tempo/App/TempoApp.swift` (opens the store, or shows the store error screen; see F-26), `Tempo/Views/Root/RootView.swift` (placeholder until T-09)
 - Widget: `TempoWidgets/TempoWidgetsBundle.swift`, `TempoWidgets/Widgets/Placeholder/` (`PlaceholderWidget`, `PlaceholderProvider`, `PlaceholderEntry`; until T-23)
 - Strings: `Tempo/Resources/Localizable.xcstrings` and `TempoWidgets/Resources/Localizable.xcstrings` (D-046)
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
@@ -244,6 +244,45 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-25._
 
 ## F-26 · Data and future sync
-Status: Not built · Last updated: —
+Status: Partly built (T-03) · Last updated: 2026-10-07 · T-03
 
-_Not built yet. Intended behavior: SPEC F-26._
+### What it does
+Everything is stored on the device in one SwiftData store inside the App Group, shared by the app and the widget extension. Device-only state lives in the App Group's `UserDefaults`. There's no account and no server.
+
+### Behavior
+- **Tables** (SPEC §4): `tasks`, `schedules`, `completions`, `time_entries` and `settings`, one SwiftData record each. Records are flat, link through `UUID` fields, store enums as the SPEC strings (`one_time`, `progress`, `duration`; `fixed`, `part`, `anytime`; `morning` … `night`; `timer`, `manual`) and day keys as `Int`.
+- **IDs** are UUIDs made on the device. The settings row's id is always `00000000-0000-0000-0000-000000000001` (D-056).
+- **Writes:** `save` inserts or updates a row by id and sets `updatedAt` to the clock's now on every write. `createdAt` keeps the value it was given.
+- **Deletes are soft:** they set `deletedAt` and `updatedAt`. Reads never return rows with `deletedAt` set. Deleting a missing or already deleted row does nothing.
+- **Reading order:** tasks by `createdAt` (creation order), schedules by `effectiveFrom`, completions by `day`, time entries by `createdAt`.
+- **Bad data:** a row with an unknown enum string, or a schedule whose timing columns don't fit together, is skipped and logged rather than crashing. A time entry with 0 seconds or fewer is rejected with `StorageError.invalidValue`.
+- **Settings row:** created with the defaults (SPEC §4.5) the first time the app launches. Later launches keep what's saved. New part start times are checked against the F-02 rules before saving.
+- **Device-only state** (SPEC §4.6), one JSON value per key in `UserDefaults(suiteName: "group.com.applab.tempo")`:
+  - `deviceState.timer` — the timer: kind (`generic`/`habit`), habit id, start day, accumulated seconds, current segment start (empty while paused).
+  - `deviceState.missedSeen` — the popup's seen list: a day and occurrence ids.
+  - `deviceState.pendingOpenAction` — for now only "choose a task for a finished timer", with the frozen time.
+  - Setting a value to empty removes the key. A value that can't be decoded reads as empty and is logged. The guide-completed flag will use `@AppStorage` (T-28).
+- **Sharing with the widgets:** the store file is `Tempo.store` in the App Group container. Every read and write makes a fresh `ModelContext`, so each process sees the other's writes (CLAUDE.md, ios.md §6).
+- **If the store can't be opened,** the app shows "Can't open your tasks" / "Something went wrong while opening Tempo's data. Close the app and open it again." (D-057).
+- **After every write** through a manager, `RefreshManager.afterChange()` reloads every widget, 0.5 s after the last of a burst of writes. `refreshNow()` skips the wait, for App Intents. Notification rebuilding joins it in T-21.
+
+### Data
+All tables in SPEC §4 and the device-only state in §4.6.
+
+### Implementation (iOS)
+- Values: `Packages/Core/Sources/Core/Models/` — `TaskValue`, `TaskType`, `ScheduleValue`, `Timing`, `TimingKind`, `CompletionValue`, `TimeEntryValue`, `TimeEntrySource`, `SettingsValue`, `TaskData`, `PendingOpenAction`; `Core/Timer/` — `TimerState`, `TimerKind`, `FinishedTimer`; `Core/Missed/MissedSeenList`.
+- Storage: `Shared/Storage/` — `SchemaV1` (records), `MigrationPlan`, `StoreFactory`, `TaskStore` (protocol), `SwiftDataTaskStore`, `DeviceState`, `StorageError`.
+- Managers: `Shared/Managers/SettingsManager` (+ `SettingsError`), `RefreshManager`, `WidgetManager` (+ `WidgetReloading`).
+- Clock and logging: `Shared/Utilities/Clock/` (`Clock`, `SystemClock`, `FixedClock`; D-054), `Shared/Utilities/Logging/Log`.
+- App: `Tempo/App/AppDependencies` creates the managers and makes sure the settings row exists at launch; `Tempo/Views/Root/Components/StoreErrorView`.
+
+### Tests
+- `TempoTests/Storage/SwiftDataTaskStoreTests.swift`: create, read, update and soft delete for every table; soft-deleted rows never appear; `updatedAt` on every write; timing round trips; filters and order; settings row.
+- `TempoTests/Storage/StoreFactoryTests.swift`: the store lives in the App Group; two containers on one file (as the app and the extension) read each other's writes.
+- `TempoTests/Storage/DeviceStateTests.swift`: timer, seen list and pending action survive a new instance (a restart); clearing; unreadable data.
+- `TempoTests/Managers/SettingsManagerTests.swift`, `AppDependenciesTests.swift`: defaults created on first launch and kept afterward; invalid part times rejected; widgets refreshed after an update.
+- `TempoTests/Managers/RefreshManagerTests.swift`: a burst of changes refreshes once; `refreshNow` is immediate.
+
+### Known gaps
+- No sync, by design for v1.
+- The widget extension doesn't read the store yet (T-22). Cross-process reads are covered by the two-container test.

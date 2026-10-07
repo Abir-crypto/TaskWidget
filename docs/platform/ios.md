@@ -14,6 +14,7 @@
   - The `Core` package uses Swift 6.
   - The app and widget targets use Swift 5 mode, with Strict Concurrency Checking set to Complete (as warnings). SwiftData types aren't `Sendable`, and Swift 6 mode there would mean fighting the compiler.
   - Default actor isolation stays `nonisolated`, and Approachable Concurrency is off (Xcode 26+ templates turn both on). `@MainActor` is written explicitly where it's needed, as in §4.
+  - The app, widget and test targets turn on the upcoming feature `InferSendableFromCaptures` (`SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES = YES`, on by default in Swift 6). Without it, every key path in a SwiftData `#Predicate` or `SortDescriptor` warns under complete checking (D-055).
 
 ---
 
@@ -169,13 +170,17 @@ App Intents ───────────┘            │
 **Protocols, so previews and tests can use fakes:** `TaskStore`, `Clock`, `NotificationScheduling`, `WidgetReloading`.
 
 ```swift
-protocol Clock: Sendable { var now: Date { get } }
+protocol Clock: Sendable {
+    var now: Date { get }
+    var calendar: Calendar { get }   // the app: Calendar.autoupdatingCurrent; tests: fixed (D-054)
+}
 
-protocol TaskStore {
+protocol TaskStore: Sendable {
+    func loadAll() throws -> TaskData                       // every live row of the four task tables
     func tasks() throws -> [TaskValue]
-    func schedules(taskID: UUID) throws -> [ScheduleValue]
-    func save(_ task: TaskValue) throws
-    func softDelete(taskID: UUID) throws
+    func schedules(taskID: UUID?) throws -> [ScheduleValue]
+    @discardableResult func save(_ task: TaskValue) throws -> TaskValue   // upsert by id, sets updatedAt
+    func softDeleteTask(id: UUID) throws
     // completions, time entries and settings follow the same shape
 }
 

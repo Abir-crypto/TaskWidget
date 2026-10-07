@@ -14,6 +14,11 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Storage details (T-03)
+- Platform: ios.md §1 — the app, widget and test targets enable `InferSendableFromCaptures`, so SwiftData key paths don't warn under complete concurrency checking (D-055).
+- Platform: ios.md §4 — `Clock` also provides the `Calendar` that rules run in (D-054). The `TaskStore` sample shows the real shape: `loadAll()`, upserting `save` that returns the stored copy, and `softDelete…(id:)`.
+- No changes to SPEC.md.
+
 ## 2026-10-07 · Test runs use the latest installed iOS simulator
 - Platform: ios.md §5 — the required test run before closing a task is on the latest iOS simulator installed (currently iOS 27.0), not iOS 17. Xcode 27 can't install iOS 17 or 18 runtimes. The deployment target stays iOS 17.0, and the iOS 18+ API ban still applies (D-052).
 - Platform: ios.md §13 — the `Core` simulator run and the manual QA checklist's full pass now use the latest installed iOS.

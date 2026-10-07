@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Can't open your tasks" : {
+
+    },
+    "Something went wrong while opening Tempo's data. Close the app and open it again." : {
+
+    },
     "Tempo" : {
       "comment" : "App name, shown as the placeholder screen title.",
       "shouldTranslate" : false
