@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Today screen details (T-12)
+- Platform: ios.md §13 — `-ui-testing-sample` starts UI tests with sample data.
+- No changes to SPEC.md. D-073 to D-077 fill gaps in F-05, F-10 and F-24: Log time's starting value, empty-part wording, folding ended parts, red dots only for today and past days, and the layout of swipe actions.
+
 ## 2026-10-07 · Task editor details (T-11)
 - Platform: ios.md §13 — UI tests also pass `-ui-testing-timezone`, so fixed times mean the same on any Mac.
 - No changes to SPEC.md. D-068 to D-072 fill gaps in F-15 and F-03: editor defaults and when the title message appears, ended parts for edits that apply today, Start again after its part has ended, read-only tasks, and End habit offered next to Delete with history.

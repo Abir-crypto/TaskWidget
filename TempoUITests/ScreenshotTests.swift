@@ -41,4 +41,27 @@ final class ScreenshotTests: XCTestCase {
         app.swipeUp()
         save(app, "editor-3-duration-scrolled")
     }
+
+    @MainActor
+    func testToday() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
+        save(app, "today-1")
+        app.swipeUp()
+        save(app, "today-2-scrolled")
+        app.swipeDown()
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Morning'")).firstMatch.tap()
+        save(app, "today-3-morning-expanded")
+        app.buttons["day-20261008"].tap()
+        save(app, "today-4-thursday")
+        app.buttons["day-20261005"].tap()
+        save(app, "today-5-monday")
+    }
+
+    @MainActor
+    func testTodayEmpty() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00")
+        _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
+        save(app, "today-empty")
+    }
 }

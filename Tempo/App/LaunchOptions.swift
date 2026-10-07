@@ -5,13 +5,16 @@ import Foundation
 /// - `-ui-testing`: an in-memory store and separate device-only state.
 /// - `-ui-testing-now <ISO 8601 date>`: a clock fixed at that moment.
 /// - `-ui-testing-timezone <identifier>`: the time zone rules run in, so fixed times mean the same on any Mac.
+/// - `-ui-testing-sample`: start with `SampleData`.
 struct LaunchOptions {
     var isUITesting = false
     var fixedNow: Date?
     var timeZone: TimeZone?
+    var usesSampleData = false
 
     init(arguments: [String] = ProcessInfo.processInfo.arguments) {
         isUITesting = arguments.contains("-ui-testing")
+        usesSampleData = arguments.contains("-ui-testing-sample")
         fixedNow = value(after: "-ui-testing-now", in: arguments).flatMap { ISO8601DateFormatter().date(from: $0) }
         timeZone = value(after: "-ui-testing-timezone", in: arguments).flatMap(TimeZone.init(identifier:))
     }

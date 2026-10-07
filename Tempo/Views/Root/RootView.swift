@@ -45,6 +45,9 @@ struct RootView: View {
         .sheet(item: $router.taskPicker) { request in
             TaskPickerView(dependencies: dependencies, request: request)
         }
+        .sheet(item: $router.logTime) { request in
+            LogTimeView(dependencies: dependencies, taskID: request.taskID)
+        }
         .onOpenURL { url in
             router.open(DeepLink(url: url))
         }

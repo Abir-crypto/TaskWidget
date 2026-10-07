@@ -12,6 +12,7 @@ final class NavigationRouter {
     var editor: EditorRequest?
     var isTimerScreenPresented = false
     var taskPicker: TaskPickerRequest?
+    var logTime: LogTimeRequest?
     var isSettingsPresented = false
     var isHistoryPresented = false
 
@@ -58,6 +59,7 @@ final class NavigationRouter {
         editor = nil
         isTimerScreenPresented = false
         taskPicker = nil
+        logTime = nil
         isSettingsPresented = false
         isHistoryPresented = false
     }

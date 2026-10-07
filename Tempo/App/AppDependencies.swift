@@ -40,9 +40,11 @@ final class AppDependencies {
             let clock: any Clock = options.fixedNow.map { FixedClock($0, calendar: calendar) } ?? SystemClock()
             let deviceState = DeviceState(defaults: UserDefaults(suiteName: "ui-testing") ?? .standard)
             deviceState.reset()
+            let store = SwiftDataTaskStore(container: try StoreFactory.make(inMemory: true), clock: clock)
+            if options.usesSampleData { SampleData.populate(store: store, clock: clock) }
             return AppDependencies(
                 clock: clock,
-                store: SwiftDataTaskStore(container: try StoreFactory.make(inMemory: true), clock: clock),
+                store: store,
                 deviceState: deviceState,
                 notifications: FixedNotificationScheduler(permission: .allowed),
                 widgets: WidgetManager())
@@ -58,8 +60,9 @@ final class AppDependencies {
         )
     }
 
-    /// In-memory dependencies for previews, at Tuesday 6 Oct 2026, 10:30 in the current time zone.
-    static func preview(hour: Int = 10, minute: Int = 30) -> AppDependencies {
+    /// In-memory dependencies for previews, at Tuesday 6 Oct 2026, 10:30 in the current time zone, optionally
+    /// filled with `SampleData`.
+    static func preview(hour: Int = 10, minute: Int = 30, sample: Bool = false) -> AppDependencies {
         let calendar = Calendar.autoupdatingCurrent
         let now = DayKey(year: 2026, month: 10, day: 6).date(atMinute: hour * 60 + minute, in: calendar)
         let clock = FixedClock(now, calendar: calendar)
@@ -75,6 +78,7 @@ final class AppDependencies {
             notifications: FixedNotificationScheduler(permission: .allowed),
             widgets: WidgetManager())
         dependencies.prepare()
+        if sample { SampleData.populate(store: store, clock: clock) }
         return dependencies
     }
 

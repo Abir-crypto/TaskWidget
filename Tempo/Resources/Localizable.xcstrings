@@ -7,8 +7,24 @@
     "%@ starts at" : {
 
     },
+    "%lld done" : {
+
+    },
     "%lld min" : {
 
+    },
+    "%lld missed" : {
+
+    },
+    "%lld of %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld min"
+          }
+        }
+      }
     },
     "A habit measured in minutes against a daily target." : {
 
@@ -20,6 +36,12 @@
 
     },
     "About" : {
+
+    },
+    "Add" : {
+
+    },
+    "Add a task" : {
 
     },
     "Add a title" : {
@@ -70,6 +92,12 @@
     "Close" : {
 
     },
+    "Couldn't change the task" : {
+
+    },
+    "Couldn't log time" : {
+
+    },
     "Couldn't save" : {
 
     },
@@ -77,6 +105,9 @@
 
     },
     "Date" : {
+
+    },
+    "Delete" : {
 
     },
     "Delete task" : {
@@ -91,6 +122,9 @@
     "Delete with history" : {
 
     },
+    "Done" : {
+
+    },
     "Done once, on one day." : {
 
     },
@@ -100,10 +134,19 @@
     "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." : {
 
     },
+    "Edit" : {
+
+    },
     "Edit task" : {
 
     },
     "End habit" : {
+
+    },
+    "End habit keeps its history and stats. Delete with history removes them for good." : {
+
+    },
+    "End or delete this habit?" : {
 
     },
     "End this habit?" : {
@@ -124,7 +167,19 @@
     "Fixed-time tasks" : {
 
     },
+    "Habit" : {
+
+    },
+    "Has missed tasks" : {
+
+    },
+    "Has tasks" : {
+
+    },
     "Hide task names on the Lock Screen" : {
+
+    },
+    "Hides the tasks" : {
 
     },
     "History" : {
@@ -133,22 +188,79 @@
     "It moves to History with its stats, and you can start it again later." : {
 
     },
+    "Log time" : {
+
+    },
+    "Mark done" : {
+
+    },
+    "Mark not done" : {
+
+    },
+    "Minutes" : {
+
+    },
     "Missed" : {
 
     },
     "Morning" : {
       "comment" : "Part of the day"
     },
+    "Move to next day" : {
+
+    },
+    "Move to tomorrow" : {
+
+    },
     "New task" : {
+
+    },
+    "Next week" : {
 
     },
     "Night" : {
       "comment" : "Part of the day"
     },
+    "No anytime tasks" : {
+
+    },
+    "No tasks" : {
+
+    },
+    "No tasks today" : {
+
+    },
     "Noon" : {
       "comment" : "Part of the day"
     },
     "Not allowed yet" : {
+
+    },
+    "Nothing at night" : {
+
+    },
+    "Nothing at noon" : {
+
+    },
+    "Nothing in the evening" : {
+
+    },
+    "Nothing in the morning" : {
+
+    },
+    "Nothing planned for %@" : {
+
+    },
+    "Nothing this evening" : {
+
+    },
+    "Nothing this morning" : {
+
+    },
+    "Nothing tonight" : {
+
+    },
+    "Nothing was planned for %@" : {
 
     },
     "Notifications" : {
@@ -190,6 +302,9 @@
     "Pick today or a later day." : {
 
     },
+    "Previous week" : {
+
+    },
     "Privacy" : {
 
     },
@@ -218,6 +333,12 @@
 
     },
     "Settings" : {
+
+    },
+    "Short" : {
+
+    },
+    "Shows the tasks" : {
 
     },
     "Something went wrong while opening Tempo's data. Close the app and open it again." : {
@@ -265,6 +386,9 @@
     "Time" : {
 
     },
+    "Time can only be logged today, between the habit's start and last day." : {
+
+    },
     "Timer" : {
 
     },
@@ -274,7 +398,13 @@
     "Today" : {
 
     },
+    "Tomorrow" : {
+
+    },
     "Type" : {
+
+    },
+    "Undo" : {
 
     },
     "Version" : {
@@ -283,10 +413,16 @@
     "When" : {
 
     },
+    "Yesterday" : {
+
+    },
     "^[%lld day](inflect: true)" : {
 
     },
     "^[%lld hour](inflect: true)" : {
+
+    },
+    "ends in %@" : {
 
     }
   },

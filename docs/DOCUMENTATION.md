@@ -236,7 +236,7 @@ Reads `completions` and `time_entries`; writes `completions` and `tasks.date`. U
 - Screens that show statuses and offer these actions come in T-12 onward. The timer's exception for past days arrives with T-19.
 
 ## F-05 · Time tracking
-Status: Partly built (T-06) · Last updated: 2026-10-07 · T-06
+Status: Partly built (T-06, T-12) · Last updated: 2026-10-07 · T-12
 
 ### What it does
 Duration habits collect time entries. The math for minutes, weekly goals and totals is in `Core`, and `TaskManager` can log time by hand and delete today's entries. There's no UI yet.
@@ -256,13 +256,17 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 ### Implementation (iOS)
 - Rules: `Packages/Core/Sources/Core/Duration/` — `DurationMath`, `GoalProgress`; `TaskRules.logTimeError`.
 - Manager: `Shared/Managers/TaskManager.swift` — `logTime`, `deleteTimeEntry`.
+- Views: `Tempo/Views/LogTime/LogTimeView`, `LogTimeViewModel` (T-12).
 
 ### Tests
 - `Packages/Core/Tests/CoreTests/Duration/DurationMathTests.swift`: rounding, summing, the §5.5 example, a mid-week target change, mid-week weekday change, start and last days, unscheduled days, region week start, Log time steps.
 - `TempoTests/Managers/TimeLoggingTests.swift`: Log time on today and unscheduled days, refused on future and ended habits, steps, type, deleting today's but not past entries.
+- `TempoTests/ViewModels/LogTimeViewModelTests.swift`: the starting value, adding to today, the choices, refusing outside the habit's days.
+
+- **Log time sheet** (T-12): opened from a duration row's "Log time" swipe (later also from Missed and Habit detail). It shows the habit's title, "Today" with "12 of 30 min", and a wheel of 5–480 minutes in 5-minute steps, starting at the minutes left to reach today's target rounded up to 5 (30 once the target is reached) (D-073). "Add" saves to today and closes; "Cancel" closes. If time can't be logged today, Add is disabled with "Time can only be logged today, between the habit's start and last day."
 
 ### Known gaps
-- The Log time sheet (T-12), today's entries in Habit detail (T-15), and the timer's entries (T-19).
+- Today's entries in Habit detail (T-15), and the timer's entries (T-19).
 
 ## F-06 · Timer
 Status: Not built · Last updated: —
@@ -315,7 +319,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Tabs** (left to right): Today (`sun.max`), Tasks (`checklist`), Missed (`exclamationmark.circle`), Stats (`chart.bar`). The app starts on Today.
 - **Missed badge:** the number of today's Missed and Short tasks; hidden at 0. It's recounted on launch, after every change, when the app becomes active, and every minute (statuses change at part boundaries).
 - **Settings** opens from a gear button (accessibility label "Settings") at the top right of Today, pushed onto Today's navigation stack. **History** opens from a clock button ("History") on Tasks, pushed onto Tasks' stack (D-063).
-- **Floating + button** ("Add task"): bottom right of Today and Tasks only. Today's opens the editor with no presets yet (the selected day comes with T-12); Tasks' presets a progress habit (the segment comes with T-13). Scrolling content on those screens keeps an 88-point bottom margin, so the last row is never under the button.
+- **Floating + button** ("Add task"): bottom right of Today and Tasks only. Today's opens the editor preset to the selected day (F-10); Tasks' presets a progress habit (the segment comes with T-13). Scrolling content on those screens keeps an 88-point bottom margin, so the last row is never under the button.
 - **Timer bar slot:** every tab's root has a bottom safe-area inset for the timer bar, just above the tab bar. It takes no space until a timer exists (T-20).
 - **Presented over the tabs** as sheets: the editor, the timer screen and the task picker (D-063).
 - **Links** (`tempo://`, parsed by `DeepLink`):
@@ -328,7 +332,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Today (T-12), Tasks (T-13), Missed (T-16), Stats (T-18), History (T-14), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: Tasks (T-13), Habit detail (T-15), Missed (T-16), Stats (T-18), History (T-14), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -351,9 +355,56 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 - The missed popup (T-17) and the timer bar's content (T-20).
 
 ## F-10 · Today screen
-Status: Not built · Last updated: —
+Status: Partly built (T-12) · Last updated: 2026-10-07 · T-12
 
-_Not built yet. Intended behavior: SPEC F-10._
+### What it does
+The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening, Night and Anytime, with the actions F-04 allows. It updates every minute while open.
+
+### Behavior
+- **Title:** "Today", "Tomorrow", "Yesterday", or a short date in the user's format ("Thu 8 Oct"), as a large navigation title. The gear (Settings) is at the top right. A "Today" button appears at the top left whenever another day is selected.
+- **Day strip:** the seven days of the selected day's week, starting on the region's first weekday; each shows its weekday initial and number. Today's number is in the accent color; the selected day is circled (accent for today, black/white otherwise). A grey dot means the day has tasks; a red dot means today or a past day has Missed or Short tasks (D-076). Tapping a day selects it. Swiping the strip left or right moves the selection by a week. VoiceOver reads each day's full date and "No tasks", "Has tasks" or "Has missed tasks", and offers "Next week" and "Previous week" actions.
+- **Sections** in order: Morning, Noon, Evening, Night, Anytime (`DayPlan`). Within a part, fixed-time tasks come first in time order, then part-of-day tasks in creation order.
+  - On today, an ended part with tasks folds into one tappable line, "Morning · 2 done · 1 missed" (Short counts as missed), with a chevron; tapping shows or hides its tasks. Expanded parts fold again when another day is selected (D-075).
+  - The part in progress has its name in bold accent color and "ends in 1h 20m" on the right, recalculated every minute.
+  - Other parts, and every part on other days, show their name as a plain header.
+  - A part with no tasks shows small grey text: "Nothing this morning", "Nothing at noon", "Nothing this evening", "Nothing tonight" on today; "Nothing in the morning", "Nothing at noon", "Nothing in the evening", "Nothing at night" on other days; "No anytime tasks" for Anytime (D-074).
+- **Rows:**
+  - One-time tasks and progress habits: a checkbox (accessibility "Mark done"/"Mark not done" with the title), the title (struck through and grey when done), "Habit" with a repeat icon for progress habits, the fixed time on the right if there is one, and a red "Missed" label when missed. The checkbox is disabled where F-04 doesn't allow completing.
+  - Duration habits: a progress ring, the title, "10 of 30 min", the fixed time if any, and "Done", "Short" or "Missed" with an icon once final. Time can still be added after Done.
+  - Statuses always come with text and an icon.
+- **Tapping a row:** a one-time task opens the editor (read-only for past days); a habit opens Habit detail (a placeholder until T-15).
+- **Swipe actions**, only where F-04 allows (D-077):
+  - From the left: "Done"/"Undo" (one-time and progress, today; one-time on future days), "Log time" (duration habits, today).
+  - From the right: "Delete", "Edit" (today and later), "Move to tomorrow" on today or "Move to next day" on a future day (one-time tasks that aren't done).
+  - Past days have no swipe actions.
+- **Delete:** a one-time task asks "Delete this task?" ("This can't be undone."). A habit asks "End or delete this habit?" with "End habit" and "Delete with history" ("End habit keeps its history and stats. Delete with history removes them for good.").
+- **Floating +:** opens the editor preset to the selected day (today when a past day is selected).
+- **Links:** `tempo://today?day=…&part=…&task=…` selects the day, unfolds the part (or the task's part) and scrolls to the part or task.
+- **Empty states** (F-24): today with no tasks → "No tasks today" with "Add a task"; a future day → "Nothing planned for Thu 8 Oct" with "Add a task" preset to that day; a past day → "Nothing was planned for Mon 5 Oct". The day strip stays visible.
+- If an action fails, an alert "Couldn't change the task" explains why.
+- Reloads after every change (`RefreshManager.revision`) and when the app becomes active.
+- **Log time sheet** (F-05): see F-05.
+
+### Data
+Reads everything through a `Snapshot`; writes completions, dates (move), copies, time entries and deletes through `TaskManager`.
+
+### Implementation (iOS)
+- Views: `Tempo/Views/Today/TodayView`, `TodayViewModel`; `Components/` — `DayStrip`, `DayStripDay`, `PartHeader`, `CollapsedPartRow`, `TaskRow`, `DurationRow`, `StatusLabel`.
+- Rules: `Packages/Core/Sources/Core/Schedule/DayPlan` (+ `DaySection`, `DayItem`, `DaySectionPhase`).
+- Utilities: `Shared/Utilities/Formatters/DayTitleFormatter`, `DurationFormatter`.
+- App: `Tempo/App/Route` (Habit detail), `LogTimeRequest`; `NavigationRouter.logTime`.
+- Placeholder: `Tempo/Views/HabitDetail/HabitDetailView` (T-15).
+- `Tempo/App/SampleData` fills previews and UI tests (`-ui-testing-sample`) with a realistic week.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Schedule/DayPlanTests.swift`: section order, items per part, phases, before Morning, other days, counts and progress.
+- `TempoTests/ViewModels/TodayViewModelTests.swift`: spec order, statuses at boundaries, collapsing, dots and week moves, titles, read-only past days, F-04 on future days, today's actions including Move to tomorrow, deletes, link focus.
+- `TempoUITests/TodayUITests.swift`: checkbox complete/undo, Log time from a swipe, Move to tomorrow from a swipe, swiping the strip by a week and the Today button, unfolding an ended part, disabled checkboxes on past days.
+
+### Known gaps
+- ▶ on duration rows and hiding it while a timer exists (T-20).
+- The missed popup (T-17).
+- Haptics on completing and switching days (T-31).
 
 ## F-11 · Tasks tab
 Status: Not built · Last updated: —
@@ -546,9 +597,25 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-23._
 
 ## F-24 · Empty states
-Status: Not built · Last updated: —
+Status: Partly built (T-12) · Last updated: 2026-10-07 · T-12
 
-_Not built yet. Intended behavior: SPEC F-24._
+### What it does
+Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
+
+### Behavior
+| Where | As built |
+|---|---|
+| Today, no tasks today | "No tasks today" with "Add a task" (editor preset to today) |
+| Today, a future day | "Nothing planned for Thu 8 Oct" with "Add a task" (preset to that day) |
+| Today, an empty past day | "Nothing was planned for Mon 5 Oct" |
+| Today, an empty part | Small grey text, e.g. "Nothing this evening" (wording per day in F-10, D-074) |
+| Everything else | Not built yet (T-13 onward) |
+
+### Implementation (iOS)
+- `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`.
+
+### Known gaps
+- The rest of the F-24 table, with its screens; T-29 checks every row.
 
 ## F-25 · iPad
 Status: Not built · Last updated: —
