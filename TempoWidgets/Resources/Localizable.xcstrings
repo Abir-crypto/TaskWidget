@@ -44,9 +44,6 @@
         }
       }
     },
-    "%lld left today" : {
-
-    },
     "%lld left: %@" : {
       "localizations" : {
         "en" : {
@@ -73,9 +70,6 @@
     "A habit you check off on the days it repeats." : {
 
     },
-    "A placeholder until the real widgets are built." : {
-      "comment" : "Widget gallery description of the placeholder widget."
-    },
     "Anytime" : {
 
     },
@@ -95,6 +89,9 @@
       "comment" : "Part of the day"
     },
     "Every day" : {
+
+    },
+    "Finish Timer" : {
 
     },
     "In %lld min" : {
@@ -124,8 +121,35 @@
     "Open Tempo to refresh" : {
 
     },
+    "Pause" : {
+
+    },
+    "Pause Timer" : {
+
+    },
+    "Paused" : {
+
+    },
     "Progress" : {
       "comment" : "Task type"
+    },
+    "Resume" : {
+
+    },
+    "Resume Timer" : {
+
+    },
+    "Running" : {
+
+    },
+    "Start" : {
+
+    },
+    "Start Timer" : {
+
+    },
+    "Start a timer and choose the habit when you're done." : {
+
     },
     "Stop" : {
 
@@ -133,9 +157,8 @@
     "Task" : {
 
     },
-    "Tempo" : {
-      "comment" : "App name, shown in the placeholder widget and its gallery title.",
-      "shouldTranslate" : false
+    "Timer" : {
+
     },
     "Timer is still running" : {
 

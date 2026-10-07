@@ -131,8 +131,7 @@ Tempo/
 │   │   ├── Day/
 │   │   ├── Focus/
 │   │   ├── Now/
-│   │   ├── LockScreen/
-│   │   └── Placeholder/                  # T-01 only; removed when the first real widget lands (T-23)
+│   │   └── LockScreen/
 │   ├── Components/                       # CheckboxToggleStyle, TaskMark, WidgetRow, …
 │   └── Resources/                        # the extension's own Assets.xcassets and Localizable.xcstrings
 ├── TempoTests/                           # app tests: managers with an in-memory store, deep links
@@ -517,7 +516,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   - Always use a fixed "now". Tuesday 6 Oct 2026 is the reference day.
   - Daylight-saving tests use 29 Mar 2026 (a gap) and 25 Oct 2026 (an overlap) in `Europe/London`.
 - **App:** `TempoTests` covers the managers with `StoreFactory.make(inMemory: true)`, plus `DeepLink`.
-- **UI:** `TempoUITests` (XCTest) checks what unit tests can't reach: tabs, navigation and links in the running app. The app is launched with `-ui-testing`, which gives it an in-memory store and its own device-only state, optionally `-ui-testing-now <ISO 8601>` to fix its clock, and `-ui-testing-timezone <identifier>` to fix the time zone rules run in (`LaunchOptions`; `UITestApp` always passes Europe/London), and `-ui-testing-sample` to start with `SampleData`, a realistic week of tasks that previews use too. `-ui-testing-no-popup` marks today's missed tasks as seen so the missed popup stays away; `UITestApp` passes it unless a test asks for the popup. `-ui-testing-finished-timer <seconds>` leaves a finished generic timer waiting for the task picker, as the Timer widget's Done does. Keep these few; they're slow. `ScreenshotTests` saves screenshots for review only when `TEST_RUNNER_TEMPO_SCREENSHOTS=<folder>` is passed to `xcodebuild`; otherwise it's skipped.
+- **UI:** `TempoUITests` (XCTest) checks what unit tests can't reach: tabs, navigation and links in the running app. The app is launched with `-ui-testing`, which gives it an in-memory store and its own device-only state, optionally `-ui-testing-now <ISO 8601>` to fix its clock, and `-ui-testing-timezone <identifier>` to fix the time zone rules run in (`LaunchOptions`; `UITestApp` always passes Europe/London), and `-ui-testing-sample` to start with `SampleData`, a realistic week of tasks that previews use too. `-ui-testing-no-popup` marks today's missed tasks as seen so the missed popup stays away; `UITestApp` passes it unless a test asks for the popup. `-ui-testing-finished-timer <seconds>` leaves a finished generic timer waiting for the task picker, as the Timer widget's Done does. Keep these few; they're slow. `ScreenshotTests` saves screenshots for review only when `TEST_RUNNER_TEMPO_SCREENSHOTS=<folder>` is passed to `xcodebuild`; otherwise it's skipped. Its widget tests add a widget to the Home Screen through SpringBoard (`XCUIApplication(bundleIdentifier: "com.apple.springboard")`: long press, Edit, Add Widget, search "Tempo") and press its buttons, which is the only way to see a real widget from the command line. They use the simulator's real store, and clean up what they add.
 - **Command:** `xcodebuild -scheme Tempo -destination 'platform=iOS Simulator,name=<an available iPhone>' test`. List the devices with `xcrun simctl list devices available`.
 - **`Core` on a simulator:** the `Tempo` scheme runs only `TempoTests`, because Xcode ignores a local package's test target in an app scheme. To run the `Core` tests on an iOS simulator (part of the required run on the latest installed iOS, §5), use the package's own scheme from its folder: `cd Packages/Core && xcodebuild -scheme Core -destination 'platform=iOS Simulator,name=<iPhone>,OS=<version>' test`.
 

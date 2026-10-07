@@ -56,7 +56,7 @@ Only the project skeleton exists. No features are live yet. The app opens to a p
 
 ### Behavior
 - **App:** the tab layout from F-09, with placeholder screens.
-- **Widget:** one small widget, listed in the gallery as "Tempo" with the description "A placeholder until the real widgets are built." It shows a clock symbol, "Tempo" and "N left today" from the shared timeline (F-17), until the Timer widget replaces it in T-23.
+- **Widgets:** see F-17 onward. The T-01 placeholder widget was removed in T-23.
 - **iPhone** runs in portrait only. **iPad** supports all four orientations.
 
 ### Project and targets
@@ -79,7 +79,7 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 
 ### Implementation (iOS)
 - App: `Tempo/App/TempoApp.swift` (opens the store, or shows the store error screen; see F-26), `Tempo/Views/Root/RootView.swift` (the tabs, F-09)
-- Widget: `TempoWidgets/TempoWidgetsBundle.swift`, `TempoWidgets/Widgets/Placeholder/` (`PlaceholderWidget`, `PlaceholderWidgetView`; until T-23), the shared provider in F-17
+- Widgets: `TempoWidgets/TempoWidgetsBundle.swift` and the widget folders (F-17 onward)
 - Strings: `Tempo/Resources/Localizable.xcstrings` and `TempoWidgets/Resources/Localizable.xcstrings` (D-046)
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
 
@@ -743,15 +743,15 @@ The foundation every widget shares: one timeline provider that reads the app's s
 - **Next timeline:** after midnight (`TimelinePlanner.nextMidnight`), and the entries already cover tomorrow in case the refresh is late.
 - **Load failure:** a single entry showing "Open Tempo to refresh" with a refresh icon, and another try 15 minutes later.
 - **After any change** — in the app, from a widget button or from a notification action — every widget reloads (`WidgetCenter.reloadAllTimelines`) and the notifications are rebuilt (`RefreshManager`). Widget buttons wait for both before returning (`refreshNowAndWait`), since the extension's process may end right after.
-- **Widget buttons** (`Shared/Intents/`, compiled into the app and the extension, hidden from Shortcuts with `isDiscoverable = false`): `ToggleCompletionIntent` (a `SetValueIntent` for the Now widget's checkboxes) completes or undoes a task by id and day, following F-04. More arrive with each widget.
-- **Placeholder widget** (until T-23): a small "Tempo" widget showing "N left today" from the shared provider, or the fallback.
+- **Widget buttons** (`Shared/Intents/`, compiled into the app and the extension, hidden from Shortcuts with `isDiscoverable = false`): `ToggleCompletionIntent` (a `SetValueIntent` for the Now widget's checkboxes) completes or undoes a task by id and day, following F-04; the timer intents are in F-18 and F-21.
+- The T-01 placeholder widget used this provider until the Timer widget replaced it (T-23).
 
 ### Data
 Reads everything; buttons write through the same managers as the app.
 
 ### Implementation (iOS)
 - Shared (app and extension): `Shared/Widgets/WidgetSnapshot`, `SnapshotLoader`, `WidgetTimelinePlan`; `Shared/Intents/IntentEnvironment`, `ToggleCompletionIntent` (D-089).
-- Extension: `TempoWidgets/Provider/TodayTimelineProvider`, `TodayEntry`; `TempoWidgets/Components/WidgetFailureView`; `TempoWidgets/Widgets/Placeholder/PlaceholderWidget`, `PlaceholderWidgetView`.
+- Extension: `TempoWidgets/Provider/TodayTimelineProvider`, `TodayEntry`; `TempoWidgets/Components/WidgetFailureView`.
 - Rules: `Packages/Core/Sources/Core/Timeline/TimelinePlanner`.
 
 ### Tests
@@ -762,9 +762,39 @@ Reads everything; buttons write through the same managers as the app.
 - The real widgets (T-23–T-27). Dark mode, tinted styles and status icons are checked per widget and again in T-31.
 
 ## F-18 · Timer widget (small)
-Status: Not built · Last updated: —
+Status: Built (T-23) · Last updated: 2026-10-07 · T-23
 
-_Not built yet. Intended behavior: SPEC F-18._
+### What it does
+A small widget that starts a generic timer, pauses, resumes and finishes it without opening the app, except Done, which opens the task picker. A habit timer started elsewhere shows here without controls.
+
+### Behavior
+- **Gallery:** "Timer" — "Start a timer and choose the habit when you're done." Small only.
+- **Idle:** "Timer" with a timer icon and a "Start" button, which starts a generic timer (`StartGenericTimerIntent`) without opening the app. If a timer was started elsewhere in the meantime, nothing happens and the widget catches up.
+- **Generic timer, running:** "Timer", the clock counting up (it updates itself), "Running", a pause button ("Pause") and "Done".
+- **Generic timer, paused:** the time so far ("5:12" or "1:05:12"), "Paused", a play button ("Resume") and "Done".
+- **Done** (`FinishGenericTimerIntent`, opens the app): the time is frozen at the tap, the timer is cleared, and the app opens on the task picker with that time (pending open action). If the intent runs inside the app, it tells the app at once; otherwise the app reads the action when it opens.
+- **Habit timer** (started in the app or the Now widget): "Timer", the habit's title, and the clock, or "Paused" with an icon; no buttons.
+- **Tapping elsewhere** opens the timer screen while a timer exists, otherwise Today.
+- **Load failure:** "Open Tempo to refresh" (F-17).
+- The clock, title and main button are accented in tinted and accented styles (`widgetAccentable`). The background is the extension's `WidgetBackground` color.
+- Checked on a real Home Screen in the iOS 27 simulator: added from the gallery, Start, Pause, Done opening the task picker, and a habit timer from the app shown without controls.
+
+### Data
+Reads `deviceState.timer` and the timed habit's title; writes the timer and `deviceState.pendingOpenAction`.
+
+### Implementation (iOS)
+- Widget: `TempoWidgets/Widgets/Timer/TimerWidget`, `TimerWidgetView`; `TempoWidgets/Components/WidgetClock`; previews use `TempoWidgets/Provider/WidgetPreviewData`.
+- State: `Shared/Widgets/TimerWidgetState`, `TimerClockValue`.
+- Intents: `Shared/Intents/StartGenericTimerIntent`, `PauseTimerIntent`, `ResumeTimerIntent`, `FinishGenericTimerIntent` (+ `Notification.Name.pendingOpenActionWritten`).
+- App: `RootView.handlePendingOpenAction`, run on activation and on that notification.
+- The T-01 placeholder widget is gone; `TempoWidgetsBundle` lists `TimerWidget`.
+
+### Tests
+- `TempoTests/Widgets/TimerWidgetTests.swift`: idle and its link; Start, Pause and Resume through the intents; Done freezing the time and leaving the picker action; a habit timer shown without controls (and the generic Done leaving it alone); Start while a timer exists; paused clock text.
+- `TempoUITests/ScreenshotTests.swift` (`testWidgetOnHomeScreen`, `testTimerWidgetButtons`, `testTimerWidgetShowsAHabitTimer`, run only with `TEST_RUNNER_TEMPO_SCREENSHOTS`): adds the widget through SpringBoard and photographs every state.
+
+### Known gaps
+- None for F-18.
 
 ## F-19 · Day widget (medium)
 Status: Not built · Last updated: —

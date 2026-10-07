@@ -154,4 +154,133 @@ final class ScreenshotTests: XCTestCase {
         _ = app.buttons["Undo"].waitForExistence(timeout: 3)
         save(app, "picker-2-toast")
     }
+
+    /// Adds the Timer widget to the Home Screen through SpringBoard and photographs each step.
+    @MainActor
+    func testWidgetOnHomeScreen() {
+        let app = UITestApp.launch()
+        _ = app.wait(for: .runningForeground, timeout: 5)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        save(springboard, "widget-1-home")
+        springboard.press(forDuration: 2)
+        sleep(1)
+        save(springboard, "widget-2-jiggle")
+        let edit = springboard.buttons["Edit"]
+        if edit.waitForExistence(timeout: 3) { edit.tap() }
+        sleep(1)
+        save(springboard, "widget-3-edit")
+        let add = springboard.buttons["Add Widget"]
+        if add.waitForExistence(timeout: 3) { add.tap() }
+        sleep(2)
+        save(springboard, "widget-4-gallery")
+        let search = springboard.searchFields.firstMatch
+        if search.waitForExistence(timeout: 3) {
+            search.tap()
+            search.typeText("Tempo")
+        }
+        sleep(1)
+        springboard.staticTexts["Tempo"].firstMatch.tap()
+        sleep(2)
+        save(springboard, "widget-5-tempo")
+        let candidates = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget'")).allElementsBoundByIndex
+        if let button = candidates.last(where: { $0.isHittable }) {
+            button.tap()
+        } else {
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.905)).tap()
+        }
+        sleep(2)
+        save(springboard, "widget-6-added")
+        let done = springboard.buttons["Done"].firstMatch
+        if done.waitForExistence(timeout: 2) { done.tap() }
+        sleep(2)
+        save(springboard, "widget-7-home")
+        print("SPRINGBOARD TREE:", springboard.debugDescription.prefix(8000))
+    }
+
+    /// Uses the Timer widget's buttons on the Home Screen (run `testWidgetOnHomeScreen` first).
+    @MainActor
+    func testTimerWidgetButtons() {
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        // The widget sits on the page with the Tempo app.
+        for _ in 0..<3 where !springboard.buttons["Start"].firstMatch.exists { springboard.swipeLeft() }
+        let start = springboard.buttons["Start"].firstMatch
+        if start.waitForExistence(timeout: 5) { start.tap() }
+        sleep(4)
+        save(springboard, "widget-8-running")
+        let pause = springboard.buttons["Pause"].firstMatch
+        if pause.waitForExistence(timeout: 5) { pause.tap() }
+        sleep(4)
+        save(springboard, "widget-9-paused")
+        let done = springboard.buttons["Done"].firstMatch
+        if done.waitForExistence(timeout: 5) { done.tap() }
+        sleep(5)
+        save(XCUIApplication(), "widget-10-app-after-done")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        for _ in 0..<3 where !springboard.buttons["Start"].firstMatch.exists { springboard.swipeLeft() }
+        sleep(1)
+        save(springboard, "widget-11-idle-again")
+    }
+
+    /// Starts a habit timer in the real app and photographs the Timer widget showing it without controls, then
+    /// deletes the habit again (run `testWidgetOnHomeScreen` first).
+    @MainActor
+    func testTimerWidgetShowsAHabitTimer() {
+        let app = XCUIApplication()
+        app.launch()
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Add task"].tap()
+        app.buttons["Duration"].tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Widget check")
+        app.buttons["Anytime"].tap()
+        app.buttons["Save"].tap()
+        let play = app.buttons["Start timer"].firstMatch
+        _ = play.waitForExistence(timeout: 5)
+        play.tap()
+        sleep(1)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        for _ in 0..<3 where !springboard.staticTexts["Widget check"].firstMatch.exists { springboard.swipeLeft() }
+        sleep(3)
+        save(springboard, "widget-12-habit-timer")
+
+        app.activate()
+        Self.deleteHabit(named: "Widget check", in: app)
+    }
+
+    /// Deletes a habit with its history through Tasks › Habits, which also discards its timer.
+    @MainActor
+    static func deleteHabit(named name: String, in app: XCUIApplication) {
+        app.tabBars.buttons["Tasks"].tap()
+        app.buttons["Habits"].tap()
+        let row = app.cells.containing(.staticText, identifier: name).firstMatch
+        guard row.waitForExistence(timeout: 3) else { return }
+        row.tap()
+        app.navigationBars.buttons["Edit"].tap()
+        let delete = app.buttons["Delete with history"].firstMatch
+        for _ in 0..<4 where !delete.isHittable { app.swipeUp() }
+        delete.tap()
+        let confirm = app.buttons.matching(NSPredicate(format: "label == 'Delete with history'")).allElementsBoundByIndex
+            .last { $0.isHittable }
+        confirm?.tap()
+        sleep(1)
+    }
+
+    /// Removes the habit `testTimerWidgetShowsAHabitTimer` adds, if a run stopped halfway.
+    @MainActor
+    func testCleanUpWidgetCheckHabit() {
+        let app = XCUIApplication()
+        app.launch()
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        Self.deleteHabit(named: "Widget check", in: app)
+        app.tabBars.buttons["Tasks"].tap()
+        save(app, "cleanup-tasks")
+    }
 }

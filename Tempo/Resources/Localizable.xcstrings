@@ -402,6 +402,9 @@
     "Filters on" : {
 
     },
+    "Finish Timer" : {
+
+    },
     "Finished habits will appear here" : {
 
     },
@@ -676,6 +679,9 @@
     "Pause" : {
 
     },
+    "Pause Timer" : {
+
+    },
     "Paused" : {
 
     },
@@ -716,6 +722,9 @@
 
     },
     "Resume" : {
+
+    },
+    "Resume Timer" : {
 
     },
     "Review missed tasks" : {
@@ -761,6 +770,9 @@
 
     },
     "Sort and filter" : {
+
+    },
+    "Start Timer" : {
 
     },
     "Start again" : {

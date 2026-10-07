@@ -14,6 +14,11 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Timer widget details (T-23)
+- Platform: ios.md §3 — the T-01 `Widgets/Placeholder/` folder is gone.
+- Platform: ios.md §13 — screenshot tests can add a widget to the Home Screen through SpringBoard.
+- No changes to SPEC.md.
+
 ## 2026-10-07 · Widget foundation details (T-22)
 - Platform: ios.md §3 — `WidgetSnapshot`, `SnapshotLoader` and the new `WidgetTimelinePlan` live in `Shared/Widgets/`, so app tests can test them; `TempoWidgets/Provider/` keeps `TodayTimelineProvider` and `TodayEntry` (D-089).
 - Platform: ios.md §8 — intents use `IntentEnvironment` and `refreshNowAndWait()`; `ToggleCompletionIntent` is a `SetValueIntent`.

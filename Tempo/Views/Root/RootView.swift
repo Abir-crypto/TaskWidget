@@ -63,6 +63,10 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
             timeChanged()
         }
+        // The Timer widget's Done can run inside the app after it's already active (ios.md §11).
+        .onReceive(NotificationCenter.default.publisher(for: .pendingOpenActionWritten)) { _ in
+            handlePendingOpenAction()
+        }
         .onOpenURL { url in
             router.open(DeepLink(url: url))
         }
@@ -75,10 +79,7 @@ struct RootView: View {
         .onChange(of: scenePhase, initial: true) { _, phase in
             switch phase {
             case .active:
-                if let action = dependencies.deviceState.pendingOpenAction {
-                    dependencies.deviceState.pendingOpenAction = nil
-                    router.handle(action)
-                }
+                handlePendingOpenAction()
                 // A widget may have changed data while the app was in the background.
                 dependencies.refresh.dataMayHaveChanged()
                 Task { await dependencies.reminders.rebuild() }
@@ -89,6 +90,13 @@ struct RootView: View {
                 break
             }
         }
+    }
+
+    /// Acts on what a widget button left for the app, such as choosing a task for a finished timer (SPEC §4.6).
+    private func handlePendingOpenAction() {
+        guard let action = dependencies.deviceState.pendingOpenAction else { return }
+        dependencies.deviceState.pendingOpenAction = nil
+        router.handle(action)
     }
 
     private func timeChanged() {
