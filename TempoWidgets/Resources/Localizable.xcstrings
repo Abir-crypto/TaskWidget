@@ -1,8 +1,20 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "A habit measured in minutes against a daily target." : {
+
+    },
+    "A habit you check off on the days it repeats." : {
+
+    },
     "A placeholder until the real widgets are built." : {
       "comment" : "Widget gallery description of the placeholder widget."
+    },
+    "Done once, on one day." : {
+
+    },
+    "Duration" : {
+      "comment" : "Task type"
     },
     "Evening" : {
       "comment" : "Part of the day"
@@ -15,6 +27,12 @@
     },
     "Noon" : {
       "comment" : "Part of the day"
+    },
+    "One-time" : {
+      "comment" : "Task type"
+    },
+    "Progress" : {
+      "comment" : "Task type"
     },
     "Tempo" : {
       "comment" : "App name, shown in the placeholder widget and its gallery title.",

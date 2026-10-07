@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Task editor details (T-11)
+- Platform: ios.md §13 — UI tests also pass `-ui-testing-timezone`, so fixed times mean the same on any Mac.
+- No changes to SPEC.md. D-068 to D-072 fill gaps in F-15 and F-03: editor defaults and when the title message appears, ended parts for edits that apply today, Start again after its part has ended, read-only tasks, and End habit offered next to Delete with history.
+
 ## 2026-10-07 · Settings details (T-10)
 - Platform: ios.md §13 — `ScreenshotTests` in `TempoUITests`, run only with `TEST_RUNNER_TEMPO_SCREENSHOTS`.
 - No changes to SPEC.md. D-066 (the recap follows Night) and D-067 (asking for permission from Settings) fill gaps in F-16.

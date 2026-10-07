@@ -150,7 +150,7 @@ None yet. `PartSettings` mirrors the four `*_start` columns of `settings` (SPEC 
 - Setting the start times in the app comes in Settings (T-10) and the guide (T-28).
 
 ## F-03 · Habit schedules and goals
-Status: Partly built (T-04) · Last updated: 2026-10-07 · T-04
+Status: Partly built (T-04, T-11) · Last updated: 2026-10-07 · T-11
 
 ### What it does
 Habits occur on chosen weekdays between their start and last day, and keep a history of their schedule so edits apply from today onward. The data operations exist in `TaskManager`; there's no UI yet.
@@ -191,7 +191,7 @@ Habits occur on chosen weekdays between their start and last day, and keep a his
 
 ### Known gaps
 - The weekly goal (T-06), results in History (T-14) and the editor UI with its note (T-11).
-- Creating a task in a part of today that has already ended isn't blocked yet (T-11, D-035).
+- The editor (F-15) is the UI for these operations; Start again starts today even when the habit's part has ended (D-070).
 
 ## F-04 · Daily cycle and status
 Status: Partly built (T-05) · Last updated: 2026-10-07 · T-05
@@ -309,7 +309,7 @@ Reads everything through a `Snapshot`; the seen list is `deviceState.missedSeen`
 Status: Built (T-09) · Last updated: 2026-10-07 · T-09
 
 ### What it does
-The app opens to four tabs. Settings, History, the editor, the timer screen and the task picker open from buttons and from links. Most screens are placeholders that later tasks fill in.
+The app opens to four tabs. Settings, History, the editor, the timer screen and the task picker open from buttons and from links. Some screens are still placeholders that later tasks fill in.
 
 ### Behavior
 - **Tabs** (left to right): Today (`sun.max`), Tasks (`checklist`), Missed (`exclamationmark.circle`), Stats (`chart.bar`). The app starts on Today.
@@ -328,7 +328,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Today (T-12), Tasks (T-13), Missed (T-16), Stats (T-18), History (T-14), the editor (T-11, "New task" with Cancel), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: Today (T-12), Tasks (T-13), Missed (T-16), Stats (T-18), History (T-14), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -400,9 +400,53 @@ The stats formulas (SPEC §5.7) and the data for every Stats card exist in `Core
 - The Stats screen (T-18) and Habit detail (T-15).
 
 ## F-15 · Task editor
-Status: Not built · Last updated: —
+Status: Built (T-11) · Last updated: 2026-10-07 · T-11
 
-_Not built yet. Intended behavior: SPEC F-15._
+### What it does
+A sheet for creating a task or editing one. Presets for the day and type come from where it was opened.
+
+### Behavior
+- **Title bar:** "New task", "Edit task", or "Task" when read-only. Cancel (Close when read-only) on the left; Save on the right, disabled until the task is valid.
+- **Type:** a segmented One-time / Progress / Duration picker for new tasks, with a one-line explanation under it ("Done once, on one day.", "A habit you check off on the days it repeats.", "A habit measured in minutes against a daily target."). When editing it's shown read-only with "The type can't be changed after a task is created."
+- **Title:** a text field. "Add a title" appears in red under it once it has been edited and is empty (D-068).
+- **When:** Fixed time / Part of the day / Anytime.
+  - Fixed time: a time picker in 5-minute steps.
+  - Part of the day: Morning, Noon, Evening and Night as rows with a checkmark on the chosen one.
+  - Anytime: "Anytime tasks belong to no part of the day and stay open until midnight."
+  - On today (the date of a one-time task, or a habit's start day, or today for edits to a habit that has started), parts that have ended are grey with "Already over" and can't be picked, and the time picker starts at the first part that hasn't ended. A timing the task already had can stay, so a missed task can still be renamed (D-069). If the chosen timing is over, Save is disabled and the footer says "That part of the day is already over. Pick a later time."
+- **One-time:** "Date", from today onward; defaults to the preset day or today.
+- **Habits** ("Schedule" section): "Repeat on" with seven weekday toggles in the region's order, all on by default ("Pick at least one day" in red when none are on); "Starts", from today onward, read-only once the habit has started; "Set length" toggle with a day stepper (1–365, 30 when switched on). Footer: "Ongoing until you end it." without a length, or, when editing a habit, "Changes apply from today. Earlier days keep their old schedule."
+- **Duration:** "Daily target", a stepper from 5 to 480 minutes in 5-minute steps, 30 by default.
+- **Defaults for a new task:** the part of the day in progress (Morning on other days or before Morning starts), and for fixed time the next 5-minute step after now (09:00 on other days) (D-068).
+- **Saving:**
+  - New one-time task → `createOneTime`; new habit → `createHabit` (task and first schedule row together).
+  - Editing a one-time task → `updateOneTime` (title, date and timing in one write).
+  - Editing a habit → rename, then the start day if it moved (only while in the future; the first schedule row moves too), then the schedule (`updateSchedule`, rows per SPEC §4.2) and the length.
+  - If saving fails (for example a part ended while the editor was open), an alert "Couldn't save" explains why.
+- **Edit mode** adds, after confirmation dialogs:
+  - one-time tasks: "Delete task" ("Delete this task?" / "This can't be undone.");
+  - habits: "End habit" ("End this habit?" / "It moves to History with its stats, and you can start it again later.") and "Delete with history" ("Delete this habit and its history?" / "All of its history and stats will be deleted. This can't be undone. End the habit instead to keep them."), whose dialog also offers End habit (D-072).
+- **Read-only:** a one-time task dated before today opens read-only, with no Save or Delete. An ended habit keeps its title editable but its schedule, length and End habit are unavailable; Delete with history stays (D-071).
+- **TaskManager rules added for the editor** (also enforced outside it): a new task can't be put in a part of today that has ended (`partAlreadyOver`, D-035); neither can a schedule edit that applies today (D-069). Start again is the exception: it starts today even if the habit's part has ended (D-070).
+
+### Data
+Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
+
+### Implementation (iOS)
+- Views: `Tempo/Views/TaskEditor/TaskEditorView`, `TaskEditorViewModel`.
+- Components: `Tempo/Components/WeekdayPicker/WeekdayPicker`, `MinuteIntervalPicker` (5-minute steps).
+- Manager: `TaskManager.updateOneTime`, `parts()`, `isOver(_:on:)`, and the D-035 checks in `createOneTime`, `createHabit` and `updateSchedule`.
+- Rules: `TaskRules.isOver`, `TaskRules.earliestFixedMinute`, `TaskRuleError.partAlreadyOver`.
+- Utilities: `Shared/Utilities/Extensions/TaskType+Title` (names, explanations, icons), `Weekday+Title`.
+
+### Tests
+- `TempoTests/ViewModels/TaskEditorViewModelTests.swift`: every type with every timing, presets, defaults, the title and weekday messages, past days, ended parts and fixed times, read-only type when editing, editing one-time tasks and habits (schedule rows and the note), future start days, read-only past tasks, delete, End habit and Delete with history.
+- `Packages/Core/Tests/CoreTests/Schedule/TaskRulesTests.swift` (`TaskRulesTimingTests`): when a timing is over, the earliest fixed time.
+- `TempoUITests/TaskEditorUITests.swift`: creating a task, the title message and habit fields, "Already over" parts.
+
+### Known gaps
+- Opening the editor for an existing task comes from Today's rows (T-12), Tasks (T-13) and Habit detail (T-15).
+- Ending or deleting a habit whose timer is running asks first and discards the timer (T-19/T-20).
 
 ## F-16 · Settings
 Status: Partly built (T-10) · Last updated: 2026-10-07 · T-10

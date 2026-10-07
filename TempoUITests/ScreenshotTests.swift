@@ -28,4 +28,17 @@ final class ScreenshotTests: XCTestCase {
         app.swipeUp()
         save(app, "settings-2")
     }
+
+    @MainActor
+    func testEditor() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00")
+        app.buttons["Add task"].tap()
+        _ = app.buttons["Save"].waitForExistence(timeout: 5)
+        save(app, "editor-1-new")
+        app.buttons["Duration"].tap()
+        app.buttons["Fixed time"].tap()
+        save(app, "editor-2-duration")
+        app.swipeUp()
+        save(app, "editor-3-duration-scrolled")
+    }
 }

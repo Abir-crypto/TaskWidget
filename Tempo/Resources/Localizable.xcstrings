@@ -1,10 +1,19 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "%@ starts at" : {
 
     },
     "%lld min" : {
+
+    },
+    "A habit measured in minutes against a daily target." : {
+
+    },
+    "A habit you check off on the days it repeats." : {
 
     },
     "A summary when each part starts, a reminder before a part ends, a reminder before fixed-time tasks, a recap of the day, and an alert when a timer has been running a long time." : {
@@ -13,13 +22,28 @@
     "About" : {
 
     },
+    "Add a title" : {
+
+    },
     "Add task" : {
 
     },
     "Alert after" : {
 
     },
+    "All of its history and stats will be deleted. This can't be undone. End the habit instead to keep them." : {
+
+    },
     "Allow notifications" : {
+
+    },
+    "Already over" : {
+
+    },
+    "Anytime" : {
+
+    },
+    "Anytime tasks belong to no part of the day and stay open until midnight." : {
 
     },
     "Before the part ends" : {
@@ -34,13 +58,55 @@
     "Cancel" : {
 
     },
+    "Changes apply from today. Earlier days keep their old schedule." : {
+
+    },
+    "Check the highlighted fields." : {
+
+    },
     "Choose a task" : {
 
     },
     "Close" : {
 
     },
+    "Couldn't save" : {
+
+    },
+    "Daily target" : {
+
+    },
+    "Date" : {
+
+    },
+    "Delete task" : {
+
+    },
+    "Delete this habit and its history?" : {
+
+    },
+    "Delete this task?" : {
+
+    },
+    "Delete with history" : {
+
+    },
+    "Done once, on one day." : {
+
+    },
+    "Duration" : {
+      "comment" : "Task type"
+    },
     "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." : {
+
+    },
+    "Edit task" : {
+
+    },
+    "End habit" : {
+
+    },
+    "End this habit?" : {
 
     },
     "End-of-day recap" : {
@@ -52,6 +118,9 @@
     "Evening" : {
       "comment" : "Part of the day"
     },
+    "Fixed time" : {
+
+    },
     "Fixed-time tasks" : {
 
     },
@@ -59,6 +128,9 @@
 
     },
     "History" : {
+
+    },
+    "It moves to History with its stats, and you can start it again later." : {
 
     },
     "Missed" : {
@@ -85,13 +157,25 @@
     "Notifications are off for Tempo, so no reminders are sent. Turn them on in the Settings app." : {
 
     },
+    "OK" : {
+
+    },
     "Off" : {
 
     },
     "On" : {
 
     },
+    "One-time" : {
+      "comment" : "Task type"
+    },
+    "Ongoing until you end it." : {
+
+    },
     "Open Settings" : {
+
+    },
+    "Part of the day" : {
 
     },
     "Part starts" : {
@@ -100,8 +184,17 @@
     "Parts of the day" : {
 
     },
+    "Pick at least one day" : {
+
+    },
+    "Pick today or a later day." : {
+
+    },
     "Privacy" : {
 
+    },
+    "Progress" : {
+      "comment" : "Task type"
     },
     "Recap time" : {
 
@@ -109,7 +202,19 @@
     "Reminders" : {
 
     },
+    "Repeat on" : {
+
+    },
     "Running timer alert" : {
+
+    },
+    "Save" : {
+
+    },
+    "Schedule" : {
+
+    },
+    "Set length" : {
 
     },
     "Settings" : {
@@ -118,7 +223,16 @@
     "Something went wrong while opening Tempo's data. Close the app and open it again." : {
 
     },
+    "Something went wrong. Try again." : {
+
+    },
+    "Starts" : {
+
+    },
     "Stats" : {
+
+    },
+    "Task" : {
 
     },
     "Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked." : {
@@ -127,16 +241,49 @@
     "Tasks" : {
 
     },
+    "That part of the day is already over. Pick a later time." : {
+
+    },
+    "The type can't be changed after a task is created." : {
+
+    },
+    "This can't be undone." : {
+
+    },
     "This screen is being built." : {
+
+    },
+    "This task can't be changed any more." : {
+
+    },
+    "This task couldn't be loaded." : {
+
+    },
+    "This task no longer exists." : {
+
+    },
+    "Time" : {
 
     },
     "Timer" : {
 
     },
+    "Title" : {
+
+    },
     "Today" : {
 
     },
+    "Type" : {
+
+    },
     "Version" : {
+
+    },
+    "When" : {
+
+    },
+    "^[%lld day](inflect: true)" : {
 
     },
     "^[%lld hour](inflect: true)" : {

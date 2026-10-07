@@ -28,6 +28,16 @@ final class TaskManager {
         ScheduleEngine(data: try store.loadAll(), calendar: calendar)
     }
 
+    /// The part start times in use.
+    func parts() throws -> PartSettings {
+        try store.settings()?.parts ?? .defaults
+    }
+
+    /// Whether a timing has already ended on a day (SPEC F-15, D-035).
+    func isOver(_ timing: Timing, on day: DayKey) throws -> Bool {
+        TaskRules.isOver(timing, on: day, now: LocalTime(clock.now, calendar: calendar), parts: try parts())
+    }
+
     /// The data, the settings and the rules, read fresh.
     func snapshot() throws -> Snapshot {
         Snapshot(data: try store.loadAll(), settings: try store.settings() ?? .defaults, calendar: calendar)
@@ -149,6 +159,7 @@ final class TaskManager {
     func createOneTime(title: String, date: DayKey, timing: Timing) throws -> TaskValue {
         if let error = TaskRules.titleError(title) ?? TaskRules.timingError(timing) { throw TaskError.invalid(error) }
         guard date >= today else { throw TaskError.invalid(.dayInPast) }
+        guard try !isOver(timing, on: date) else { throw TaskError.invalid(.partAlreadyOver) }
         let now = clock.now
         let task = TaskValue(title: TaskRules.normalizedTitle(title), type: .oneTime, date: date, createdAt: now)
         let schedule = ScheduleValue(
@@ -167,7 +178,8 @@ final class TaskManager {
         weekdays: Weekdays,
         startDay: DayKey,
         lengthDays: Int?,
-        targetMinutes: Int?
+        targetMinutes: Int?,
+        allowingEndedPart: Bool = false
     ) throws -> TaskValue {
         guard type.isHabit else { throw TaskError.wrongType }
         let error =
@@ -176,6 +188,7 @@ final class TaskManager {
             ?? TaskRules.lengthError(lengthDays)
         if let error { throw TaskError.invalid(error) }
         guard startDay >= today else { throw TaskError.invalid(.dayInPast) }
+        if !allowingEndedPart, try isOver(timing, on: startDay) { throw TaskError.invalid(.partAlreadyOver) }
         let now = clock.now
         let task = TaskValue(
             title: TaskRules.normalizedTitle(title), type: type, startDay: startDay, lengthDays: lengthDays,
@@ -217,7 +230,37 @@ final class TaskManager {
             task: task, schedules: try store.schedules(taskID: taskID), timing: timing, weekdays: weekdays,
             targetMinutes: targetMinutes, today: today, now: clock.now)
         guard let write else { return }
+        // A change that applies today can't move the task into a part that has already ended (D-035, D-069).
+        let appliesToday = task.type.isHabit ? (task.startDay ?? today) <= today : task.date == today
+        if appliesToday, try isOver(timing, on: today) { throw TaskError.invalid(.partAlreadyOver) }
         try store.write([.schedule(write.schedule)])
+        refresh.afterChange()
+    }
+
+    /// Edits a one-time task's title, date and timing in one write (SPEC F-15). Only while its date is today or
+    /// later; the new date can't be in the past, and a changed date or timing can't be in a part that has ended.
+    func updateOneTime(taskID: UUID, title: String, date: DayKey, timing: Timing) throws {
+        if let error = TaskRules.titleError(title) ?? TaskRules.timingError(timing) { throw TaskError.invalid(error) }
+        var task = try existingTask(taskID)
+        guard task.type == .oneTime else { throw TaskError.wrongType }
+        guard Editability.canEditOneTime(task, today: today) else { throw TaskError.notAllowed }
+        guard date >= today else { throw TaskError.invalid(.dayInPast) }
+        guard var schedule = try store.schedules(taskID: taskID).first else { throw TaskError.notFound }
+        let moved = task.date != date || schedule.timing != timing
+        if moved, try isOver(timing, on: date) { throw TaskError.invalid(.partAlreadyOver) }
+        var writes: [StoreWrite] = []
+        let normalized = TaskRules.normalizedTitle(title)
+        if task.title != normalized || task.date != date {
+            task.title = normalized
+            task.date = date
+            writes.append(.task(task))
+        }
+        if schedule.timing != timing {
+            schedule.timing = timing
+            writes.append(.schedule(schedule))
+        }
+        guard !writes.isEmpty else { return }
+        try store.write(writes)
         refresh.afterChange()
     }
 
@@ -280,7 +323,8 @@ final class TaskManager {
         guard let schedule = try store.schedules(taskID: taskID).last else { throw TaskError.notFound }
         return try createHabit(
             type: old.type, title: old.title, timing: schedule.timing, weekdays: schedule.weekdays,
-            startDay: today, lengthDays: old.lengthDays, targetMinutes: schedule.targetMinutes)
+            startDay: today, lengthDays: old.lengthDays, targetMinutes: schedule.targetMinutes,
+            allowingEndedPart: true)
     }
 
     /// Deletes a one-time task (SPEC F-10, F-15).

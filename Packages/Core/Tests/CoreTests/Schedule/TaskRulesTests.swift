@@ -50,3 +50,48 @@ struct TaskRulesTests {
         #expect(TaskRules.weekdaysError(Weekdays(rawValue: 128), type: .progress) == .noWeekdays)
     }
 }
+
+struct TaskRulesTimingTests {
+    private let parts = PartSettings.defaults
+
+    @Test func endedPartsAreOverToday() {
+        let now = LocalTime(day: TestCalendar.today, minute: 13 * 60)
+        #expect(TaskRules.isOver(.part(.morning), on: TestCalendar.today, now: now, parts: parts))
+        #expect(!TaskRules.isOver(.part(.noon), on: TestCalendar.today, now: now, parts: parts))
+        #expect(!TaskRules.isOver(.part(.evening), on: TestCalendar.today, now: now, parts: parts))
+        #expect(TaskRules.isOver(.fixed(minute: 600), on: TestCalendar.today, now: now, parts: parts))  // 10:00, Morning
+        #expect(!TaskRules.isOver(.fixed(minute: 750), on: TestCalendar.today, now: now, parts: parts))  // 12:30, passed but Noon is open
+        #expect(!TaskRules.isOver(.anytime, on: TestCalendar.today, now: now, parts: parts))
+    }
+
+    @Test func otherDays() {
+        let now = LocalTime(day: TestCalendar.today, minute: 23 * 60)
+        #expect(!TaskRules.isOver(.part(.morning), on: TestCalendar.oct(7), now: now, parts: parts))
+        #expect(TaskRules.isOver(.anytime, on: TestCalendar.oct(5), now: now, parts: parts))
+    }
+
+    @Test func partEndsExactlyAtTheNextStart() {
+        let atNoon = LocalTime(day: TestCalendar.today, minute: 720)
+        #expect(TaskRules.isOver(.part(.morning), on: TestCalendar.today, now: atNoon, parts: parts))
+        let beforeNoon = LocalTime(day: TestCalendar.today, minute: 719)
+        #expect(!TaskRules.isOver(.part(.morning), on: TestCalendar.today, now: beforeNoon, parts: parts))
+    }
+
+    @Test func earliestFixedMinute() {
+        #expect(
+            TaskRules.earliestFixedMinute(
+                on: TestCalendar.today, now: LocalTime(day: TestCalendar.today, minute: 300), parts: parts) == 0)
+        #expect(
+            TaskRules.earliestFixedMinute(
+                on: TestCalendar.today, now: LocalTime(day: TestCalendar.today, minute: 600), parts: parts) == 0)
+        #expect(
+            TaskRules.earliestFixedMinute(
+                on: TestCalendar.today, now: LocalTime(day: TestCalendar.today, minute: 780), parts: parts) == 720)
+        #expect(
+            TaskRules.earliestFixedMinute(
+                on: TestCalendar.today, now: LocalTime(day: TestCalendar.today, minute: 1300), parts: parts) == 1260)
+        #expect(
+            TaskRules.earliestFixedMinute(
+                on: TestCalendar.oct(7), now: LocalTime(day: TestCalendar.today, minute: 1300), parts: parts) == 0)
+    }
+}

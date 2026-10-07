@@ -36,7 +36,7 @@ final class AppDependencies {
     /// in-memory store and their own device-only state instead (`LaunchOptions`).
     static func live(options: LaunchOptions = LaunchOptions()) throws -> AppDependencies {
         if options.isUITesting {
-            let calendar = Calendar.autoupdatingCurrent
+            let calendar = options.calendar
             let clock: any Clock = options.fixedNow.map { FixedClock($0, calendar: calendar) } ?? SystemClock()
             let deviceState = DeviceState(defaults: UserDefaults(suiteName: "ui-testing") ?? .standard)
             deviceState.reset()

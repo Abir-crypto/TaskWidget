@@ -6,7 +6,7 @@ enum UITestApp {
     /// - Parameter now: an ISO 8601 moment to fix the app's clock at.
     static func launch(now: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-ui-testing"]
+        app.launchArguments = ["-ui-testing", "-ui-testing-timezone", "Europe/London"]
         if let now { app.launchArguments += ["-ui-testing-now", now] }
         app.launch()
         return app

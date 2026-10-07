@@ -52,6 +52,24 @@ public enum TaskRules {
         return valid ? nil : .noWeekdays
     }
 
+    /// Whether a timing is already over on a day: its part has ended today, or the day is in the past. Anytime is
+    /// over only on past days. New tasks can't be put there, since they'd be born missed (SPEC F-15, D-035).
+    public static func isOver(_ timing: Timing, on day: DayKey, now: LocalTime, parts: PartSettings) -> Bool {
+        if day != now.day { return day < now.day }
+        switch timing {
+        case .anytime: return false
+        case .part(let part): return parts.end(of: part) <= now.minute
+        case .fixed(let minute): return parts.end(of: parts.part(containing: minute)) <= now.minute
+        }
+    }
+
+    /// The earliest fixed time that isn't in an ended part of `day` (SPEC F-15). 0 for future days.
+    public static func earliestFixedMinute(on day: DayKey, now: LocalTime, parts: PartSettings) -> Int {
+        guard day == now.day else { return 0 }
+        let part = DayPart.allCases.first { parts.end(of: $0) > now.minute } ?? .night
+        return part == .morning ? 0 : parts.start(of: part)
+    }
+
     /// The first rule a new or edited schedule breaks, if any.
     public static func scheduleError(
         type: TaskType, timing: Timing, weekdays: Weekdays, targetMinutes: Int?
@@ -78,4 +96,6 @@ public enum TaskRuleError: Error, Hashable, Sendable {
     case dayInPast
     /// Logged minutes aren't 5–480 in 5-minute steps.
     case invalidLogTime
+    /// The part of the day has already ended today ("Already over").
+    case partAlreadyOver
 }
