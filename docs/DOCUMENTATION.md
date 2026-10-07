@@ -93,9 +93,29 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 ---
 
 ## F-01 · Task types
-Status: Not built · Last updated: —
+Status: Partly built (T-03, T-04) · Last updated: 2026-10-07 · T-04
 
-_Not built yet. Intended behavior: SPEC F-01._
+### What it does
+Tasks are one-time tasks, progress habits or duration habits. The type is set when the task is created; nothing can change it afterward. There's no UI yet.
+
+### Behavior
+- Types are stored as `one_time`, `progress` and `duration` (`TaskType`). Progress and duration are habits.
+- Titles are trimmed of leading and trailing spaces and newlines, and must then be 1–100 characters (`TaskRules.titleError`: `emptyTitle`, `titleTooLong`).
+- One-time tasks have a date; habits have a start day, an optional set length and an optional `ended_on`.
+- `TaskManager` has no operation that changes a task's type.
+
+### Data
+`tasks.type`, `tasks.title`.
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Models/TaskType.swift`, `Core/Schedule/TaskRules.swift`.
+- Manager: `Shared/Managers/TaskManager.swift`.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Schedule/TaskRulesTests.swift`, `TempoTests/Managers/TaskManagerTests.swift`.
+
+### Known gaps
+- Creating and showing tasks in the app comes with the editor (T-11) and the screens (T-12 onward). Stats show one-time tasks only as a count (T-08).
 
 ## F-02 · Timing and parts of the day
 Status: Partly built (T-02) · Last updated: 2026-10-07 · T-02
@@ -129,9 +149,48 @@ None yet. `PartSettings` mirrors the four `*_start` columns of `settings` (SPEC 
 - Setting the start times in the app comes in Settings (T-10) and the guide (T-28).
 
 ## F-03 · Habit schedules and goals
-Status: Not built · Last updated: —
+Status: Partly built (T-04) · Last updated: 2026-10-07 · T-04
 
-_Not built yet. Intended behavior: SPEC F-03._
+### What it does
+Habits occur on chosen weekdays between their start and last day, and keep a history of their schedule so edits apply from today onward. The data operations exist in `TaskManager`; there's no UI yet.
+
+### Behavior
+- **Occurrence** (SPEC §5.3, `ScheduleEngine`): a one-time task occurs only on its date. A habit occurs on day `d` when `start_day ≤ d`, `d` is on or before its last day (if any), and `d`'s weekday is in the schedule for `d`. Deleted tasks and deleted schedule rows are ignored. Occurrences of one day come in task creation order. An occurrence's id is `<task id in lowercase>_<yyyymmdd>`.
+- **Last day** (`TaskValue.lastDay`): the earlier of `start_day + length_days − 1` and `ended_on`; none for an ongoing habit that hasn't been ended. A 30-day habit starting 1 Oct ends on 30 Oct. A habit has ended once its last day is before today (`hasEnded`).
+- **Live days** (`ScheduleEngine.isLive`): every day from a habit's start through its last day, scheduled or not (used for logging time, F-05).
+- **Schedule for a day:** the row with the greatest `effective_from` that is ≤ that day.
+- **Editing timing, weekdays or target** (`TaskManager.updateSchedule`, rules in `ScheduleHistory.edit`, SPEC §4.2):
+  - a habit that hasn't started yet: its first row is updated in place;
+  - a habit that already has a row starting today: that row is updated, so several edits on one day leave one row;
+  - otherwise a new row starts today, and earlier days keep their old schedule;
+  - a one-time task: its single row (`effective_from = 0`, weekdays `0`) is updated in place;
+  - an edit that changes nothing writes nothing (D-059).
+- **Input rules** (`TaskRules`): habits need at least one weekday (`noWeekdays`); duration targets are 5–480 in 5-minute steps (`invalidTarget`); progress habits and one-time tasks have no target; set lengths are 1–365 (`invalidLength`); fixed times are minutes 0–1435 on 5-minute steps (`invalidFixedTime`); a habit can't start before today, and a one-time date can't be before today (`dayInPast`).
+- **Creating** (`createOneTime`, `createHabit`): the task and its first schedule row are written together. A habit's first row starts on its start day.
+- **Title** (`rename`): trimmed and validated; applies everywhere, since history reads the same row.
+- **Length** (`setLength`): moves the last day. If the new last day would be before today, the habit is ended as with End habit instead, and its length is left as it was, so the days it already had stay in its history (D-058).
+- **Start day** (`setStartDay`): only while the start is still in the future, and never to a day before today (`notAllowed`, `dayInPast`). The first schedule row moves with it.
+- **End habit** (`endHabit`): `ended_on` becomes yesterday, or today if today already has a completion or a time entry. A habit that has already ended is left alone.
+- **Start again** (`startAgain`): a new habit with the same title, type, latest schedule (timing, weekdays, target) and length, starting today. The ended habit is unchanged.
+- **Delete with history** (`deleteWithHistory`) and **delete a one-time task** (`deleteOneTime`): soft-delete the task and all its schedules, completions and time entries in one write.
+- Every write refreshes the widgets through `RefreshManager.afterChange()`.
+
+### Data
+`tasks` (`start_day`, `length_days`, `ended_on`), `schedules` (all columns). Reads `completions` and `time_entries` for End habit.
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Schedule/` — `ScheduleEngine`, `ScheduleHistory`, `TaskRules` (+ `TaskRuleError`); `Core/Models/Occurrence.swift`, `TaskValue.lastDay`.
+- Manager: `Shared/Managers/TaskManager.swift` (+ `TaskError`). Multi-row changes use the store's atomic `write(_:)` with `StoreWrite` values (`Shared/Storage/StoreWrite.swift`).
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Schedule/ScheduleEngineTests.swift`: every T-04 occurrence case, last days, schedule lookup, deleted rows, creation order, windows.
+- `Packages/Core/Tests/CoreTests/Schedule/ScheduleHistoryTests.swift`: new row, same-day update, not-started update, one-time update, no-op.
+- `TempoTests/Managers/TaskManagerTests.swift`: creation and validation, the Wednesday weekday change, two edits on one day, not-started edits, rename, length, start day, End habit, Start again, deletes.
+- `TempoTests/Storage/SwiftDataTaskStoreTests.swift`: batch writes are all-or-nothing.
+
+### Known gaps
+- The weekly goal (T-06), results in History (T-14) and the editor UI with its note (T-11).
+- Creating a task in a part of today that has already ended isn't blocked yet (T-11, D-035).
 
 ## F-04 · Daily cycle and status
 Status: Not built · Last updated: —
@@ -244,7 +303,7 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-25._
 
 ## F-26 · Data and future sync
-Status: Partly built (T-03) · Last updated: 2026-10-07 · T-03
+Status: Partly built (T-03) · Last updated: 2026-10-07 · T-04
 
 ### What it does
 Everything is stored on the device in one SwiftData store inside the App Group, shared by the app and the widget extension. Device-only state lives in the App Group's `UserDefaults`. There's no account and no server.
@@ -252,7 +311,7 @@ Everything is stored on the device in one SwiftData store inside the App Group, 
 ### Behavior
 - **Tables** (SPEC §4): `tasks`, `schedules`, `completions`, `time_entries` and `settings`, one SwiftData record each. Records are flat, link through `UUID` fields, store enums as the SPEC strings (`one_time`, `progress`, `duration`; `fixed`, `part`, `anytime`; `morning` … `night`; `timer`, `manual`) and day keys as `Int`.
 - **IDs** are UUIDs made on the device. The settings row's id is always `00000000-0000-0000-0000-000000000001` (D-056).
-- **Writes:** `save` inserts or updates a row by id and sets `updatedAt` to the clock's now on every write. `createdAt` keeps the value it was given.
+- **Writes:** `save` inserts or updates a row by id and sets `updatedAt` to the clock's now on every write. `createdAt` keeps the value it was given. `write(_:)` applies several rows in one save: all land, or none do (T-04).
 - **Deletes are soft:** they set `deletedAt` and `updatedAt`. Reads never return rows with `deletedAt` set. Deleting a missing or already deleted row does nothing.
 - **Reading order:** tasks by `createdAt` (creation order), schedules by `effectiveFrom`, completions by `day`, time entries by `createdAt`.
 - **Bad data:** a row with an unknown enum string, or a schedule whose timing columns don't fit together, is skipped and logged rather than crashing. A time entry with 0 seconds or fewer is rejected with `StorageError.invalidValue`.
@@ -271,7 +330,7 @@ All tables in SPEC §4 and the device-only state in §4.6.
 
 ### Implementation (iOS)
 - Values: `Packages/Core/Sources/Core/Models/` — `TaskValue`, `TaskType`, `ScheduleValue`, `Timing`, `TimingKind`, `CompletionValue`, `TimeEntryValue`, `TimeEntrySource`, `SettingsValue`, `TaskData`, `PendingOpenAction`; `Core/Timer/` — `TimerState`, `TimerKind`, `FinishedTimer`; `Core/Missed/MissedSeenList`.
-- Storage: `Shared/Storage/` — `SchemaV1` (records), `MigrationPlan`, `StoreFactory`, `TaskStore` (protocol), `SwiftDataTaskStore`, `DeviceState`, `StorageError`.
+- Storage: `Shared/Storage/` — `SchemaV1` (records), `MigrationPlan`, `StoreFactory`, `TaskStore` (protocol), `SwiftDataTaskStore`, `StoreWrite` (atomic batches, T-04), `DeviceState`, `StorageError`.
 - Managers: `Shared/Managers/SettingsManager` (+ `SettingsError`), `RefreshManager`, `WidgetManager` (+ `WidgetReloading`).
 - Clock and logging: `Shared/Utilities/Clock/` (`Clock`, `SystemClock`, `FixedClock`; D-054), `Shared/Utilities/Logging/Log`.
 - App: `Tempo/App/AppDependencies` creates the managers and makes sure the settings row exists at launch; `Tempo/Views/Root/Components/StoreErrorView`.

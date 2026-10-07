@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-07 · Atomic store writes (T-04)
+- Platform: ios.md §4 — `TaskStore` gains `write(_:)`, which saves several rows in one context so a task and its schedule, or everything deleted with a habit, land together.
+- No changes to SPEC.md. D-058 and D-059 record how F-03's length and start-day edits are applied.
+
 ## 2026-10-07 · Storage details (T-03)
 - Platform: ios.md §1 — the app, widget and test targets enable `InferSendableFromCaptures`, so SwiftData key paths don't warn under complete concurrency checking (D-055).
 - Platform: ios.md §4 — `Clock` also provides the `Calendar` that rules run in (D-054). The `TaskStore` sample shows the real shape: `loadAll()`, upserting `save` that returns the stored copy, and `softDelete…(id:)`.

@@ -177,6 +177,7 @@ protocol Clock: Sendable {
 
 protocol TaskStore: Sendable {
     func loadAll() throws -> TaskData                       // every live row of the four task tables
+    func write(_ writes: [StoreWrite]) throws               // several rows in one save: all or nothing
     func tasks() throws -> [TaskValue]
     func schedules(taskID: UUID?) throws -> [ScheduleValue]
     @discardableResult func save(_ task: TaskValue) throws -> TaskValue   // upsert by id, sets updatedAt

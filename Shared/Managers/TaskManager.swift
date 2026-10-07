@@ -1,0 +1,212 @@
+import Core
+import Foundation
+
+/// Creates and edits tasks, their schedules, completions and time entries (ios.md §3).
+///
+/// Every write goes through here and ends with `RefreshManager.afterChange()`. The rules come from `Core`.
+@MainActor
+final class TaskManager {
+    private let store: any TaskStore
+    private let clock: any Clock
+    private let refresh: RefreshManager
+
+    init(store: any TaskStore, clock: any Clock, refresh: RefreshManager) {
+        self.store = store
+        self.clock = clock
+        self.refresh = refresh
+    }
+
+    var calendar: Calendar { clock.calendar }
+    var today: DayKey { DayKey(clock.now, calendar: calendar) }
+
+    /// Every live row, read fresh from storage.
+    func data() throws -> TaskData {
+        try store.loadAll()
+    }
+
+    func engine() throws -> ScheduleEngine {
+        ScheduleEngine(data: try store.loadAll(), calendar: calendar)
+    }
+
+    // MARK: Create
+
+    /// Adds a one-time task (SPEC F-01, F-15). Its date can't be in the past.
+    @discardableResult
+    func createOneTime(title: String, date: DayKey, timing: Timing) throws -> TaskValue {
+        if let error = TaskRules.titleError(title) ?? TaskRules.timingError(timing) { throw TaskError.invalid(error) }
+        guard date >= today else { throw TaskError.invalid(.dayInPast) }
+        let now = clock.now
+        let task = TaskValue(title: TaskRules.normalizedTitle(title), type: .oneTime, date: date, createdAt: now)
+        let schedule = ScheduleValue(
+            taskID: task.id, effectiveFrom: .distantPast, timing: timing, weekdays: .none, createdAt: now)
+        try store.write([.task(task), .schedule(schedule)])
+        refresh.afterChange()
+        return task
+    }
+
+    /// Adds a progress or duration habit (SPEC F-01, F-03, F-15). It can't start before today.
+    @discardableResult
+    func createHabit(
+        type: TaskType,
+        title: String,
+        timing: Timing,
+        weekdays: Weekdays,
+        startDay: DayKey,
+        lengthDays: Int?,
+        targetMinutes: Int?
+    ) throws -> TaskValue {
+        guard type.isHabit else { throw TaskError.wrongType }
+        let error =
+            TaskRules.titleError(title)
+            ?? TaskRules.scheduleError(type: type, timing: timing, weekdays: weekdays, targetMinutes: targetMinutes)
+            ?? TaskRules.lengthError(lengthDays)
+        if let error { throw TaskError.invalid(error) }
+        guard startDay >= today else { throw TaskError.invalid(.dayInPast) }
+        let now = clock.now
+        let task = TaskValue(
+            title: TaskRules.normalizedTitle(title), type: type, startDay: startDay, lengthDays: lengthDays,
+            createdAt: now)
+        let schedule = ScheduleValue(
+            taskID: task.id, effectiveFrom: startDay, timing: timing, weekdays: weekdays,
+            targetMinutes: targetMinutes, createdAt: now)
+        try store.write([.task(task), .schedule(schedule)])
+        refresh.afterChange()
+        return task
+    }
+
+    // MARK: Edit
+
+    /// Renames a task. The new title applies everywhere, including history (SPEC F-03).
+    func rename(taskID: UUID, to title: String) throws {
+        if let error = TaskRules.titleError(title) { throw TaskError.invalid(error) }
+        var task = try existingTask(taskID)
+        let normalized = TaskRules.normalizedTitle(title)
+        guard task.title != normalized else { return }
+        task.title = normalized
+        try store.write([.task(task)])
+        refresh.afterChange()
+    }
+
+    /// Changes a task's timing, weekdays or target, keeping the schedule history (SPEC §4.2, F-03).
+    /// For a habit the change applies from today; days before today keep their schedule.
+    func updateSchedule(taskID: UUID, timing: Timing, weekdays: Weekdays, targetMinutes: Int?) throws {
+        let task = try existingTask(taskID)
+        let weekdays = task.type.isHabit ? weekdays : .none
+        if let error = TaskRules.scheduleError(
+            type: task.type, timing: timing, weekdays: weekdays, targetMinutes: targetMinutes)
+        {
+            throw TaskError.invalid(error)
+        }
+        let write = ScheduleHistory.edit(
+            task: task, schedules: try store.schedules(taskID: taskID), timing: timing, weekdays: weekdays,
+            targetMinutes: targetMinutes, today: today, now: clock.now)
+        guard let write else { return }
+        try store.write([.schedule(write.schedule)])
+        refresh.afterChange()
+    }
+
+    /// Changes a habit's set length, which moves its last day (SPEC F-03). If the new last day would be before
+    /// today, the habit ends as with End habit and keeps its days so far (D-058).
+    func setLength(taskID: UUID, lengthDays: Int?) throws {
+        if let error = TaskRules.lengthError(lengthDays) { throw TaskError.invalid(error) }
+        var task = try existingTask(taskID)
+        guard task.type.isHabit, let start = task.startDay else { throw TaskError.wrongType }
+        if let lengthDays, start.adding(days: lengthDays - 1, in: calendar) < today {
+            try endHabit(taskID: taskID)
+            return
+        }
+        guard task.lengthDays != lengthDays else { return }
+        task.lengthDays = lengthDays
+        try store.write([.task(task)])
+        refresh.afterChange()
+    }
+
+    /// Moves a habit's start day. Only allowed while the start is still in the future, and never to a day
+    /// before today (SPEC F-03).
+    func setStartDay(taskID: UUID, to day: DayKey) throws {
+        var task = try existingTask(taskID)
+        guard task.type.isHabit, let start = task.startDay else { throw TaskError.wrongType }
+        guard start > today else { throw TaskError.notAllowed }
+        guard day >= today else { throw TaskError.invalid(.dayInPast) }
+        guard day != start else { return }
+        task.startDay = day
+        var writes: [StoreWrite] = [.task(task)]
+        // A habit that hasn't started has one schedule row, and it starts on the start day.
+        if var first = try store.schedules(taskID: taskID).first {
+            first.effectiveFrom = day
+            writes.append(.schedule(first))
+        }
+        try store.write(writes)
+        refresh.afterChange()
+    }
+
+    /// Stops a habit and keeps its history (SPEC F-03). The last day becomes yesterday, or today if today
+    /// already has a completion or a time entry. A habit that has already ended is left as it is.
+    func endHabit(taskID: UUID) throws {
+        var task = try existingTask(taskID)
+        guard task.type.isHabit else { throw TaskError.wrongType }
+        guard !task.hasEnded(today: today, calendar: calendar) else { return }
+        let today = today
+        let doneToday = try store.completions(taskID: taskID).contains { $0.day == today }
+        let loggedToday = try store.timeEntries(taskID: taskID).contains { $0.day == today }
+        task.endedOn = doneToday || loggedToday ? today : today.adding(days: -1, in: calendar)
+        try store.write([.task(task)])
+        refresh.afterChange()
+    }
+
+    /// Creates a new habit with the same title, type, schedule, target and length, starting today. The ended
+    /// habit keeps its history (SPEC F-03).
+    @discardableResult
+    func startAgain(taskID: UUID) throws -> TaskValue {
+        let old = try existingTask(taskID)
+        guard old.type.isHabit else { throw TaskError.wrongType }
+        guard let schedule = try store.schedules(taskID: taskID).last else { throw TaskError.notFound }
+        return try createHabit(
+            type: old.type, title: old.title, timing: schedule.timing, weekdays: schedule.weekdays,
+            startDay: today, lengthDays: old.lengthDays, targetMinutes: schedule.targetMinutes)
+    }
+
+    /// Deletes a one-time task (SPEC F-10, F-15).
+    func deleteOneTime(taskID: UUID) throws {
+        let task = try existingTask(taskID)
+        guard task.type == .oneTime else { throw TaskError.wrongType }
+        try deleteEverything(of: task)
+    }
+
+    /// Removes a habit with all of its history and stats (SPEC F-03).
+    func deleteWithHistory(taskID: UUID) throws {
+        let task = try existingTask(taskID)
+        guard task.type.isHabit else { throw TaskError.wrongType }
+        try deleteEverything(of: task)
+    }
+
+    // MARK: Helpers
+
+    private func existingTask(_ id: UUID) throws -> TaskValue {
+        guard let task = try store.task(id: id) else { throw TaskError.notFound }
+        return task
+    }
+
+    /// Soft-deletes the task and every row that belongs to it, in one write.
+    private func deleteEverything(of task: TaskValue) throws {
+        let now = clock.now
+        var writes: [StoreWrite] = []
+        var deleted = task
+        deleted.deletedAt = now
+        writes.append(.task(deleted))
+        for var schedule in try store.schedules(taskID: task.id) {
+            schedule.deletedAt = now
+            writes.append(.schedule(schedule))
+        }
+        for var completion in try store.completions(taskID: task.id) {
+            completion.deletedAt = now
+            writes.append(.completion(completion))
+        }
+        for var entry in try store.timeEntries(taskID: task.id) {
+            entry.deletedAt = now
+            writes.append(.timeEntry(entry))
+        }
+        try store.write(writes)
+        refresh.afterChange()
+    }
+}

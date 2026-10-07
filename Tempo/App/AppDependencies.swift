@@ -9,6 +9,7 @@ final class AppDependencies {
     let deviceState: DeviceState
     let refresh: RefreshManager
     let settings: SettingsManager
+    let tasks: TaskManager
 
     init(clock: any Clock, store: any TaskStore, deviceState: DeviceState, widgets: any WidgetReloading) {
         self.clock = clock
@@ -16,6 +17,7 @@ final class AppDependencies {
         self.deviceState = deviceState
         self.refresh = RefreshManager(widgets: widgets)
         self.settings = SettingsManager(store: store, refresh: refresh)
+        self.tasks = TaskManager(store: store, clock: clock, refresh: refresh)
     }
 
     /// The real dependencies: the shared App Group store, the system clock and WidgetKit.

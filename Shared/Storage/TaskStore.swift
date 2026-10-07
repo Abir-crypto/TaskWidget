@@ -9,6 +9,9 @@ protocol TaskStore: Sendable {
     /// Every live row of the four task tables, read together.
     func loadAll() throws -> TaskData
 
+    /// Inserts or updates several rows at once: all of them are saved, or none are.
+    func write(_ writes: [StoreWrite]) throws
+
     func tasks() throws -> [TaskValue]
     func task(id: UUID) throws -> TaskValue?
     /// Inserts or updates by `id`, and returns the stored copy.

@@ -217,6 +217,27 @@ struct SwiftDataTaskStoreTests {
         #expect(rows.count == 1)
     }
 
+    // MARK: Batch writes
+
+    @Test func batchWritesAreAllOrNothing() throws {
+        let task = habit()
+        let schedule = ScheduleValue(
+            taskID: task.id, effectiveFrom: TestEnvironment.today, timing: .anytime, weekdays: .all,
+            createdAt: clock.now)
+        let badEntry = TimeEntryValue(
+            taskID: task.id, day: TestEnvironment.today, seconds: 0, source: .manual, createdAt: clock.now)
+        #expect(throws: StorageError.self) {
+            try store.write([.task(task), .schedule(schedule), .timeEntry(badEntry)])
+        }
+        #expect(try store.tasks().isEmpty)
+        #expect(try store.schedules(taskID: nil).isEmpty)
+
+        clock.advance(by: 60)
+        try store.write([.task(task), .schedule(schedule)])
+        #expect(try store.tasks().first?.updatedAt == clock.now)
+        #expect(try store.schedules(taskID: task.id).first?.updatedAt == clock.now)
+    }
+
     // MARK: Everything
 
     @Test func loadAllReadsEveryTable() throws {

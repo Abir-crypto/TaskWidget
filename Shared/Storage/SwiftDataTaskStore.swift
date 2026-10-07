@@ -42,6 +42,36 @@ final class SwiftDataTaskStore: TaskStore {
         )
     }
 
+    // MARK: Batch writes
+
+    /// Applies every write in one context and one save, so either all of them land or none do.
+    /// Each row's `updatedAt` is set to the clock's now.
+    func write(_ writes: [StoreWrite]) throws {
+        try write(writes, at: clock.now)
+    }
+
+    private func write(_ writes: [StoreWrite], at now: Date) throws {
+        guard !writes.isEmpty else { return }
+        let context = makeContext()
+        for write in writes {
+            switch write {
+            case .task(var task):
+                task.updatedAt = now
+                try apply(task, in: context)
+            case .schedule(var schedule):
+                schedule.updatedAt = now
+                try apply(schedule, in: context)
+            case .completion(var completion):
+                completion.updatedAt = now
+                try apply(completion, in: context)
+            case .timeEntry(var entry):
+                entry.updatedAt = now
+                try apply(entry, in: context)
+            }
+        }
+        try context.save()
+    }
+
     // MARK: Tasks
 
     func tasks() throws -> [TaskValue] {
@@ -55,25 +85,28 @@ final class SwiftDataTaskStore: TaskStore {
 
     @discardableResult
     func save(_ task: TaskValue) throws -> TaskValue {
+        let now = clock.now
+        try write([.task(task)], at: now)
         var stored = task
-        stored.updatedAt = clock.now
-        let context = makeContext()
+        stored.updatedAt = now
+        return stored
+    }
+
+    private func apply(_ task: TaskValue, in context: ModelContext) throws {
         let id = task.id
         let existing = try context.fetch(FetchDescriptor<TaskRecord>(predicate: #Predicate { $0.id == id })).first
         let record = existing ?? TaskRecord()
         if existing == nil { context.insert(record) }
-        record.id = stored.id
-        record.title = stored.title
-        record.type = stored.type.rawValue
-        record.date = stored.date?.rawValue
-        record.startDay = stored.startDay?.rawValue
-        record.lengthDays = stored.lengthDays
-        record.endedOn = stored.endedOn?.rawValue
-        record.createdAt = stored.createdAt
-        record.updatedAt = stored.updatedAt
-        record.deletedAt = stored.deletedAt
-        try context.save()
-        return stored
+        record.id = task.id
+        record.title = task.title
+        record.type = task.type.rawValue
+        record.date = task.date?.rawValue
+        record.startDay = task.startDay?.rawValue
+        record.lengthDays = task.lengthDays
+        record.endedOn = task.endedOn?.rawValue
+        record.createdAt = task.createdAt
+        record.updatedAt = task.updatedAt
+        record.deletedAt = task.deletedAt
     }
 
     func softDeleteTask(id: UUID) throws {
@@ -121,26 +154,29 @@ final class SwiftDataTaskStore: TaskStore {
 
     @discardableResult
     func save(_ schedule: ScheduleValue) throws -> ScheduleValue {
+        let now = clock.now
+        try write([.schedule(schedule)], at: now)
         var stored = schedule
-        stored.updatedAt = clock.now
-        let context = makeContext()
+        stored.updatedAt = now
+        return stored
+    }
+
+    private func apply(_ schedule: ScheduleValue, in context: ModelContext) throws {
         let id = schedule.id
         let existing = try context.fetch(FetchDescriptor<ScheduleRecord>(predicate: #Predicate { $0.id == id })).first
         let record = existing ?? ScheduleRecord()
         if existing == nil { context.insert(record) }
-        record.id = stored.id
-        record.taskID = stored.taskID
-        record.effectiveFrom = stored.effectiveFrom.rawValue
-        record.timing = stored.timing.kind.rawValue
-        record.fixedMinute = stored.timing.fixedMinute
-        record.part = stored.timing.part?.rawValue
-        record.weekdays = stored.weekdays.rawValue
-        record.targetMinutes = stored.targetMinutes
-        record.createdAt = stored.createdAt
-        record.updatedAt = stored.updatedAt
-        record.deletedAt = stored.deletedAt
-        try context.save()
-        return stored
+        record.id = schedule.id
+        record.taskID = schedule.taskID
+        record.effectiveFrom = schedule.effectiveFrom.rawValue
+        record.timing = schedule.timing.kind.rawValue
+        record.fixedMinute = schedule.timing.fixedMinute
+        record.part = schedule.timing.part?.rawValue
+        record.weekdays = schedule.weekdays.rawValue
+        record.targetMinutes = schedule.targetMinutes
+        record.createdAt = schedule.createdAt
+        record.updatedAt = schedule.updatedAt
+        record.deletedAt = schedule.deletedAt
     }
 
     func softDeleteSchedule(id: UUID) throws {
@@ -192,22 +228,25 @@ final class SwiftDataTaskStore: TaskStore {
 
     @discardableResult
     func save(_ completion: CompletionValue) throws -> CompletionValue {
+        let now = clock.now
+        try write([.completion(completion)], at: now)
         var stored = completion
-        stored.updatedAt = clock.now
-        let context = makeContext()
+        stored.updatedAt = now
+        return stored
+    }
+
+    private func apply(_ completion: CompletionValue, in context: ModelContext) throws {
         let id = completion.id
         let existing = try context.fetch(FetchDescriptor<CompletionRecord>(predicate: #Predicate { $0.id == id }))
             .first
         let record = existing ?? CompletionRecord()
         if existing == nil { context.insert(record) }
-        record.id = stored.id
-        record.taskID = stored.taskID
-        record.day = stored.day.rawValue
-        record.createdAt = stored.createdAt
-        record.updatedAt = stored.updatedAt
-        record.deletedAt = stored.deletedAt
-        try context.save()
-        return stored
+        record.id = completion.id
+        record.taskID = completion.taskID
+        record.day = completion.day.rawValue
+        record.createdAt = completion.createdAt
+        record.updatedAt = completion.updatedAt
+        record.deletedAt = completion.deletedAt
     }
 
     func softDeleteCompletion(id: UUID) throws {
@@ -249,24 +288,27 @@ final class SwiftDataTaskStore: TaskStore {
 
     @discardableResult
     func save(_ entry: TimeEntryValue) throws -> TimeEntryValue {
-        guard entry.seconds > 0 else { throw StorageError.invalidValue("A time entry needs more than 0 seconds.") }
+        let now = clock.now
+        try write([.timeEntry(entry)], at: now)
         var stored = entry
-        stored.updatedAt = clock.now
-        let context = makeContext()
+        stored.updatedAt = now
+        return stored
+    }
+
+    private func apply(_ entry: TimeEntryValue, in context: ModelContext) throws {
+        guard entry.seconds > 0 else { throw StorageError.invalidValue("A time entry needs more than 0 seconds.") }
         let id = entry.id
         let existing = try context.fetch(FetchDescriptor<TimeEntryRecord>(predicate: #Predicate { $0.id == id })).first
         let record = existing ?? TimeEntryRecord()
         if existing == nil { context.insert(record) }
-        record.id = stored.id
-        record.taskID = stored.taskID
-        record.day = stored.day.rawValue
-        record.seconds = stored.seconds
-        record.source = stored.source.rawValue
-        record.createdAt = stored.createdAt
-        record.updatedAt = stored.updatedAt
-        record.deletedAt = stored.deletedAt
-        try context.save()
-        return stored
+        record.id = entry.id
+        record.taskID = entry.taskID
+        record.day = entry.day.rawValue
+        record.seconds = entry.seconds
+        record.source = entry.source.rawValue
+        record.createdAt = entry.createdAt
+        record.updatedAt = entry.updatedAt
+        record.deletedAt = entry.deletedAt
     }
 
     func softDeleteTimeEntry(id: UUID) throws {

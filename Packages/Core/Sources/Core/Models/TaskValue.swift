@@ -44,4 +44,24 @@ public struct TaskValue: Identifiable, Hashable, Codable, Sendable {
 
     /// Titles are 1–100 characters (SPEC §7).
     public static let maximumTitleLength = 100
+
+    /// A habit's last day: the earlier of `start_day + length_days − 1` and `ended_on` (SPEC §4.1).
+    /// `nil` when the habit has no last day. A one-time task's last day is its date.
+    public func lastDay(in calendar: Calendar) -> DayKey? {
+        guard type.isHabit else { return date }
+        let lengthEnd: DayKey? =
+            if let startDay, let lengthDays { startDay.adding(days: lengthDays - 1, in: calendar) } else { nil }
+        switch (lengthEnd, endedOn) {
+        case (let end?, let ended?): return min(end, ended)
+        case (let end?, nil): return end
+        case (nil, let ended?): return ended
+        case (nil, nil): return nil
+        }
+    }
+
+    /// Whether the habit has ended by `today`: its last day is before today (SPEC F-03).
+    public func hasEnded(today: DayKey, calendar: Calendar) -> Bool {
+        guard type.isHabit, let last = lastDay(in: calendar) else { return false }
+        return last < today
+    }
 }
