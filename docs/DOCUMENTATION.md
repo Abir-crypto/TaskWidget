@@ -193,9 +193,46 @@ Habits occur on chosen weekdays between their start and last day, and keep a his
 - Creating a task in a part of today that has already ended isn't blocked yet (T-11, D-035).
 
 ## F-04 · Daily cycle and status
-Status: Not built · Last updated: —
+Status: Partly built (T-05) · Last updated: 2026-10-07 · T-05
 
-_Not built yet. Intended behavior: SPEC F-04._
+### What it does
+Every occurrence's status is computed from the clock (SPEC §5.4), never stored. `TaskManager` checks what each day allows before every write. There's no UI yet.
+
+### Behavior
+- **Statuses** (`Status`): `upcoming`, `open`, `done`, `short`, `missed`. Done, Short and Missed are final; Short and Missed count as missed.
+- **Algorithm** (`StatusRules.status`, exactly SPEC §5.4):
+  1. One-time or progress with a live completion for (task, day) → Done. Duration with the day's minutes ≥ that day's schedule target → Done, at any time of day, even before its part starts.
+  2. A future day → Upcoming.
+  3. Today: before the window → Upcoming; inside it → Open.
+  4. Otherwise (window over, or a past day): a duration habit with at least 1 whole minute → Short; anything else → Missed.
+- **Windows:** a part's `[start, end)`; a fixed time uses the window of the part that contains it (so a 12:30 task is Open 12:00–17:00 and Missed at 17:00, and a 05:00 task waits for Morning at 06:00); Anytime is the whole day, so it's Missed at midnight.
+- **Minutes** are whole minutes rounded down from the summed seconds, so 59 seconds alone don't make a task Short.
+- Statuses use the current part times, so changing a start time moves today's statuses at once.
+- **What each day allows** (`Editability`):
+  - Complete or undo: one-time tasks today or later; progress habits only today, and only on scheduled days. Duration habits are never checked off.
+  - Log time: duration habits only today, and only between their start and last day (scheduled or not).
+  - Delete a time entry: only today's.
+  - Move: one-time tasks today or later that aren't done (D-060).
+  - Edit or delete a one-time task: only while its date is today or later.
+  - Edit a habit's schedule or length: only until it ends. Titles can always change.
+- **Complete** (`TaskManager.complete`) writes one completion row; doing it again changes nothing. **Undo** (`undoCompletion`) soft-deletes every row for the (task, day) pair, so duplicates are harmless. **Toggle** (`toggleCompletion`) does whichever applies (for the widget checkbox, T-24).
+- **Move to tomorrow / Move to next day** (`moveToNextDay`, rule in `Editability.movePlan`): a task that isn't missed changes its date by one day. A task Missed today stays on today as missed, and a copy with the same title and timing is created for tomorrow.
+- A refused change throws `TaskError.notAllowed` and writes nothing.
+
+### Data
+Reads `completions` and `time_entries`; writes `completions` and `tasks.date`. Uses the part times from `settings` (defaults if the row is missing).
+
+### Implementation (iOS)
+- Rules: `Packages/Core/Sources/Core/Status/` — `StatusRules`, `Editability`, `MovePlan`; `Core/Models/Status`, `ActivityLog` (completions and seconds by task and day), `Snapshot` (data + settings + rules in one value).
+- Manager: `Shared/Managers/TaskManager.swift` — `snapshot()`, `complete`, `undoCompletion`, `toggleCompletion`, `moveToNextDay`, and Editability checks in every edit.
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Status/StatusRulesTests.swift`: the Noon task through the day, the 12:30 task, Anytime and Night at midnight, early fixed times, Short/Missed/Done for duration habits, rounding, past and future days, changed part times, undone completions.
+- `Packages/Core/Tests/CoreTests/Status/EditabilityTests.swift`: today, past and future days, logging on unscheduled days, move plans, frozen ended habits.
+- `TempoTests/Managers/TaskCompletionTests.swift`: the same rules through `TaskManager` and the store, including both kinds of Move to tomorrow.
+
+### Known gaps
+- Screens that show statuses and offer these actions come in T-12 onward. The timer's exception for past days arrives with T-19.
 
 ## F-05 · Time tracking
 Status: Not built · Last updated: —

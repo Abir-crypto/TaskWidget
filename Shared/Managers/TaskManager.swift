@@ -28,6 +28,90 @@ final class TaskManager {
         ScheduleEngine(data: try store.loadAll(), calendar: calendar)
     }
 
+    /// The data, the settings and the rules, read fresh.
+    func snapshot() throws -> Snapshot {
+        Snapshot(data: try store.loadAll(), settings: try store.settings() ?? .defaults, calendar: calendar)
+    }
+
+    // MARK: Complete
+
+    /// Marks a one-time task or progress habit done on a day (SPEC F-04). Doing it twice changes nothing.
+    func complete(taskID: UUID, day: DayKey) throws {
+        let snapshot = try snapshot()
+        let occurrence = try completableOccurrence(taskID: taskID, day: day, in: snapshot)
+        guard !snapshot.activity.isCompleted(taskID: taskID, day: occurrence.day) else { return }
+        try store.write([.completion(CompletionValue(taskID: taskID, day: occurrence.day, createdAt: clock.now))])
+        refresh.afterChange()
+    }
+
+    /// Marks a task not done: every completion row for the (task, day) pair is soft-deleted (SPEC §4.3).
+    func undoCompletion(taskID: UUID, day: DayKey) throws {
+        let snapshot = try snapshot()
+        let occurrence = try completableOccurrence(taskID: taskID, day: day, in: snapshot)
+        let now = clock.now
+        let writes: [StoreWrite] = try store.completions(taskID: taskID)
+            .filter { $0.day == occurrence.day }
+            .map { completion in
+                var deleted = completion
+                deleted.deletedAt = now
+                return .completion(deleted)
+            }
+        guard !writes.isEmpty else { return }
+        try store.write(writes)
+        refresh.afterChange()
+    }
+
+    /// Completes or undoes, whichever is the opposite of the current state.
+    func toggleCompletion(taskID: UUID, day: DayKey) throws {
+        if try snapshot().activity.isCompleted(taskID: taskID, day: day) {
+            try undoCompletion(taskID: taskID, day: day)
+        } else {
+            try complete(taskID: taskID, day: day)
+        }
+    }
+
+    private func completableOccurrence(taskID: UUID, day: DayKey, in snapshot: Snapshot) throws -> Occurrence {
+        guard let task = snapshot.engine.task(id: taskID) else { throw TaskError.notFound }
+        guard task.type != .duration else { throw TaskError.wrongType }
+        guard let occurrence = snapshot.engine.occurrence(of: task, on: day),
+            Editability.canComplete(occurrence, today: today)
+        else { throw TaskError.notAllowed }
+        return occurrence
+    }
+
+    // MARK: Move
+
+    /// Move to tomorrow, or Move to next day on a future day (SPEC F-04). A task that isn't missed changes its
+    /// date. A task Missed today stays on today as missed, and a copy with the same title and timing is created
+    /// for tomorrow. Returns the task that is now on the next day.
+    @discardableResult
+    func moveToNextDay(taskID: UUID) throws -> TaskValue {
+        let snapshot = try snapshot()
+        guard let task = snapshot.engine.task(id: taskID), let date = task.date else { throw TaskError.notFound }
+        guard task.type == .oneTime else { throw TaskError.wrongType }
+        guard let occurrence = snapshot.engine.occurrence(of: task, on: date) else { throw TaskError.notFound }
+        let status = snapshot.status(of: occurrence, now: clock.now)
+        guard let plan = Editability.movePlan(for: occurrence, status: status, today: today, calendar: calendar)
+        else { throw TaskError.notAllowed }
+        switch plan {
+        case .moveDate(let day):
+            var moved = task
+            moved.date = day
+            try store.write([.task(moved)])
+            refresh.afterChange()
+            return moved
+        case .copy(let day):
+            let now = clock.now
+            let copy = TaskValue(title: task.title, type: .oneTime, date: day, createdAt: now)
+            let schedule = ScheduleValue(
+                taskID: copy.id, effectiveFrom: .distantPast, timing: occurrence.timing, weekdays: .none,
+                createdAt: now)
+            try store.write([.task(copy), .schedule(schedule)])
+            refresh.afterChange()
+            return copy
+        }
+    }
+
     // MARK: Create
 
     /// Adds a one-time task (SPEC F-01, F-15). Its date can't be in the past.
@@ -80,6 +164,7 @@ final class TaskManager {
     func rename(taskID: UUID, to title: String) throws {
         if let error = TaskRules.titleError(title) { throw TaskError.invalid(error) }
         var task = try existingTask(taskID)
+        if task.type == .oneTime, !Editability.canEditOneTime(task, today: today) { throw TaskError.notAllowed }
         let normalized = TaskRules.normalizedTitle(title)
         guard task.title != normalized else { return }
         task.title = normalized
@@ -91,6 +176,7 @@ final class TaskManager {
     /// For a habit the change applies from today; days before today keep their schedule.
     func updateSchedule(taskID: UUID, timing: Timing, weekdays: Weekdays, targetMinutes: Int?) throws {
         let task = try existingTask(taskID)
+        try requireEditableSchedule(task)
         let weekdays = task.type.isHabit ? weekdays : .none
         if let error = TaskRules.scheduleError(
             type: task.type, timing: timing, weekdays: weekdays, targetMinutes: targetMinutes)
@@ -111,6 +197,7 @@ final class TaskManager {
         if let error = TaskRules.lengthError(lengthDays) { throw TaskError.invalid(error) }
         var task = try existingTask(taskID)
         guard task.type.isHabit, let start = task.startDay else { throw TaskError.wrongType }
+        try requireEditableSchedule(task)
         if let lengthDays, start.adding(days: lengthDays - 1, in: calendar) < today {
             try endHabit(taskID: taskID)
             return
@@ -170,6 +257,7 @@ final class TaskManager {
     func deleteOneTime(taskID: UUID) throws {
         let task = try existingTask(taskID)
         guard task.type == .oneTime else { throw TaskError.wrongType }
+        guard Editability.canEditOneTime(task, today: today) else { throw TaskError.notAllowed }
         try deleteEverything(of: task)
     }
 
@@ -181,6 +269,15 @@ final class TaskManager {
     }
 
     // MARK: Helpers
+
+    /// One-time tasks are editable from today on; habits until they end (SPEC F-04, F-03).
+    private func requireEditableSchedule(_ task: TaskValue) throws {
+        let editable =
+            task.type.isHabit
+            ? Editability.canEditHabitSchedule(task, today: today, calendar: calendar)
+            : Editability.canEditOneTime(task, today: today)
+        if !editable { throw TaskError.notAllowed }
+    }
 
     private func existingTask(_ id: UUID) throws -> TaskValue {
         guard let task = try store.task(id: id) else { throw TaskError.notFound }

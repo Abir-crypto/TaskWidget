@@ -12,6 +12,20 @@ struct Fixtures {
 
     var engine: ScheduleEngine { ScheduleEngine(data: data, calendar: calendar) }
 
+    func snapshot(settings: SettingsValue = .defaults) -> Snapshot {
+        Snapshot(data: data, settings: settings, calendar: calendar)
+    }
+
+    /// The status of a task's occurrence on a day, at a moment.
+    func status(_ task: TaskValue, on day: DayKey = TestCalendar.today, at now: Date) -> Status? {
+        let snapshot = snapshot()
+        return snapshot.engine.occurrence(of: task, on: day).map { snapshot.status(of: $0, now: now) }
+    }
+
+    func occurrence(_ task: TaskValue, on day: DayKey = TestCalendar.today) -> Occurrence? {
+        engine.occurrence(of: task, on: day)
+    }
+
     private mutating func nextCreatedAt() -> Date {
         created = created.addingTimeInterval(60)
         return created
