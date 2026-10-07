@@ -57,6 +57,16 @@
         }
       }
     },
+    "%lld done, %lld missed, %lld left" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld done, %2$lld missed, %3$lld left"
+          }
+        }
+      }
+    },
     "%lld left" : {
 
     },
@@ -93,6 +103,9 @@
         }
       }
     },
+    "+%lld" : {
+
+    },
     "+%lld more" : {
 
     },
@@ -103,6 +116,9 @@
 
     },
     "Anytime" : {
+
+    },
+    "Anytime · %lld left" : {
 
     },
     "Day" : {
@@ -161,6 +177,9 @@
     },
     "Night" : {
       "comment" : "Part of the day"
+    },
+    "No tasks" : {
+
     },
     "No tasks today" : {
 
@@ -265,7 +284,13 @@
     "You're free today" : {
 
     },
+    "Your day at a glance, part by part." : {
+
+    },
     "^[%lld task](inflect: true)" : {
+
+    },
+    "done" : {
 
     },
     "ends" : {

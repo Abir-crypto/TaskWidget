@@ -797,9 +797,33 @@ Reads `deviceState.timer` and the timed habit's title; writes the timer and `dev
 - None for F-18.
 
 ## F-19 · Day widget (medium)
-Status: Not built · Last updated: —
+Status: Built (T-25) · Last updated: 2026-10-07 · T-25
 
-_Not built yet. Intended behavior: SPEC F-19._
+### What it does
+A medium widget showing today part by part: a column of marks for Morning, Noon, Evening and Night. It has no buttons.
+
+### Behavior
+- **Gallery:** "Day" — "Your day at a glance, part by part." Medium only.
+- **Columns:** Morning, Noon, Evening and Night. The part in progress has its name in bold accent color on a light accent background.
+- **Marks,** one per task in day order, each an icon with a color: ✓ done (green filled check), ○ not done yet (empty circle), ✗ missed (red x), ◐ short, or a duration habit with some time logged that isn't done (orange half circle). At most 6 per column, then "+N".
+- **Under each column:** "N left" (tasks still Upcoming or Open), "done" when none are left, or nothing when the part has no tasks.
+- **Footer:** "Anytime · N left" while Anytime tasks are open; "You're free today" when every task today is done (every mark is then ✓).
+- **Tapping a column** opens Today at that part; tapping elsewhere opens Today.
+- **No tasks today:** "No tasks today" with a sun icon; tapping opens the editor for today.
+- **Load failure:** "Open Tempo to refresh" (F-17).
+- VoiceOver reads each column as its part name with "2 done, 1 missed, 3 left" or "No tasks".
+- Checked on a real Home Screen in the iOS 27 simulator.
+
+### Implementation (iOS)
+- Widget: `TempoWidgets/Widgets/Day/DayWidget`, `DayWidgetView`.
+- Content: `Shared/Widgets/DayWidgetContent`, `DayColumn`, `DayMark`.
+
+### Tests
+- `TempoTests/Widgets/DayWidgetTests.swift`: columns, the highlight, every kind of mark, "N left" and "done", "+N", the Anytime footer, the empty and all-done states, column links.
+- `TempoUITests/ScreenshotTests.swift` (`testDayWidgetOnHomeScreen`, screenshots only).
+
+### Known gaps
+- None for F-19.
 
 ## F-20 · Focus widget (medium)
 Status: Partly built (T-07) · Last updated: 2026-10-07 · T-07
@@ -899,7 +923,9 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | Task picker, with no duration habits | "No duration tasks yet" with "Add a duration task" and "Discard" |
 | Now widget, with no tasks | "No tasks today"; tapping opens the editor for today |
 | Now widget, nothing left | "You're free today" |
-| Day, Focus and Lock Screen widgets | Not built yet (T-25 onward) |
+| Day widget, with no tasks | "No tasks today"; tapping opens the editor for today |
+| Day widget, everything done | Every mark ✓ and "You're free today" |
+| Focus and Lock Screen widgets | Not built yet (T-26, T-27) |
 
 ### Implementation (iOS)
 - `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.

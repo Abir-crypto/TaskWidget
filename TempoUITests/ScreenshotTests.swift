@@ -396,4 +396,68 @@ final class ScreenshotTests: XCTestCase {
         }
         sleep(1)
     }
+
+    /// Adds the Day widget (medium) next to two real tasks, photographs it, then deletes the tasks.
+    @MainActor
+    func testDayWidgetOnHomeScreen() {
+        let app = XCUIApplication()
+        app.launch()
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        for name in ["Day check A", "Day check B"] {
+            app.tabBars.buttons["Today"].tap()
+            app.buttons["Add task"].tap()
+            let title = app.textFields["Title"]
+            title.tap()
+            title.typeText(name)
+            app.buttons["Anytime"].tap()
+            app.buttons["Save"].tap()
+            sleep(1)
+        }
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        for _ in 0..<3 where !springboard.icons["Contacts"].exists || !springboard.icons["Contacts"].isHittable {
+            springboard.swipeLeft()
+        }
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.62, dy: 0.76)).press(forDuration: 2)
+        sleep(1)
+        if springboard.buttons["Edit"].waitForExistence(timeout: 3) { springboard.buttons["Edit"].tap() }
+        sleep(1)
+        if springboard.buttons["Add Widget"].firstMatch.waitForExistence(timeout: 3) {
+            springboard.buttons["Add Widget"].firstMatch.tap()
+        }
+        sleep(2)
+        let search = springboard.searchFields.firstMatch
+        if search.waitForExistence(timeout: 3) {
+            search.tap()
+            search.typeText("Tempo")
+        }
+        sleep(1)
+        springboard.staticTexts["Tempo"].firstMatch.tap()
+        sleep(2)
+        springboard.swipeLeft()
+        sleep(2)
+        save(springboard, "day-1-gallery")
+        let candidates = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget'")).allElementsBoundByIndex
+        if let button = candidates.last(where: { $0.isHittable }) {
+            button.tap()
+        } else {
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.905)).tap()
+        }
+        sleep(2)
+        if springboard.buttons["Done"].firstMatch.waitForExistence(timeout: 2) { springboard.buttons["Done"].firstMatch.tap() }
+        sleep(3)
+        save(springboard, "day-2-home")
+
+        app.activate()
+        app.tabBars.buttons["Today"].tap()
+        for name in ["Day check A", "Day check B"] {
+            let row = app.staticTexts[name].firstMatch
+            guard row.waitForExistence(timeout: 3) else { continue }
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+            sleep(1)
+        }
+    }
 }
