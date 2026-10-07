@@ -32,8 +32,10 @@ struct TasksViewModelTests {
         clock.now = TestEnvironment.date(2026, 10, 5, 9)  // Monday
         let gym = try habit("Gym", weekdays: [.monday, .wednesday, .friday], start: day(5))
         try tasks.complete(taskID: gym.id, day: day(5))
+        clock.advance(by: 60)  // creation order decides the list order
         let read = try habit("Read", type: .duration, start: day(5))
         try tasks.logTime(taskID: read.id, minutes: 40)
+        clock.advance(by: 60)
         let ended = try habit("Old", start: day(5))
         clock.now = TestEnvironment.date(2026, 10, 6, 9)
         try tasks.endHabit(taskID: ended.id)

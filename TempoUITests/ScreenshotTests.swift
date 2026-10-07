@@ -75,4 +75,14 @@ final class ScreenshotTests: XCTestCase {
         app.buttons["One-time"].tap()
         save(app, "tasks-onetime")
     }
+
+    @MainActor
+    func testHistory() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        app.tabBars.buttons["Tasks"].tap()
+        app.buttons["History"].tap()
+        app.buttons["Habits"].tap()
+        _ = app.staticTexts["Meditate"].waitForExistence(timeout: 5)
+        save(app, "history-habits")
+    }
 }

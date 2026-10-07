@@ -124,6 +124,9 @@
     "Couldn't save" : {
 
     },
+    "Creates the same habit again, starting today" : {
+
+    },
     "Daily target" : {
 
     },
@@ -158,6 +161,16 @@
     "Done" : {
 
     },
+    "Done %lld of %lld days" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Done %1$lld of %2$lld days"
+          }
+        }
+      }
+    },
     "Done once, on one day." : {
 
     },
@@ -188,6 +201,9 @@
     "End-of-day recap" : {
 
     },
+    "Ended %@" : {
+
+    },
     "Ending soon" : {
 
     },
@@ -195,6 +211,9 @@
       "comment" : "Part of the day"
     },
     "Every day" : {
+
+    },
+    "Finished habits will appear here" : {
 
     },
     "Fixed time" : {
@@ -269,6 +288,9 @@
     "No habits yet" : {
 
     },
+    "No matches" : {
+
+    },
     "No tasks" : {
 
     },
@@ -288,6 +310,9 @@
 
     },
     "Nothing at noon" : {
+
+    },
+    "Nothing completed yet" : {
 
     },
     "Nothing in the evening" : {
@@ -325,6 +350,16 @@
     },
     "On" : {
 
+    },
+    "On target %lld of %lld days · %@ total" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "On target %1$lld of %2$lld days · %3$@ total"
+          }
+        }
+      }
     },
     "One-time" : {
       "comment" : "Task type"
@@ -377,6 +412,9 @@
     "Schedule" : {
 
     },
+    "Search" : {
+
+    },
     "Set length" : {
 
     },
@@ -393,6 +431,12 @@
 
     },
     "Something went wrong. Try again." : {
+
+    },
+    "Start again" : {
+
+    },
+    "Started again" : {
 
     },
     "Starts" : {
@@ -480,6 +524,9 @@
 
     },
     "ends in %@" : {
+
+    },
+    "“%@” starts again today. You'll find it in Tasks." : {
 
     }
   },

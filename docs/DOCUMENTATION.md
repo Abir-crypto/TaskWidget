@@ -332,7 +332,7 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
-- **Placeholders** until their tasks: Habit detail (T-15), Missed (T-16), Stats (T-18), History (T-14), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
+- **Placeholders** until their tasks: Habit detail (T-15), Missed (T-16), Stats (T-18), the timer screen (T-20, "Timer" with Close) and the task picker (T-20, "Choose a task" with Close). Each placeholder says "This screen is being built."
 
 ### Data
 Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
@@ -442,9 +442,35 @@ Reads everything through a `Snapshot`.
 - None for F-11. Habit detail itself comes in T-15.
 
 ## F-12 · History
-Status: Not built · Last updated: —
+Status: Built (T-14) · Last updated: 2026-10-07 · T-14
 
-_Not built yet. Intended behavior: SPEC F-12._
+### What it does
+History, pushed from the clock on Tasks, lists completed one-time tasks and ended habits, with a search field.
+
+### Behavior
+- **Segment:** "One-time" (default) or "Habits".
+- **One-time:** every one-time task with a completion, grouped by the day it was actually completed (the completion's time), newest day first and newest first within a day, under "Today", "Yesterday" or a short date (D-079). A task completed early for a later date shows under the day it was done. Rows show a filled checkmark and the title struck through. The checkmark ("Mark not done") works only for tasks completed today whose date is today or later; older ones are read-only.
+- **Habits:** every habit whose last day is before today (its set length finished, or it was ended by hand), most recently ended first. Each row shows its type icon, title, result, "Ended Sat 26 Sep", and a "Start again" button:
+  - progress habits: "Done 27 of 30 days" (done days out of counted scheduled days over the habit's life);
+  - duration habits: "On target 18 of 20 days · 14h 20m total".
+  - Start again creates the same habit starting today (F-03) and confirms with "Started again" / "“Gym” starts again today. You'll find it in Tasks." The ended habit stays in History.
+  - Tapping a row opens Habit detail.
+- **Search:** filters both segments by title, ignoring case and diacritics.
+- **Empty states** (F-24): "Nothing completed yet", "Finished habits will appear here", and "No matches" when a search finds nothing.
+
+### Data
+Reads completions, tasks and time entries; writes completions (undo) and new habits (Start again).
+
+### Implementation (iOS)
+- Views: `Tempo/Views/History/HistoryView`, `HistoryViewModel`, `HistorySegment`, `CompletedTask`, `CompletedGroup`, `EndedHabit`; `Components/CompletedTaskRow`, `EndedHabitRow`.
+- Rules: `StatsCalculator.rate(of:from:through:)`, `DurationMath.total`.
+
+### Tests
+- `TempoTests/ViewModels/HistoryViewModelTests.swift`: grouping by completion day, newest first; undo only today; results for both habit types and their order; Start again; search; empty segments.
+- `TempoUITests/HistoryUITests.swift`: empty states; an ended habit's result and Start again; a task completed on Today appears, search with no matches, and Mark not done.
+
+### Known gaps
+- None for F-12.
 
 ## F-13 · Habit detail
 Status: Not built · Last updated: —
@@ -627,7 +653,7 @@ Status: Not built · Last updated: —
 _Not built yet. Intended behavior: SPEC F-23._
 
 ## F-24 · Empty states
-Status: Partly built (T-12, T-13) · Last updated: 2026-10-07 · T-13
+Status: Partly built (T-12–T-14) · Last updated: 2026-10-07 · T-14
 
 ### What it does
 Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
@@ -641,10 +667,13 @@ Screens that can be empty show a message, with an Add button where SPEC F-24 lis
 | Today, an empty part | Small grey text, e.g. "Nothing this evening" (wording per day in F-10, D-074) |
 | Tasks › Habits | "No habits yet" with "Add a habit" (progress habit preset) |
 | Tasks › One-time | "No upcoming tasks" with "Add a task" (one-time preset) |
-| Everything else | Not built yet (T-14 onward) |
+| History › One-time | "Nothing completed yet" |
+| History › Habits | "Finished habits will appear here" |
+| History, a search with no results | "No matches" |
+| Everything else | Not built yet (T-15 onward) |
 
 ### Implementation (iOS)
-- `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift` and `Tempo/Views/Tasks/TasksView.swift`.
+- `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.
 
 ### Known gaps
 - The rest of the F-24 table, with its screens; T-29 checks every row.

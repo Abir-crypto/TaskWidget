@@ -52,6 +52,22 @@ enum SampleData {
         _ = add("Renew passport", .oneTime, .anytime)
         _ = add("Pick up the parcel", .oneTime, .part(.noon), date: today.adding(days: 2, in: calendar))
 
+        // A 30-day habit that finished ten days ago, for History.
+        let meditateStart = today.adding(days: -39, in: calendar)
+        order += 1
+        let meditate = TaskValue(
+            title: "Meditate", type: .progress, startDay: meditateStart, lengthDays: 30,
+            createdAt: meditateStart.date(atMinute: 480, in: calendar))
+        writes.append(.task(meditate))
+        writes.append(
+            .schedule(
+                ScheduleValue(
+                    taskID: meditate.id, effectiveFrom: meditateStart, timing: .part(.morning), weekdays: .all,
+                    createdAt: meditate.createdAt)))
+        for offset in 0..<30 where offset % 7 != 3 {
+            complete(meditate.id, meditateStart.adding(days: offset, in: calendar))
+        }
+
         for offset in 1...7 {
             let day = today.adding(days: -offset, in: calendar)
             if offset != 3 { complete(medicine, day) }
