@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-10 · Notification delegate (T-32)
+- Platform: ios.md §10 — the notification delegate uses the completion-handler callbacks on the main actor; the async ones crashed the app when a notification was tapped.
+- No changes to SPEC.md.
+
 ## 2026-10-10 · Accessibility notes (T-31)
 - Platform: ios.md §9 — main widget buttons switch to a bordered style outside full color.
 - Platform: ios.md §12 — how haptics are triggered, and the large-text layouts (D-097).

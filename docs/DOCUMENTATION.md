@@ -49,15 +49,17 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Partly built (T-01) · Last updated: 2026-10-07 · T-09
+Status: Built (T-01–T-32) · Last updated: 2026-10-10 · T-32
 
 ### What it does
-Only the project skeleton exists. No features are live yet. The app opens to a placeholder screen, and the widget gallery offers one placeholder widget.
+Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the time of day, with widgets at its core. Every feature in SPEC F-01–F-26 is built, and each section below describes it as it is.
 
 ### Behavior
-- **App:** the tab layout from F-09, with placeholder screens.
-- **Widgets:** see F-17 onward. The T-01 placeholder widget was removed in T-23.
-- **iPhone** runs in portrait only. **iPad** supports all four orientations.
+- **App:** four tabs — Today, Tasks, Missed and Stats (F-09) — with Settings, History, Habit detail, the editor, Log time, the timer screen, the task picker, the missed popup and the first-launch guide.
+- **Widgets:** Timer, Day, Focus and Now on the Home Screen, and rectangular and inline widgets on the Lock Screen (F-17–F-22).
+- **Notifications:** part summaries, ending-soon and fixed-time reminders, an end-of-day recap and the running-timer alert (F-07).
+- **iPhone** runs in portrait only. **iPad** supports all four orientations and resizable windows (F-25).
+- **Accessibility:** every control has a spoken label and statuses are read as text; layouts hold up to the largest text size; dark mode and the tinted widget styles are supported; completing a task and changing day give haptic feedback (T-31).
 
 ### Project and targets
 | Item | Value |
@@ -72,7 +74,7 @@ Only the project skeleton exists. No features are live yet. The app opens to a p
 | Swift | App, extension and tests use Swift 5 mode with strict concurrency set to `complete` and `InferSendableFromCaptures` on (D-055). Default actor isolation stays `nonisolated` (D-047). |
 | App Group | `group.com.applab.tempo`, in both targets' entitlements |
 | URL scheme | `tempo` (app `Info.plist`) |
-| Background refresh | `UIBackgroundModes = [fetch]` and `BGTaskSchedulerPermittedIdentifiers = [com.applab.tempo.refresh]`. Nothing is registered yet; that comes in T-21. |
+| Background refresh | `UIBackgroundModes = [fetch]` and `BGTaskSchedulerPermittedIdentifiers = [com.applab.tempo.refresh]`. `TempoApp` handles it with `.backgroundTask(.appRefresh(…))`, and `BackgroundRefresh` schedules the next run after each rebuild (F-07). |
 | Signing | Automatic, team `QAUG82L94Y` |
 
 The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is kept out of the bundles (D-048). `Tempo/`, `TempoWidgets/`, `Shared/` and `TempoTests/` are folder-synchronized groups: a file added on disk joins its target automatically. `Shared/` belongs to both the app and the extension.
@@ -85,16 +87,17 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 
 ### Tests
 - `TempoTests/ProjectConfigurationTests.swift`: the app's bundle ID, the `tempo` URL scheme, the background refresh settings, the App Group container and the embedded extension's bundle ID.
-- `Core` tests: see the feature sections (T-02 onward).
+- Each feature section lists its tests. `TempoUITests/AccessibilityUITests` audits every screen (T-31), and `ScreenshotTests` holds the checks on the real Home Screen and Lock Screen (screenshots only).
 
 ### Known gaps
-- Every feature, F-01 to F-26, is still to be built (T-02 onward).
+- Checked only on simulators. Never seen on a physical device: Lock Screen titles hidden while locked (no simulator can have a passcode), and real Split View and Stage Manager with a second app. Not seen as they happen: widget switches at part boundaries and midnight, a timer running past midnight, a time-zone change while the app runs, and notification kinds other than the fixed-time reminder. The rules behind them are covered by unit tests (T-32).
+- Start again's day when the part is over is an open question (D-070, F-03).
 - Tests run on the latest installed simulator (iOS 27.0), not on iOS 17, because Xcode 27 can't install iOS 17 runtimes (D-052). The deployment target is still iOS 17.0, so the compiler rejects newer APIs used without an availability check.
 
 ---
 
 ## F-01 · Task types
-Status: Partly built (T-03, T-04) · Last updated: 2026-10-07 · T-04
+Status: Built (T-03, T-04, T-11–T-14) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 Tasks are one-time tasks, progress habits or duration habits. The type is set when the task is created; nothing can change it afterward. There's no UI yet.
@@ -116,10 +119,10 @@ Tasks are one-time tasks, progress habits or duration habits. The type is set wh
 - `Packages/Core/Tests/CoreTests/Schedule/TaskRulesTests.swift`, `TempoTests/Managers/TaskManagerTests.swift`.
 
 ### Known gaps
-- Creating and showing tasks in the app comes with the editor (T-11) and the screens (T-12 onward). Stats show one-time tasks only as a count (T-08).
+- None for F-01.
 
 ## F-02 · Timing and parts of the day
-Status: Partly built (T-02) · Last updated: 2026-10-07 · T-02
+Status: Built (T-02–T-04, T-10, T-28) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 The rules for days, weekdays and parts of the day exist in `Core`. Nothing in the app uses them yet.
@@ -146,11 +149,10 @@ None yet. `PartSettings` mirrors the four `*_start` columns of `settings` (SPEC 
 - `Packages/Core/Tests/CoreTests/Support/TestCalendar.swift`: the fixed Europe/London calendar and Tuesday 6 Oct 2026 reference day (ios.md §13).
 
 ### Known gaps
-- Timing (fixed time, part, anytime) on tasks arrives with the data model (T-03) and occurrences (T-04).
-- Setting the start times in the app comes in Settings (T-10) and the guide (T-28).
+- None for F-02.
 
 ## F-03 · Habit schedules and goals
-Status: Partly built (T-04, T-11) · Last updated: 2026-10-07 · T-11
+Status: Built (T-04, T-06, T-11, T-14, T-15) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 Habits occur on chosen weekdays between their start and last day, and keep a history of their schedule so edits apply from today onward. The data operations exist in `TaskManager`; there's no UI yet.
@@ -190,11 +192,10 @@ Habits occur on chosen weekdays between their start and last day, and keep a his
 - `TempoTests/Storage/SwiftDataTaskStoreTests.swift`: batch writes are all-or-nothing.
 
 ### Known gaps
-- The weekly goal (T-06), results in History (T-14) and the editor UI with its note (T-11).
-- The editor (F-15) is the UI for these operations; Start again starts today even when the habit's part has ended (D-070).
+- Start again starts today even when the habit's part of the day is already over (D-070). That's an open question for the owner.
 
 ## F-04 · Daily cycle and status
-Status: Partly built (T-05) · Last updated: 2026-10-07 · T-05
+Status: Built (T-05, T-12, T-16, T-19) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 Every occurrence's status is computed from the clock (SPEC §5.4), never stored. `TaskManager` checks what each day allows before every write. There's no UI yet.
@@ -233,10 +234,10 @@ Reads `completions` and `time_entries`; writes `completions` and `tasks.date`. U
 - `TempoTests/Managers/TaskCompletionTests.swift`: the same rules through `TaskManager` and the store, including both kinds of Move to tomorrow.
 
 ### Known gaps
-- Screens that show statuses and offer these actions come in T-12 onward. The timer's exception for past days arrives with T-19.
+- None for F-04.
 
 ## F-05 · Time tracking
-Status: Partly built (T-06, T-12) · Last updated: 2026-10-07 · T-12
+Status: Built (T-06, T-12, T-15, T-19) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 Duration habits collect time entries. The math for minutes, weekly goals and totals is in `Core`, and `TaskManager` can log time by hand and delete today's entries. There's no UI yet.
@@ -266,10 +267,10 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 - **Log time sheet** (T-12): opened from a duration row's "Log time" swipe (later also from Missed and Habit detail). It shows the habit's title, "Today" with "12 of 30 min", and a wheel of 5–480 minutes in 5-minute steps, starting at the minutes left to reach today's target rounded up to 5 (30 once the target is reached) (D-073). "Add" saves to today and closes; "Cancel" closes. If time can't be logged today, Add is disabled with "Time can only be logged today, between the habit's start and last day."
 
 ### Known gaps
-- Today's entries in Habit detail (T-15), and the timer's entries (T-19).
+- None for F-05.
 
 ## F-06 · Timer
-Status: Partly built (T-19, T-20) · Last updated: 2026-10-07 · T-20
+Status: Built (T-19, T-20, T-23, T-24) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 One timer per device, generic or for a habit, which can be paused, resumed, finished or discarded. Its state is stored on the device, shared by the app and the widgets. In the app it shows as a bar above the tabs and a timer screen, with a task picker and a confirmation after Done. Widget controls come in T-23 and T-24.
@@ -320,10 +321,10 @@ One timer per device, generic or for a habit, which can be paused, resumed, fini
 - Clocks count from the app's clock and then update themselves.
 
 ### Known gaps
-- The widgets (T-23, T-24). The running alert notification and its Stop / Keep going are in F-07 (T-21).
+- None for F-06.
 
 ## F-07 · Notifications
-Status: Partly built (T-21) · Last updated: 2026-10-07 · T-21
+Status: Built (T-21, T-28, T-32) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 The app keeps the next 72 hours of reminders scheduled (the earliest 60): part summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap and the running-timer alert. The plan is rebuilt from the current data after every change. Asking for permission comes with the guide (T-28); until then Settings' "Allow notifications" asks.
@@ -350,6 +351,8 @@ The app keeps the next 72 hours of reminders scheduled (the earliest 60): part s
 - **Tapping** a notification opens its place: part summaries and ending-soon → Today at that day and part; fixed time → Today at that task; recap → the Missed tab; timer alert → the timer screen. A tap counts as opening from a link, so the missed popup waits.
 - **Timer alert actions:** "Stop" pauses the timer and opens the timer screen; "Keep going" leaves it running and reschedules the alert one period later.
 - Taps that arrive before the app has finished starting are kept and handled once it's ready.
+- **Permission** is asked for on the guide's last page (F-23), or later from Settings.
+- **Real delivery (T-32):** on the iOS 27 simulator a fixed-time reminder arrived on the Home Screen as "Reminder check at 3:05 PM" / "In 10 min", and tapping it opened Today at that task. The first try crashed the app on the tap: the notification delegate used the system's async callbacks, whose completion ran off the main thread. The delegate now uses the completion-handler callbacks and completes on the main actor.
 
 ### Data
 Reads everything plus `deviceState.timer`; reads the notification permission from the system.
@@ -365,10 +368,10 @@ Reads everything plus `deviceState.timer`; reads the notification permission fro
 - `TempoTests/Notifications/NotificationTextTests.swift`: every F-07 example word for word, "and N more", links.
 - `TempoTests/Notifications/ReminderManagerTests.swift`: rebuilds, refused permission, completing a task, Settings changes, the timer alert and its category, rebuilding after any change, overlapping rebuilds.
 - `TempoTests/Notifications/NotificationActionHandlerTests.swift`: taps open each place; Stop; Keep going.
+- `TempoUITests/ScreenshotTests.swift` (`testFixedTimeReminderArrives`, about 15 minutes): a real fixed-time reminder arrives and its tap opens the app.
 
 ### Known gaps
-- Asking for permission on the guide's last page (T-28).
-- None beyond the guide's permission page. Widget buttons rebuild notifications since T-22.
+- Only the fixed-time reminder was seen arriving for real. The other kinds go through the same scheduler and tap handling; their times and text are covered by the planner and text tests.
 
 ## F-08 · Missed tasks
 Status: Built (T-03, T-07, T-16, T-17) · Last updated: 2026-10-10 · T-31
@@ -415,16 +418,16 @@ Reads everything through a `Snapshot`; writes completions and copies through `Ta
 - None for F-08. The end-of-day recap (F-07) lists all of today's missed tasks, including ones the popup has shown.
 
 ## F-09 · Navigation and app structure
-Status: Built (T-09) · Last updated: 2026-10-10 · T-29
+Status: Built (T-09, T-28, T-29) · Last updated: 2026-10-10 · T-32
 
 ### What it does
-The app opens to four tabs. Settings, History, the editor, the timer screen and the task picker open from buttons and from links. Some screens are still placeholders that later tasks fill in.
+The app opens to four tabs. Settings, History, the editor, the timer screen and the task picker open from buttons and from links.
 
 ### Behavior
 - **Tabs** (left to right): Today (`sun.max`), Tasks (`checklist`), Missed (`exclamationmark.circle`), Stats (`chart.bar`). The app starts on Today.
 - **Missed badge:** the number of today's Missed and Short tasks; hidden at 0. It's recounted on launch, after every change, when the app becomes active, and every minute (statuses change at part boundaries).
 - **Settings** opens from a gear button (accessibility label "Settings") at the top right of Today, pushed onto Today's navigation stack. **History** opens from a clock button ("History") on Tasks, pushed onto Tasks' stack (D-063).
-- **Floating + button** ("Add task"): bottom right of Today and Tasks only. Today's opens the editor preset to the selected day (F-10); Tasks' presets a progress habit (the segment comes with T-13). Scrolling content on those screens keeps an 88-point bottom margin, so the last row is never under the button.
+- **Floating + button** ("Add task"): bottom right of Today and Tasks only. Today's opens the editor preset to the selected day (F-10); Tasks' presets the type shown by its segment (a progress habit or a one-time task, F-11). Scrolling content on those screens keeps an 88-point bottom margin, so the last row is never under the button.
 - **Timer bar:** every tab's root has the timer bar in a bottom safe-area inset, just above the tab bar, while a timer exists, and the timer's confirmation in the same place after Done (F-06).
 - **Presented over the tabs** as sheets: the editor, the timer screen and the task picker (D-063).
 - **Links** (`tempo://`, parsed by `DeepLink`):
@@ -444,8 +447,8 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 
 ### Implementation (iOS)
 - App: `Tempo/App/` — `TempoApp`, `AppDependencies` (now `@Observable`, put in the environment), `NavigationRouter`, `AppTab`, `TodayFocus`, `EditorRequest`, `TaskPickerRequest`, `LaunchOptions` (UI-test launch arguments).
-- Views: `Tempo/Views/Root/RootView`, `RootViewModel`; placeholder views in `Views/Today`, `Tasks`, `Missed`, `Stats`, `Settings`, `History`, `TaskEditor`, `TimerScreen`, `TaskPicker`.
-- Components: `Tempo/Components/FloatingAddButton/FloatingAddButton` (with the `floatingAddButton(action:)` modifier), `Tempo/Components/TimerBar/TimerBar` (empty slot).
+- Views: `Tempo/Views/Root/RootView`, `RootViewModel`; the screens in `Views/` (each feature's section lists its files).
+- Components: `Tempo/Components/FloatingAddButton/FloatingAddButton` (with the `floatingAddButton(action:)` modifier), `Tempo/Components/TimerBar/TimerBar` (F-06).
 - Links: `Shared/DeepLink/DeepLink.swift`.
 - Managers: `Shared/Managers/MissedManager` (badge count); `RefreshManager.revision`, which screens watch to reload.
 
@@ -456,11 +459,10 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 - `TempoUITests/NavigationUITests.swift`: the four tabs, gear → Settings, clock → History, + on Today and Tasks only, every link destination opened in the running app.
 
 ### Known gaps
-- The screens behind the tabs are placeholders until their tasks.
 - None for F-09.
 
 ## F-10 · Today screen
-Status: Partly built (T-12) · Last updated: 2026-10-10 · T-31
+Status: Built (T-12, T-20, T-31) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening, Night and Anytime, with the actions F-04 allows. It updates every minute while open.
@@ -500,7 +502,6 @@ Reads everything through a `Snapshot`; writes completions, dates (move), copies,
 - Rules: `Packages/Core/Sources/Core/Schedule/DayPlan` (+ `DaySection`, `DayItem`, `DaySectionPhase`).
 - Utilities: `Shared/Utilities/Formatters/DayTitleFormatter`, `DurationFormatter`.
 - App: `Tempo/App/Route` (Habit detail), `LogTimeRequest`; `NavigationRouter.logTime`.
-- Placeholder: `Tempo/Views/HabitDetail/HabitDetailView` (T-15).
 - `Tempo/App/SampleData` fills previews and UI tests (`-ui-testing-sample`) with a realistic week.
 - Large text: `Tempo/Components/RowDetailsLayout` (also used by `MissedRow` and the editor's part rows).
 
@@ -510,10 +511,10 @@ Reads everything through a `Snapshot`; writes completions, dates (move), copies,
 - `TempoUITests/TodayUITests.swift`: checkbox complete/undo, Log time from a swipe, Move to tomorrow from a swipe, swiping the strip by a week and the Today button, unfolding an ended part, disabled checkboxes on past days.
 
 ### Known gaps
-- Haptics on completing and switching days (T-31).
+- None for F-10.
 
 ## F-11 · Tasks tab
-Status: Built (T-13) · Last updated: 2026-10-07 · T-13
+Status: Built (T-13) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 Two lists behind a segmented control: active habits with their progress, and upcoming one-time tasks.
@@ -545,7 +546,7 @@ Reads everything through a `Snapshot`.
 - `TempoUITests/TasksUITests.swift`: the segment survives a restart; + presets the type from the segment, with both empty states.
 
 ### Known gaps
-- None for F-11. Habit detail itself comes in T-15.
+- None for F-11.
 
 ## F-12 · History
 Status: Built (T-14) · Last updated: 2026-10-07 · T-14
@@ -579,7 +580,7 @@ Reads completions, tasks and time entries; writes completions (undo) and new hab
 - None for F-12.
 
 ## F-13 · Habit detail
-Status: Partly built (T-15) · Last updated: 2026-10-10 · T-31
+Status: Built (T-15, T-20, T-31) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 Pushed from a habit row in Today, Tasks or History, it shows one habit's schedule, this week, a month calendar, stats, streak, today's time entries and recent missed days.
@@ -651,7 +652,7 @@ The Stats tab shows a week, month or year: an overview, a completion chart, time
 - None for F-14.
 
 ## F-15 · Task editor
-Status: Built (T-11) · Last updated: 2026-10-07 · T-11
+Status: Built (T-11, T-31) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 A sheet for creating a task or editing one. Presets for the day and type come from where it was opened.
@@ -696,8 +697,7 @@ Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
 - `TempoUITests/TaskEditorUITests.swift`: creating a task, the title message and habit fields, "Already over" parts.
 
 ### Known gaps
-- Opening the editor for an existing task comes from Today's rows (T-12), Tasks (T-13) and Habit detail (T-15).
-- Ending or deleting a habit whose timer is running asks first and discards the timer (T-19/T-20).
+- None for F-15.
 
 ## F-16 · Settings
 Status: Built (T-10, T-28) · Last updated: 2026-10-10 · T-31
@@ -771,7 +771,7 @@ Reads everything; buttons write through the same managers as the app.
 - `TempoTests/Widgets/WidgetFoundationTests.swift`: a second container on the app's store file (as the extension) reads the same plan; the timeline's moments and refresh time; each moment's statuses; the timer moment; the fallback and 15-minute retry; a widget button completing and undoing, reloading widgets and rebuilding notifications.
 
 ### Known gaps
-- Dark mode, tinted styles and status icons are checked per widget and again in T-31.
+- None for F-17.
 
 ## F-18 · Timer widget (small)
 Status: Built (T-23) · Last updated: 2026-10-10 · T-31
@@ -1064,7 +1064,7 @@ The same app on iPad, with content kept to a readable width, every orientation, 
 - Split View and Stage Manager were checked only by resizing the app's window from a UI test, not by placing a second app beside it.
 
 ## F-26 · Data and future sync
-Status: Partly built (T-03) · Last updated: 2026-10-07 · T-04
+Status: Built (T-03, T-04, T-22, T-28) · Last updated: 2026-10-10 · T-32
 
 ### What it does
 Everything is stored on the device in one SwiftData store inside the App Group, shared by the app and the widget extension. Device-only state lives in the App Group's `UserDefaults`. There's no account and no server.
@@ -1081,7 +1081,8 @@ Everything is stored on the device in one SwiftData store inside the App Group, 
   - `deviceState.timer` — the timer: kind (`generic`/`habit`), habit id, start day, accumulated seconds, current segment start (empty while paused).
   - `deviceState.missedSeen` — the popup's seen list: a day and occurrence ids.
   - `deviceState.pendingOpenAction` — for now only "choose a task for a finished timer", with the frozen time.
-  - Setting a value to empty removes the key. A value that can't be decoded reads as empty and is logged. The guide-completed flag will use `@AppStorage` (T-28).
+  - `deviceState.guideCompleted` — a plain bool: the first-launch guide was finished (D-094).
+  - Setting a value to empty removes the key. A value that can't be decoded reads as empty and is logged.
 - **Sharing with the widgets:** the store file is `Tempo.store` in the App Group container. Every read and write makes a fresh `ModelContext`, so each process sees the other's writes (CLAUDE.md, ios.md §6).
 - **If the store can't be opened,** the app shows "Can't open your tasks" / "Something went wrong while opening Tempo's data. Close the app and open it again." (D-057).
 - **After every write** through a manager, `RefreshManager.afterChange()` reloads every widget and rebuilds the notifications, 0.5 s after the last of a burst of writes. `refreshNow()` skips the wait; `refreshNowAndWait()` also waits for the notifications, for App Intents (T-21).
@@ -1105,4 +1106,4 @@ All tables in SPEC §4 and the device-only state in §4.6.
 
 ### Known gaps
 - No sync, by design for v1.
-- The widget extension doesn't read the store yet (T-22). Cross-process reads are covered by the two-container test.
+

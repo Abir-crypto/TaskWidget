@@ -323,7 +323,9 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
         finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
-        app.buttons["Add task"].tap()
+        app.buttons["Today"].firstMatch.tap()
+        app.buttons["Add task"].firstMatch.tap()
+        _ = app.buttons["Duration"].waitForExistence(timeout: 5)
         app.buttons["Duration"].tap()
         let title = app.textFields["Title"]
         title.tap()
@@ -337,8 +339,17 @@ final class ScreenshotTests: XCTestCase {
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
         XCUIDevice.shared.press(.home)
         sleep(1)
-        for _ in 0..<3 where !springboard.staticTexts["Widget check"].firstMatch.exists { springboard.swipeLeft() }
-        sleep(3)
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        // The Timer widget's page; give the widgets a moment to reload.
+        for _ in 0..<3
+        where !springboard.buttons["Start"].firstMatch.isHittable
+            && !springboard.staticTexts["Widget check"].firstMatch.exists
+        {
+            springboard.swipeLeft()
+            sleep(1)
+        }
+        sleep(5)
         save(springboard, "widget-12-habit-timer")
 
         app.activate()
@@ -473,9 +484,10 @@ final class ScreenshotTests: XCTestCase {
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
         XCUIDevice.shared.press(.home)
         sleep(1)
-        for _ in 0..<3 where !springboard.icons["Contacts"].exists || !springboard.icons["Contacts"].isHittable {
-            springboard.swipeLeft()
-        }
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        // The Now widget is at the top of the Timer widget's page.
+        for _ in 0..<3 where !springboard.buttons["Start"].firstMatch.isHittable { springboard.swipeLeft() }
         sleep(3)
         save(springboard, "check-1-before")
         springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.14, dy: 0.167)).tap()
@@ -733,6 +745,116 @@ final class ScreenshotTests: XCTestCase {
             }
         }
         save(app, "leftovers-after")
+    }
+
+    /// Allows notifications, adds a task at a fixed time about 20 minutes ahead, and waits on the Home Screen for its
+    /// fixed-time reminder (10 minutes before by default); photographs the banner, taps it, photographs where it
+    /// leads, then deletes the task (manual QA, ios.md §13). Takes about 15 minutes.
+    @MainActor
+    func testFixedTimeReminderArrives() {
+        let app = XCUIApplication()
+        app.launch()
+        finishGuideIfShown(app)
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+
+        // Permission, from Settings.
+        app.buttons["Settings"].firstMatch.tap()
+        let allow = app.buttons["Allow notifications"]
+        for _ in 0..<3 where !allow.exists { app.swipeUp() }
+        if allow.exists {
+            allow.tap()
+            let systemAllow = springboard.alerts.buttons["Allow"]
+            if systemAllow.waitForExistence(timeout: 5) { systemAllow.tap() }
+            sleep(1)
+        }
+        save(app, "reminder-0-settings")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        // A task at the 5-minute step 15–20 minutes ahead, set on the hour, minute and AM/PM wheels.
+        let target = Calendar.current.dateComponents([.hour, .minute], from: Date().addingTimeInterval(15 * 60))
+        var hour = target.hour ?? 0
+        var minute = ((target.minute ?? 0) + 4) / 5 * 5
+        if minute == 60 {
+            minute = 0
+            hour = (hour + 1) % 24
+        }
+        app.buttons["Add task"].firstMatch.tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Reminder check")
+        app.buttons["Fixed time"].tap()
+        app.datePickers["Time"].buttons.firstMatch.tap()
+        let wheels = app.pickerWheels
+        _ = wheels.firstMatch.waitForExistence(timeout: 3)
+        wheels.element(boundBy: 0).adjust(toPickerWheelValue: String((hour + 11) % 12 + 1))
+        wheels.element(boundBy: 1).adjust(toPickerWheelValue: String(format: "%02d", minute))
+        wheels.element(boundBy: 2).adjust(toPickerWheelValue: hour < 12 ? "AM" : "PM")
+        // Close the wheels with a tap on the title bar; the open wheels cover the Title field.
+        app.navigationBars.staticTexts["New task"].tap()
+        sleep(1)
+        save(app, "reminder-1-editor")
+        app.buttons["Save"].tap()
+        sleep(1)
+
+        XCUIDevice.shared.press(.home)
+        let banner = springboard.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS 'Reminder check'")).firstMatch
+        let arrived = banner.waitForExistence(timeout: 20 * 60)
+        saveScreen("reminder-2-banner")
+        if arrived {
+            print("REMINDER banner: \(banner.label)")
+            banner.tap()
+            sleep(3)
+            save(app, "reminder-3-opened")
+        }
+        app.activate()
+        app.buttons["Today"].firstMatch.tap()
+        let row = app.staticTexts["Reminder check"].firstMatch
+        if row.waitForExistence(timeout: 3) {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
+        XCTAssertTrue(arrived, "The fixed-time reminder didn't arrive")
+    }
+
+    /// Adds a fixed-time task in the real app, relaunches it in New York's time zone and checks the task keeps its
+    /// wall-clock time, then deletes it (manual QA, ios.md §13: time zone changes keep wall-clock times).
+    @MainActor
+    func testFixedTimeKeepsItsWallClockTimeInAnotherZone() {
+        var app = XCUIApplication()
+        app.launch()
+        finishGuideIfShown(app)
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Today"].firstMatch.tap()
+        app.buttons["Add task"].firstMatch.tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Zone check")
+        app.buttons["Fixed time"].tap()
+        let time = app.datePickers["Time"].buttons.firstMatch.value as? String ?? ""
+        app.buttons["Save"].tap()
+        sleep(1)
+        save(app, "zone-1-home-zone")
+        XCTAssertTrue(app.staticTexts[time].exists, "\(time) isn't shown")
+        app.terminate()
+
+        app = XCUIApplication()
+        app.launchEnvironment["TZ"] = "America/New_York"
+        app.launch()
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Today"].firstMatch.tap()
+        let row = app.staticTexts["Zone check"].firstMatch
+        for _ in 0..<4 where !row.exists { app.swipeUp() }
+        save(app, "zone-2-new-york")
+        XCTAssertTrue(row.exists, "The task isn't on today in New York")
+        XCTAssertTrue(app.staticTexts[time].exists, "\(time) changed in New York")
+        if row.exists {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
     }
 
     /// Photographs each Home Screen page, to plan where widgets can go.

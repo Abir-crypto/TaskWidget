@@ -432,6 +432,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   - during background refresh: `.backgroundTask(.appRefresh("com.applab.tempo.refresh"))`, which also submits the next `BGAppRefreshTaskRequest` with an earliest start one hour away.
 - **The timer alert's category:** `TIMER_ALERT`, with `STOP` (`.foreground`; pauses the timer and opens the timer screen) and `KEEP_GOING`.
 - **Delegate** (in `AppDelegate`, through `UIApplicationDelegateAdaptor`):
+  - Use the completion-handler forms of `willPresent` and `didReceive`, and call the handler on the main actor. The system calls the `async` forms' handlers off the main thread, and a tap then crashes UIKit (found in T-32).
   - `willPresent` returns `[.banner, .list, .sound]`.
   - `didReceive` routes to the destination stored in `userInfo["url"]`. Responses that arrive before the app's dependencies exist are held and delivered once `onResponse` is set.
 - **Words:** `Core`'s `ReminderPlanner` returns what each notification is about (`ReminderContent`); `NotificationText` in `Shared/` turns it into localized words, so `Core` stays free of UI text.

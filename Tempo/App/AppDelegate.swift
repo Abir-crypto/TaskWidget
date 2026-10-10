@@ -19,18 +19,25 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         return true
     }
 
+    // The completion-handler forms, with each handler called on the main actor: the system calls the async forms'
+    // handlers off the main thread, and tapping a notification then crashed UIKit's state restoration (T-32).
     nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter, willPresent notification: UNNotification
-    ) async -> UNNotificationPresentationOptions {
-        [.banner, .list, .sound]
+        _ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping @Sendable (UNNotificationPresentationOptions) -> Void
+    ) {
+        Task { @MainActor in completionHandler([.banner, .list, .sound]) }
     }
 
     nonisolated func userNotificationCenter(
-        _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse
-    ) async {
+        _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping @Sendable () -> Void
+    ) {
         let url = (response.notification.request.content.userInfo["url"] as? String).flatMap(URL.init(string:))
         let received = NotificationResponse(actionIdentifier: response.actionIdentifier, url: url)
-        await MainActor.run { self.receive(received) }
+        Task { @MainActor in
+            self.receive(received)
+            completionHandler()
+        }
     }
 
     @MainActor
