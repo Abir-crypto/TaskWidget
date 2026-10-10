@@ -49,7 +49,7 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Built (T-01–T-32) · Last updated: 2026-10-10 · T-32
+Status: Built (T-01–T-32) · Last updated: 2026-10-10 · App icon
 
 ### What it does
 Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the time of day, with widgets at its core. Every feature in SPEC F-01–F-26 is built, and each section below describes it as it is.
@@ -59,6 +59,7 @@ Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the tim
 - **Widgets:** Timer, Day, Focus and Now on the Home Screen, and rectangular and inline widgets on the Lock Screen (F-17–F-22).
 - **Notifications:** part summaries, ending-soon and fixed-time reminders, an end-of-day recap and the running-timer alert (F-07).
 - **iPhone** runs in portrait only. **iPad** supports all four orientations and resizable windows (F-25).
+- **App icon:** a ring of four arcs, one per part of the day (amber, orange, pink, violet, clockwise from the top), around a white checkmark on a sky-blue to indigo gradient, with dark and tinted variants for the Home Screen styles (D-099). The widget extension uses the app's icon.
 - **Accessibility:** every control has a spoken label and statuses are read as text; layouts hold up to the largest text size; dark mode and the tinted widget styles are supported; completing a task and changing day give haptic feedback (T-31).
 
 ### Project and targets
@@ -83,6 +84,7 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 - App: `Tempo/App/TempoApp.swift` (opens the store, or shows the store error screen; see F-26), `Tempo/Views/Root/RootView.swift` (the tabs, F-09)
 - Widgets: `TempoWidgets/TempoWidgetsBundle.swift` and the widget folders (F-17 onward)
 - Strings: `Tempo/Resources/Localizable.xcstrings` and `TempoWidgets/Resources/Localizable.xcstrings` (D-046)
+- App icon: `Tempo/Resources/Assets.xcassets/AppIcon.appiconset` — `AppIcon.png`, `AppIcon-Dark.png`, `AppIcon-Tinted.png` (1024 × 1024; the first two without transparency, as the App Store requires).
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
 
 ### Tests

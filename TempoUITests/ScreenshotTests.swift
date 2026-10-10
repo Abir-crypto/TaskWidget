@@ -660,7 +660,7 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
-    /// Photographs Home Screen pages 1–3 in each style named in `TEMPO_STYLES` (default "Tinted,Clear") next to a
+    /// Photographs Home Screen pages 1–4 in each style named in `TEMPO_STYLES` (default "Tinted,Clear") next to a
     /// real task, then puts the Default style back and deletes the task (SPEC F-17: widgets adapt to tinted
     /// styles).
     @MainActor
@@ -685,7 +685,7 @@ final class ScreenshotTests: XCTestCase {
             sleep(1)
             XCUIDevice.shared.press(.home)
             sleep(2)
-            for page in 1...3 {
+            for page in 1...4 {
                 saveScreen("style-\(style.lowercased())-\(page)")
                 springboard.swipeLeft()
                 sleep(1)
@@ -717,7 +717,13 @@ final class ScreenshotTests: XCTestCase {
         if springboard.buttons["Customize"].waitForExistence(timeout: 3) { springboard.buttons["Customize"].tap() }
         if springboard.buttons[style].waitForExistence(timeout: 3) { springboard.buttons[style].tap() }
         sleep(1)
-        springboard.otherElements["PopoverDismissRegion"].firstMatch.tap()
+        let dismiss = springboard.otherElements["PopoverDismissRegion"].firstMatch
+        if dismiss.exists {
+            dismiss.tap()
+        } else {
+            // The status bar is a safe place to tap away the panel.
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)).tap()
+        }
         sleep(1)
         XCUIDevice.shared.press(.home)
         sleep(1)
