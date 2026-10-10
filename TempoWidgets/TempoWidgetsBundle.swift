@@ -8,5 +8,6 @@ struct TempoWidgetsBundle: WidgetBundle {
         DayWidget()  // .systemMedium
         FocusWidget()  // .systemMedium
         NowWidget()  // .systemLarge
+        LockScreenWidget()  // .accessoryRectangular, .accessoryInline
     }
 }

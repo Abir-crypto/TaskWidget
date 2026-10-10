@@ -57,6 +57,16 @@
         }
       }
     },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
     "%lld done, %lld missed, %lld left" : {
       "localizations" : {
         "en" : {
@@ -184,6 +194,19 @@
     "Next" : {
 
     },
+    "Next task" : {
+
+    },
+    "Next: %@ at %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Next: %1$@ at %2$@"
+          }
+        }
+      }
+    },
     "Night" : {
       "comment" : "Part of the day"
     },
@@ -300,6 +323,9 @@
 
     },
     "Your day at a glance, part by part." : {
+
+    },
+    "Your next task, on the Lock Screen." : {
 
     },
     "^[%lld task](inflect: true)" : {

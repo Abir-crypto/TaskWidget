@@ -692,7 +692,7 @@ Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
 - Ending or deleting a habit whose timer is running asks first and discards the timer (T-19/T-20).
 
 ## F-16 · Settings
-Status: Partly built (T-10) · Last updated: 2026-10-07 · T-10
+Status: Partly built (T-10) · Last updated: 2026-10-10 · T-27
 
 ### What it does
 Settings is pushed from the gear on Today. Every change is saved as soon as it's made and keeps its value after a restart.
@@ -707,7 +707,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
   - "Running timer alert" (on/off), and when on, "Alert after": 1, 2 (default) or 3 hours.
   - Footer: "A summary when each part starts, a reminder before a part ends, a reminder before fixed-time tasks, a recap of the day, and an alert when a timer has been running a long time."
 - **Notifications** status row: "On"; "Off" with an "Open Settings" button that opens the app's notification settings in the system Settings app, and the footer "Notifications are off for Tempo, so no reminders are sent. Turn them on in the Settings app."; or "Not allowed yet" with an "Allow notifications" button that asks for permission (D-067). The status is re-read whenever the app becomes active.
-- **Privacy:** "Hide task names on the Lock Screen", off by default. Footer: "Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked."
+- **Privacy:** "Hide task names on the Lock Screen", off by default. Footer: "Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked." The Lock Screen widgets follow it (F-22).
 - **About:** "Version" shows the marketing version and build, e.g. "1.0 (1)".
 - **Validation** (`SettingsValue.validationError`): part times follow F-02; leads and the alert period must be one of their choices; the recap must be a 15-minute step from Night's start to 23:45. A change that breaks a rule isn't saved, and the screen reloads what's stored.
 - Times show in the user's 12- or 24-hour format (`TimeOfDayFormatter`).
@@ -732,7 +732,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 - **Help › How to use** comes with the guide (T-28).
 
 ## F-17 · Widgets: general rules
-Status: Partly built (T-22) · Last updated: 2026-10-07 · T-22
+Status: Built (T-22–T-27) · Last updated: 2026-10-10 · T-27
 
 ### What it does
 The foundation every widget shares: one timeline provider that reads the app's store, entries for each moment the widgets must change, a fallback when the data can't be read, and widget buttons (App Intents) that refresh everything after they act.
@@ -759,7 +759,7 @@ Reads everything; buttons write through the same managers as the app.
 - `TempoTests/Widgets/WidgetFoundationTests.swift`: a second container on the app's store file (as the extension) reads the same plan; the timeline's moments and refresh time; each moment's statuses; the timer moment; the fallback and 15-minute retry; a widget button completing and undoing, reloading widgets and rebuilding notifications.
 
 ### Known gaps
-- The real widgets (T-23–T-27). Dark mode, tinted styles and status icons are checked per widget and again in T-31.
+- Dark mode, tinted styles and status icons are checked per widget and again in T-31.
 
 ## F-18 · Timer widget (small)
 Status: Built (T-23) · Last updated: 2026-10-07 · T-23
@@ -826,7 +826,7 @@ A medium widget showing today part by part: a column of marks for Morning, Noon,
 - None for F-19.
 
 ## F-20 · Focus widget (medium)
-Status: Built (T-07, T-26) · Last updated: 2026-10-07 · T-26
+Status: Built (T-07, T-26) · Last updated: 2026-10-10 · T-27
 
 ### What it does
 A medium widget with the one thing to do next, from the next-task rule (SPEC §5.6), and what comes after it. Information only, with no buttons.
@@ -851,7 +851,7 @@ A medium widget with the one thing to do next, from the next-task rule (SPEC §5
 
 ### Implementation (iOS)
 - Widget: `TempoWidgets/Widgets/Focus/FocusWidget`, `FocusWidgetView`.
-- Content: `Shared/Widgets/FocusWidgetContent`, `FocusItem`, `FocusWhen`.
+- Content: `Shared/Widgets/FocusWidgetContent`, `NextTaskItem`, `NextTaskWhen` (shared with the Lock Screen widgets since T-27), and `WidgetSnapshot.allDoneCount` for "All N tasks done".
 - Rules: `Packages/Core/Sources/Core/NextTask/` — `NextTaskRule`, `NextTask`, `NextTaskKind`.
 
 ### Tests
@@ -860,7 +860,7 @@ A medium widget with the one thing to do next, from the next-task rule (SPEC §5
 - `TempoUITests/ScreenshotTests.swift` (`testFocusWidgetOnHomeScreen`, screenshots only).
 
 ### Known gaps
-- None for F-20. The Lock Screen widgets (T-27) use the same rule.
+- None for F-20. The Lock Screen widgets (F-22) use the same rule.
 
 ## F-21 · Now widget (large)
 Status: Built (T-24) · Last updated: 2026-10-07 · T-26
@@ -899,9 +899,40 @@ Reads everything through the widget snapshot; writes completions, the timer and 
 - None for F-21.
 
 ## F-22 · Lock Screen widgets
-Status: Not built · Last updated: —
+Status: Built (T-07, T-27) · Last updated: 2026-10-10 · T-27
 
-_Not built yet. Intended behavior: SPEC F-22._
+### What it does
+Two Lock Screen widgets with the one thing to do next, from the next-task rule (SPEC §5.6): a rectangular one under the clock (two lines) and an inline one above it (one line). Information only.
+
+### Behavior
+- **Gallery:** "Next task" — "Your next task, on the Lock Screen." Rectangular and inline.
+- **Rectangular,** first line (bold, accent color) / title (up to two lines):
+  - a fixed-time task: "12:30 · in 45 min" / "Interview", where "in 45 min" counts down by itself;
+  - a task in the part in progress: "Noon · until 17:00" / "Call the bank";
+  - a duration habit: "Evening · 10 of 30 min" / "Read" — its time, part or "Anytime", then its progress, whatever its timing (D-092);
+  - a task in a later part: "Evening · from 17:00" / "Gym";
+  - an Anytime task: "Anytime" / "Renew passport";
+  - nothing left: "You're free today" / "All 6 tasks done", the second line only when today had tasks and every one is done (D-091).
+  The first line shrinks to fit (down to 70%) rather than being cut off, since "Morning · until 12:00 PM" is wider than the widget at the headline size.
+- **Inline:** "Next: Interview at 12:30", "Noon: Call the bank", "Evening: Read", "Evening: Gym", "Anytime: Renew passport", or "You're free today".
+- Times follow the user's 12- or 24-hour setting.
+- **Hide task names on the Lock Screen** (F-16): titles are marked privacy-sensitive, so the system hides them while the device is locked and shows them once it's unlocked. On the inline widget the whole line is hidden, since it's a single line of text (D-092). Turning the setting on or off refreshes the widgets.
+- **Tapping** opens Today at the task shown, or Today when free.
+- **Updates on its own** at the same moments as the other widgets (F-17); the countdown updates in between.
+- **Load failure:** "Open Tempo to refresh", with a refresh icon on the inline size (F-17).
+- Checked on a real Lock Screen in the iOS 26.5 simulator: both sizes, the shrinking first line, and a tap opening Today at the task. The iOS 27 simulator can't edit the Lock Screen, and no simulator can have a passcode, so the hidden names were not seen locked; the `Names hidden while locked` preview shows how they're drawn.
+
+### Implementation (iOS)
+- Widget: `TempoWidgets/Widgets/LockScreen/LockScreenWidget`, `LockScreenWidgetView` (`.accessoryRectangular`, `.accessoryInline`; `.privacySensitive()` on titles).
+- Content: `Shared/Widgets/LockScreenWidgetContent`, `LockScreenItem`, built on `NextTaskItem` and `NextTaskWhen`, which the Focus widget uses too.
+- Rules: `Packages/Core/Sources/Core/NextTask/` — `NextTaskRule` (F-20).
+
+### Tests
+- `TempoTests/Widgets/LockScreenWidgetTests.swift`: every row of the F-22 table on both sizes; duration habits at a fixed time, in a later part and at Anytime; the free state with and without "All N tasks done"; the tap link; "Hide task names" reaching the widget and refreshing it; the shown task changing across the timeline's moments.
+- `TempoUITests/ScreenshotTests.swift` (`testLockScreenWidgets`, screenshots only; run on the iOS 26.5 simulator).
+
+### Known gaps
+- Titles hidden while locked can only be seen on a device with a passcode.
 
 ## F-23 · First-launch guide
 Status: Not built · Last updated: —

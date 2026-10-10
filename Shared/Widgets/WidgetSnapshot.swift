@@ -16,6 +16,13 @@ struct WidgetSnapshot: Sendable {
         DayPlan(day: DayKey(date, calendar: calendar), snapshot: core, now: date)
     }
 
+    /// How many tasks today had, when every one of them is done; `nil` when there were none or any wasn't done.
+    /// The free state's "All N tasks done" (D-091).
+    func allDoneCount(at date: Date) -> Int? {
+        let plan = plan(at: date)
+        return !plan.isEmpty && plan.items.allSatisfy { $0.status == .done } ? plan.items.count : nil
+    }
+
     /// An empty snapshot, for placeholders.
     static func empty(calendar: Calendar) -> WidgetSnapshot {
         WidgetSnapshot(

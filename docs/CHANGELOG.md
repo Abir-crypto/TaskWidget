@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-10 · Lock Screen widget testing (T-27)
+- Platform: ios.md §13 — Lock Screen widgets are checked through the Lock Screen editor on the iOS 26.5 simulator (iOS 27.0's can't open it); hidden titles can only be seen locked on a device, and a preview shows them redacted.
+- No changes to SPEC.md.
+
 ## 2026-10-07 · Now widget checkboxes (T-24)
 - Platform: ios.md §8, §9 — the Now widget's checkboxes are `Button(intent:)` with an explicit target state instead of `Toggle(isOn:intent:)`, which didn't complete on the iOS 27 simulator (D-090).
 - No changes to SPEC.md.

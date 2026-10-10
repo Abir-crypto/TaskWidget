@@ -23,7 +23,7 @@ struct FocusWidgetView: View {
         }
     }
 
-    private func next(_ item: FocusItem, then: FocusItem?) -> some View {
+    private func next(_ item: NextTaskItem, then: NextTaskItem?) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             whenLine(item.when)
                 .font(.caption.weight(.bold))
@@ -52,11 +52,11 @@ struct FocusWidgetView: View {
 
     /// "NEXT · 12:30 · in 45 min" counts down by itself; the other lines are fixed text.
     @ViewBuilder
-    private func whenLine(_ when: FocusWhen) -> some View {
+    private func whenLine(_ when: NextTaskWhen) -> some View {
         if case .next(_, let date) = when, date > entry.date {
-            Text(when.label) + Text(" · ") + Text("in ") + Text(date, style: .relative)
+            Text(when.focusLabel) + Text(" · ") + Text("in ") + Text(date, style: .relative)
         } else {
-            Text(when.label)
+            Text(when.focusLabel)
         }
     }
 

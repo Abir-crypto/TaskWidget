@@ -560,4 +560,120 @@ final class ScreenshotTests: XCTestCase {
             sleep(1)
         }
     }
+    /// Adds both Lock Screen widgets next to a real task and photographs them, taps the rectangular one, then
+    /// photographs them again with "Hide task names on the Lock Screen" on, and cleans up. The iOS 27 simulator
+    /// can't edit the Lock Screen, so run this on iOS 26.5. A simulator can't have a passcode, so it never counts as
+    /// locked and names stay visible there.
+    @MainActor
+    func testLockScreenWidgets() {
+        let app = XCUIApplication()
+        app.launch()
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["Add task"].tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Lock check")
+        app.buttons["Save"].tap()
+        sleep(1)
+
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        lockAndWake()
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62)).press(forDuration: 2)
+        sleep(2)
+        springboard.buttons["posterboard-customize-button"].tap()
+        sleep(2)
+        if !springboard.buttons["com.applab.tempo.widgets:LockScreenWidget"].exists {
+            springboard.buttons["grouped-widgets-reticle-view"].firstMatch.tap()
+            sleep(2)
+            let tempo = springboard.cells["Tempo"]
+            for _ in 0..<4 where !tempo.isHittable {
+                springboard.cells.element(boundBy: 2).swipeUp()
+                sleep(1)
+            }
+            tempo.tap()
+            sleep(2)
+            springboard.buttons["Tempo, Next task"].tap()
+            sleep(2)
+            if springboard.buttons["close"].exists { springboard.buttons["close"].tap() }
+            sleep(1)
+            dismissSheet(springboard)
+        }
+        let inline = springboard.buttons["inline-widget-reticle-view"]
+        if inline.waitForExistence(timeout: 3) && !inline.label.contains("Tempo") {
+            inline.tap()
+            sleep(2)
+            let choice = springboard.cells.matching(NSPredicate(format: "label BEGINSWITH 'Tempo'")).firstMatch
+            for _ in 0..<6 where !choice.isHittable {
+                springboard.cells.element(boundBy: 1).swipeUp()
+                sleep(1)
+            }
+            choice.tap()
+            sleep(2)
+            dismissSheet(springboard)
+        }
+        save(springboard, "lock-1-editor")
+        springboard.buttons["editing-done"].tap()
+        sleep(2)
+        let poster = springboard.cells.matching(NSPredicate(format: "identifier BEGINSWITH 'posterboard-posteruuid'"))
+            .firstMatch
+        if poster.exists { poster.tap() }
+        sleep(1)
+
+        lockAndWake()
+        sleep(3)
+        save(springboard, "lock-2-locked")
+        // The rectangular widget, below the clock on the left.
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.82)).tap()
+        sleep(3)
+        save(app, "lock-3-opened")
+
+        setHideTaskNames(app, true)
+        lockAndWake()
+        sleep(3)
+        save(springboard, "lock-4-names-hidden")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        app.activate()
+        setHideTaskNames(app, false)
+
+        app.tabBars.buttons["Today"].tap()
+        let row = app.staticTexts["Lock check"].firstMatch
+        if row.waitForExistence(timeout: 3) {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
+        sleep(1)
+    }
+
+    @MainActor
+    private func lockAndWake() {
+        XCUIDevice.shared.perform(NSSelectorFromString("pressLockButton"))
+        sleep(2)
+        XCUIDevice.shared.press(.home)
+        sleep(2)
+    }
+
+    /// Drags the Lock Screen editor's widget sheet down and away.
+    @MainActor
+    private func dismissSheet(_ springboard: XCUIApplication) {
+        let grabber = springboard.buttons["Sheet Grabber"]
+        guard grabber.exists else { return }
+        grabber.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(
+            forDuration: 0.2, thenDragTo: springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98)))
+        sleep(2)
+    }
+
+    @MainActor
+    private func setHideTaskNames(_ app: XCUIApplication, _ on: Bool) {
+        app.buttons["Settings"].firstMatch.tap()
+        let toggle = app.switches["Hide task names on the Lock Screen"].firstMatch
+        for _ in 0..<3 where !toggle.isHittable { app.swipeUp() }
+        if (toggle.value as? String == "1") != on {
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        }
+        sleep(1)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+    }
 }

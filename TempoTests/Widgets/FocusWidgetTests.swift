@@ -42,7 +42,7 @@ struct FocusWidgetTests {
         }
         #expect(item.taskID == interview.id)
         #expect(item.when == .next(minute: 750, date: TestEnvironment.date(2026, 10, 6, 12, 30)))
-        #expect(item.when.label == "NEXT · \(time(750))")
+        #expect(item.when.focusLabel == "NEXT · \(time(750))")
         #expect(then?.title == "Call the bank")
         #expect(DeepLink(url: item.url) == .today(day: TestEnvironment.today, taskID: interview.id))
     }
@@ -55,9 +55,9 @@ struct FocusWidgetTests {
             return
         }
         #expect(item.title == "Call the bank")
-        #expect(item.when.label == "NOON · until \(time(1020))")
+        #expect(item.when.focusLabel == "NOON · until \(time(1020))")
         #expect(then?.title == "Pick up")
-        #expect(then?.when.label == "NEXT · \(time(960))")
+        #expect(then?.when.focusLabel == "NEXT · \(time(960))")
     }
 
     @Test func laterPartFromItsStart() throws {
@@ -66,7 +66,7 @@ struct FocusWidgetTests {
             Issue.record("Expected a next item")
             return
         }
-        #expect(item.when.label == "EVENING · from \(time(1020))")
+        #expect(item.when.focusLabel == "EVENING · from \(time(1020))")
         #expect(then == nil)
     }
 
@@ -79,7 +79,7 @@ struct FocusWidgetTests {
             Issue.record("Expected a next item")
             return
         }
-        #expect(item.when.label == "ANYTIME")
+        #expect(item.when.focusLabel == "ANYTIME")
         #expect(item.progress == "10 of 30 min")
     }
 
@@ -108,13 +108,13 @@ struct FocusWidgetTests {
             Issue.record("Expected next items")
             return
         }
-        #expect(early.when.label == "NEXT · \(time(750))")  // rule 3: the earliest coming item
+        #expect(early.when.focusLabel == "NEXT · \(time(750))")  // rule 3: the earliest coming item
         #expect(soon.when == .next(minute: 750, date: TestEnvironment.date(2026, 10, 6, 12, 30)))
         guard case .next(let afternoon, _) = try content(at: 17) else {
             Issue.record("Expected a next item")
             return
         }
         #expect(afternoon.title == "Gym")
-        #expect(afternoon.when.label == "EVENING · until \(time(1260))")
+        #expect(afternoon.when.focusLabel == "EVENING · until \(time(1260))")
     }
 }
