@@ -7,6 +7,7 @@ struct SettingsView: View {
     let dependencies: AppDependencies
     @State private var model: SettingsViewModel
     @Environment(\.openURL) private var openURL
+    @Environment(NavigationRouter.self) private var router
 
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
@@ -20,6 +21,7 @@ struct SettingsView: View {
             remindersSection
             notificationsSection
             privacySection
+            helpSection
             aboutSection
         }
         .navigationTitle("Settings")
@@ -30,17 +32,7 @@ struct SettingsView: View {
 
     private var partsSection: some View {
         Section {
-            ForEach(DayPart.allCases, id: \.self) { part in
-                LabeledContent(part.title) {
-                    MinuteIntervalPicker(
-                        minute: Binding(
-                            get: { model.settings.parts.start(of: part) },
-                            set: { model.setStart(of: part, to: $0) }),
-                        interval: PartSettings.step,
-                        range: model.allowedStarts(for: part),
-                        accessibilityLabel: String(localized: "\(part.title) starts at"))
-                }
-            }
+            PartStartPickers(model: model)
         } header: {
             Text("Parts of the day")
         } footer: {
@@ -126,7 +118,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: Privacy and About
+    // MARK: Privacy, Help and About
 
     private var privacySection: some View {
         Section {
@@ -135,6 +127,13 @@ struct SettingsView: View {
             Text("Privacy")
         } footer: {
             Text("Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked.")
+        }
+    }
+
+    /// How to use reopens pages 1–5 of the guide (SPEC F-16, F-23).
+    private var helpSection: some View {
+        Section("Help") {
+            Button("How to use") { router.guide = .howToUse }
         }
     }
 
@@ -153,5 +152,6 @@ struct SettingsView: View {
 }
 
 #Preview {
-    NavigationStack { SettingsView(dependencies: .preview()) }
+    let dependencies = AppDependencies.preview()
+    return NavigationStack { SettingsView(dependencies: dependencies) }.previewEnvironment(dependencies)
 }

@@ -30,6 +30,18 @@ final class ScreenshotTests: XCTestCase {
     }
 
     @MainActor
+    func testGuide() {
+        let app = UITestApp.launch(guide: true)
+        _ = app.staticTexts["Welcome to Tempo"].waitForExistence(timeout: 5)
+        for page in 1...6 {
+            save(app, "guide-\(page)")
+            app.buttons["Next"].tap()
+            sleep(1)
+        }
+        save(app, "guide-7")
+    }
+
+    @MainActor
     func testEditor() {
         let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00")
         app.buttons["Add task"].tap()
@@ -233,6 +245,7 @@ final class ScreenshotTests: XCTestCase {
     func testTimerWidgetShowsAHabitTimer() {
         let app = XCUIApplication()
         app.launch()
+        finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
         app.buttons["Add task"].tap()
         app.buttons["Duration"].tap()
@@ -280,6 +293,7 @@ final class ScreenshotTests: XCTestCase {
     func testCleanUpWidgetCheckHabit() {
         let app = XCUIApplication()
         app.launch()
+        finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
         Self.deleteHabit(named: "Widget check", in: app)
         app.tabBars.buttons["Tasks"].tap()
@@ -292,6 +306,7 @@ final class ScreenshotTests: XCTestCase {
     func testNowWidgetOnHomeScreen() {
         let app = XCUIApplication()
         app.launch()
+        finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
         app.tabBars.buttons["Today"].tap()
         app.buttons["Add task"].tap()
@@ -369,6 +384,7 @@ final class ScreenshotTests: XCTestCase {
     func testNowWidgetCheckbox() {
         let app = XCUIApplication()
         app.launch()
+        finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
         app.tabBars.buttons["Today"].tap()
         app.buttons["Add task"].tap()
@@ -407,6 +423,7 @@ final class ScreenshotTests: XCTestCase {
     func testDayWidgetOnHomeScreen() {
         let app = XCUIApplication()
         app.launch()
+        finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
         for name in ["Day check A", "Day check B"] {
             app.tabBars.buttons["Today"].tap()
@@ -490,6 +507,7 @@ final class ScreenshotTests: XCTestCase {
     func testFocusWidgetOnHomeScreen() {
         let app = XCUIApplication()
         app.launch()
+        finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
         for (name, part) in [("Focus check", nil), ("Focus later", "Night")] as [(String, String?)] {
             app.tabBars.buttons["Today"].tap()
@@ -568,6 +586,7 @@ final class ScreenshotTests: XCTestCase {
     func testLockScreenWidgets() {
         let app = XCUIApplication()
         app.launch()
+        finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
         app.tabBars.buttons["Today"].tap()
         app.buttons["Add task"].tap()
@@ -644,6 +663,16 @@ final class ScreenshotTests: XCTestCase {
             if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
             if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
         }
+        sleep(1)
+    }
+
+    /// The real app shows the first-launch guide until it has been finished once on the simulator.
+    @MainActor
+    private func finishGuideIfShown(_ app: XCUIApplication) {
+        guard app.buttons["Skip"].waitForExistence(timeout: 2) else { return }
+        app.buttons["Skip"].tap()
+        app.buttons["Next"].tap()
+        app.buttons["Not now"].tap()
         sleep(1)
     }
 

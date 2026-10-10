@@ -2,7 +2,7 @@ import Core
 import Foundation
 
 /// State that stays on this device and is never synced (SPEC §4.6): the timer, the missed popup's seen
-/// list and the pending open action. Stored as JSON in the App Group's `UserDefaults`, so the app and the
+/// list, the pending open action and whether the first-launch guide was finished. Stored as JSON in the App Group's `UserDefaults`, so the app and the
 /// widget extension share it (ios.md §6).
 final class DeviceState: @unchecked Sendable {
     // `UserDefaults` is thread-safe; it's the only stored property.
@@ -25,6 +25,7 @@ final class DeviceState: @unchecked Sendable {
         case timer = "deviceState.timer"
         case missedSeen = "deviceState.missedSeen"
         case pendingOpenAction = "deviceState.pendingOpenAction"
+        case guideCompleted = "deviceState.guideCompleted"
     }
 
     /// The one timer, or `nil` when idle.
@@ -43,6 +44,12 @@ final class DeviceState: @unchecked Sendable {
     var pendingOpenAction: PendingOpenAction? {
         get { read(PendingOpenAction.self, for: .pendingOpenAction) }
         set { write(newValue, for: .pendingOpenAction) }
+    }
+
+    /// The first-launch guide was finished; it never shows on its own again (SPEC F-23).
+    var guideCompleted: Bool {
+        get { defaults.bool(forKey: Key.guideCompleted.rawValue) }
+        set { defaults.set(newValue, forKey: Key.guideCompleted.rawValue) }
     }
 
     /// Removes every device-only value.

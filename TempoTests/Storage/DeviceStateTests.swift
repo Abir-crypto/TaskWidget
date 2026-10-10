@@ -48,8 +48,15 @@ struct DeviceStateTests {
         #expect(state.timer == nil)
     }
 
+    @Test func guideCompletedSurvivesARestart() {
+        #expect(!state().guideCompleted)
+        state().guideCompleted = true
+        #expect(state().guideCompleted)
+    }
+
     @Test func resetClearsEverything() {
         let state = state()
+        state.guideCompleted = true
         state.timer = TimerState(kind: .generic, habitID: nil, startDay: TestEnvironment.today, segmentStart: nil)
         state.missedSeen = MissedSeenList(day: TestEnvironment.today)
         state.pendingOpenAction = .chooseTaskForTimer(
@@ -58,6 +65,7 @@ struct DeviceStateTests {
         #expect(state.timer == nil)
         #expect(state.missedSeen == nil)
         #expect(state.pendingOpenAction == nil)
+        #expect(!state.guideCompleted)
     }
 
     @Test func unreadableDataReadsAsEmpty() throws {

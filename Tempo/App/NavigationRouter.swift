@@ -23,6 +23,8 @@ final class NavigationRouter {
     var logTime: LogTimeRequest?
     var isSettingsPresented = false
     var isHistoryPresented = false
+    /// The first-launch guide, or its pages 1–5 from Settings › How to use (SPEC F-23).
+    var guide: GuideMode?
 
     /// True when this activation came from a widget, a notification or a pending open action. The missed popup
     /// waits for a normal open (SPEC F-08). Reset when the app goes to the background.
@@ -98,5 +100,7 @@ final class NavigationRouter {
         logTime = nil
         isSettingsPresented = false
         isHistoryPresented = false
+        // The first-launch guide stays until it's finished; How to use makes way for the link.
+        if guide == .howToUse { guide = nil }
     }
 }

@@ -8,8 +8,10 @@ enum UITestApp {
     ///   - sample: start with the sample tasks.
     ///   - missedPopup: let the missed popup appear; other tests keep it away.
     ///   - finishedTimer: seconds of a finished generic timer waiting for the task picker.
+    ///   - guide: show the first-launch guide; other tests skip it.
     static func launch(
-        now: String? = nil, sample: Bool = false, missedPopup: Bool = false, finishedTimer: Int? = nil
+        now: String? = nil, sample: Bool = false, missedPopup: Bool = false, finishedTimer: Int? = nil,
+        guide: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-ui-testing-timezone", "Europe/London"]
@@ -17,6 +19,7 @@ enum UITestApp {
         if sample { app.launchArguments.append("-ui-testing-sample") }
         if !missedPopup { app.launchArguments.append("-ui-testing-no-popup") }
         if let finishedTimer { app.launchArguments += ["-ui-testing-finished-timer", String(finishedTimer)] }
+        if guide { app.launchArguments.append("-ui-testing-guide") }
         app.launch()
         return app
     }

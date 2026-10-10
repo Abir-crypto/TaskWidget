@@ -84,7 +84,7 @@ Tempo/
 │   │   ├── MigrationPlan.swift
 │   │   ├── StoreFactory.swift
 │   │   ├── SwiftDataTaskStore.swift      # implements TaskStore
-│   │   └── DeviceState.swift             # App Group UserDefaults: timer, seen list, pending open action
+│   │   └── DeviceState.swift             # App Group UserDefaults: timer, seen list, pending open action, guide completed
 │   ├── Intents/                          # every widget button (§8), plus IntentEnvironment
 │   ├── Widgets/                          # WidgetSnapshot, SnapshotLoader, WidgetTimelinePlan (shared so TempoTests can test them)
 │   ├── DeepLink/
@@ -230,7 +230,7 @@ final class TodayViewModel {
 - **One `ModelContainer` per process,** held in a static. **Each read or write uses a fresh `ModelContext`.** No `@Query` anywhere.
   - On iOS 17, SwiftData doesn't reliably show writes made by another process (the widget extension), and fresh contexts avoid that problem.
 - **Mapping:** records are converted to `Core` value types in `SwiftDataTaskStore`. Views never receive records.
-- **Device-only state** (SPEC §4.6) lives in `UserDefaults(suiteName: "group.com.applab.tempo")` as Codable JSON: the timer, the missed seen list, and the pending open action. The "guide completed" flag is app-only and uses `@AppStorage`.
+- **Device-only state** (SPEC §4.6) lives in `UserDefaults(suiteName: "group.com.applab.tempo")` as Codable JSON: the timer, the missed seen list, and the pending open action, plus the "guide completed" flag as a plain bool. The flag lives here rather than in `@AppStorage` so UI tests control it with the rest of the device-only state (D-094).
 
 ```swift
 enum SchemaV1: VersionedSchema {
@@ -492,7 +492,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
 - **Empty states:** `ContentUnavailableView` with an `actions:` button wherever SPEC F-24 lists one.
 - **Missed popup:** a `.sheet` with `.presentationDetents([.medium])`, not a system alert, because a system alert can't lay out a list cleanly.
 - **Onboarding:**
-  - Presented with `.fullScreenCover` while `@AppStorage("guideCompleted")` is false.
+  - Presented by `RootView` with `.fullScreenCover(item: $router.guide)`: `.firstLaunch` (pages 1–7) while `DeviceState.guideCompleted` is false, and `.howToUse` (pages 1–5) from Settings › How to use. UI tests skip it unless launched with `-ui-testing-guide`.
   - Its pages are a `TabView` with `.tabViewStyle(.page)` and `.indexViewStyle(.page(backgroundDisplayMode: .always))`.
 - **Time pickers:** SwiftUI's `DatePicker` has no minute interval, so `MinuteIntervalPicker` wraps `UIDatePicker` (`.time` mode, `minuteInterval` 5, or 15 in Settings).
 - **Live statuses:** the Today screen and the timer screen sit inside `TimelineView(.everyMinute)`.

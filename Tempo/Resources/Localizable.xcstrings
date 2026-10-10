@@ -154,6 +154,9 @@
     "A habit you check off on the days it repeats." : {
 
     },
+    "A summary as each part starts, a reminder before it ends, and a look at anything you missed." : {
+
+    },
     "A summary when each part starts, a reminder before a part ends, a reminder before fixed-time tasks, a recap of the day, and an alert when a timer has been running a long time." : {
 
     },
@@ -216,7 +219,13 @@
     "All of its history and stats will be deleted. This can't be undone. End the habit instead to keep them." : {
 
     },
+    "Allow" : {
+
+    },
     "Allow notifications" : {
+
+    },
+    "Allow notifications for part summaries, reminders and an end-of-day recap." : {
 
     },
     "Already over" : {
@@ -256,6 +265,9 @@
 
     },
     "Choose a task" : {
+
+    },
+    "Choose when each part starts. You can change these later in Settings." : {
 
     },
     "Clear filters" : {
@@ -438,6 +450,9 @@
     "Has tasks" : {
 
     },
+    "Help" : {
+
+    },
     "Hide task names on the Lock Screen" : {
 
     },
@@ -445,6 +460,9 @@
 
     },
     "History" : {
+
+    },
+    "How to use" : {
 
     },
     "In %lld min" : {
@@ -493,6 +511,12 @@
 
     },
     "Missed" : {
+
+    },
+    "Missed and Stats" : {
+
+    },
+    "Missed gathers what slipped by, so you can still do it or move it to tomorrow. Stats shows your streaks and how each part of the day is going." : {
 
     },
     "Month" : {
@@ -662,6 +686,9 @@
     "One-time" : {
       "comment" : "Task type"
     },
+    "One-time tasks are done once. Progress habits are checked off on their days, and duration habits count minutes toward a daily target." : {
+
+    },
     "One-time tasks completed" : {
 
     },
@@ -705,6 +732,9 @@
 
     },
     "Pick today or a later day." : {
+
+    },
+    "Plan your day by its parts: morning, noon, evening and night. Every task belongs to a part, a set time, or anytime." : {
 
     },
     "Previous" : {
@@ -771,6 +801,9 @@
 
     },
     "Shows the tasks" : {
+
+    },
+    "Skip" : {
 
     },
     "Something went wrong while opening Tempo's data. Close the app and open it again." : {
@@ -866,6 +899,9 @@
     "This year" : {
 
     },
+    "Three kinds of tasks" : {
+
+    },
     "Time" : {
 
     },
@@ -879,6 +915,9 @@
 
     },
     "Timer is still running" : {
+
+    },
+    "Timer runs a stopwatch, Day shows the whole day, Focus shows what's next, and Now lets you check tasks off. On the Lock Screen, you'll see your next task." : {
 
     },
     "Title" : {
@@ -933,7 +972,13 @@
     "Weekends" : {
 
     },
+    "Welcome to Tempo" : {
+
+    },
     "When" : {
+
+    },
+    "Widgets" : {
 
     },
     "Year" : {
@@ -949,6 +994,9 @@
 
     },
     "You missed ^[%lld task](inflect: true) today" : {
+
+    },
+    "Your parts of the day" : {
 
     },
     "^[%lld day](inflect: true)" : {

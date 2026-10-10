@@ -47,6 +47,7 @@ final class AppDependencies {
             let clock: any Clock = options.fixedNow.map { FixedClock($0, calendar: calendar) } ?? SystemClock()
             let deviceState = DeviceState(defaults: UserDefaults(suiteName: "ui-testing") ?? .standard)
             deviceState.reset()
+            deviceState.guideCompleted = !options.showsGuide
             let store = SwiftDataTaskStore(container: try StoreFactory.make(inMemory: true), clock: clock)
             if options.usesSampleData { SampleData.populate(store: store, clock: clock) }
             let dependencies = AppDependencies(

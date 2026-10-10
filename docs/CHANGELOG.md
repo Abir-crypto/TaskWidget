@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-10 · First-launch guide storage (T-28)
+- Platform: ios.md §3, §6, §12 — "guide completed" is kept in `DeviceState` (App Group defaults) instead of `@AppStorage`, and the guide is presented through `NavigationRouter.guide` in first-launch or How to use mode (D-094).
+- No changes to SPEC.md.
+
 ## 2026-10-10 · Lock Screen widget testing (T-27)
 - Platform: ios.md §13 — Lock Screen widgets are checked through the Lock Screen editor on the iOS 26.5 simulator (iOS 27.0's can't open it); hidden titles can only be seen locked on a device, and a preview shows them redacted.
 - No changes to SPEC.md.

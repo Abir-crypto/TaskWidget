@@ -692,7 +692,7 @@ Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
 - Ending or deleting a habit whose timer is running asks first and discards the timer (T-19/T-20).
 
 ## F-16 · Settings
-Status: Partly built (T-10) · Last updated: 2026-10-10 · T-27
+Status: Built (T-10, T-28) · Last updated: 2026-10-10 · T-28
 
 ### What it does
 Settings is pushed from the gear on Today. Every change is saved as soon as it's made and keeps its value after a restart.
@@ -708,6 +708,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
   - Footer: "A summary when each part starts, a reminder before a part ends, a reminder before fixed-time tasks, a recap of the day, and an alert when a timer has been running a long time."
 - **Notifications** status row: "On"; "Off" with an "Open Settings" button that opens the app's notification settings in the system Settings app, and the footer "Notifications are off for Tempo, so no reminders are sent. Turn them on in the Settings app."; or "Not allowed yet" with an "Allow notifications" button that asks for permission (D-067). The status is re-read whenever the app becomes active.
 - **Privacy:** "Hide task names on the Lock Screen", off by default. Footer: "Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked." The Lock Screen widgets follow it (F-22).
+- **Help:** "How to use" opens pages 1–5 of the guide (F-23).
 - **About:** "Version" shows the marketing version and build, e.g. "1.0 (1)".
 - **Validation** (`SettingsValue.validationError`): part times follow F-02; leads and the alert period must be one of their choices; the recap must be a 15-minute step from Night's start to 23:45. A change that breaks a rule isn't saved, and the screen reloads what's stored.
 - Times show in the user's 12- or 24-hour format (`TimeOfDayFormatter`).
@@ -718,7 +719,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 
 ### Implementation (iOS)
 - Views: `Tempo/Views/Settings/SettingsView`, `SettingsViewModel`.
-- Components: `Tempo/Components/MinuteIntervalPicker/MinuteIntervalPicker` (wraps `UIDatePicker`; minutes are shown on a fixed UTC day so daylight saving never shifts them).
+- Components: `Tempo/Components/PartStartPickers/PartStartPickers` (the four part pickers, shared with the guide's page 6), `Tempo/Components/MinuteIntervalPicker/MinuteIntervalPicker` (wraps `UIDatePicker`; minutes are shown on a fixed UTC day so daylight saving never shifts them).
 - Managers: `Shared/Managers/SettingsManager` (full validation, `SettingsError.invalid`), `NotificationScheduling` with `SystemNotificationScheduler` and `FixedNotificationScheduler` (previews and tests), `NotificationPermission`.
 - Rules: `Packages/Core/Sources/Core/Models/SettingsValue.swift` (`validationError`, `recapChoices`, `keepingRecapInRange`).
 - Utilities: `Shared/Utilities/Formatters/TimeOfDayFormatter`, `Shared/Utilities/Extensions/DayPart+Title`.
@@ -726,10 +727,10 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 ### Tests
 - `Packages/Core/Tests/CoreTests/Calendar/SettingsValueTests.swift`: defaults, recap choices, every validation error, the recap following Night.
 - `TempoTests/ViewModels/SettingsViewModelTests.swift`: defaults and permission, every setting saved and read back from a new container on the same file (a restart), invalid part times not saved, picker ranges, the recap following Night, asking for permission, "off" status.
-- `TempoUITests/SettingsUITests.swift`: every setting is on screen.
+- `TempoUITests/SettingsUITests.swift`: every setting is on screen. `GuideUITests` opens How to use.
 
 ### Known gaps
-- **Help › How to use** comes with the guide (T-28).
+- None for F-16.
 
 ## F-17 · Widgets: general rules
 Status: Built (T-22–T-27) · Last updated: 2026-10-10 · T-27
@@ -935,9 +936,43 @@ Two Lock Screen widgets with the one thing to do next, from the next-task rule (
 - Titles hidden while locked can only be seen on a device with a passcode.
 
 ## F-23 · First-launch guide
-Status: Not built · Last updated: —
+Status: Built (T-28) · Last updated: 2026-10-10 · T-28
 
-_Not built yet. Intended behavior: SPEC F-23._
+### What it does
+Seven swipeable pages shown once, over everything, the first time the app opens: five that introduce the app, one to set the parts of the day, and one to allow notifications. Settings › How to use shows the first five again.
+
+### Behavior
+- **Pages,** each with an SF Symbol, a title and one or two sentences:
+  1. "Welcome to Tempo" — "Plan your day by its parts: morning, noon, evening and night. Every task belongs to a part, a set time, or anytime."
+  2. "Three kinds of tasks" — "One-time tasks are done once. Progress habits are checked off on their days, and duration habits count minutes toward a daily target."
+  3. "Reminders" — "A summary as each part starts, a reminder before it ends, and a look at anything you missed."
+  4. "Widgets" — "Timer runs a stopwatch, Day shows the whole day, Focus shows what's next, and Now lets you check tasks off. On the Lock Screen, you'll see your next task."
+  5. "Missed and Stats" — "Missed gathers what slipped by, so you can still do it or move it to tomorrow. Stats shows your streaks and how each part of the day is going."
+  6. "Your parts of the day" — "Choose when each part starts. You can change these later in Settings." Then the four start-time pickers from Settings (15-minute steps, limited by the F-02 rules), filled with the stored times — the defaults on first launch. Each change is saved straight away.
+  7. "Notifications" — "Allow notifications for part summaries, reminders and an end-of-day recap." **Allow** asks for the system permission, schedules the reminders and closes the guide; **Not now** closes it without asking.
+- **Moving between pages:** swipe, or tap **Next** at the bottom of pages 1–6. Page dots show where you are (D-093).
+- **Skip** (top right, pages 1–5) jumps to page 6, so the setup pages are never skipped.
+- Closing page 7, either way, marks the guide completed; it never shows on its own again. Closing the app before then shows it again next time, keeping any part times already saved. The guide can't be swiped away.
+- The missed popup waits while the guide is showing. Today's empty state appears once it closes.
+- **How to use** (Settings › Help) opens pages 1–5 with **Done** at the top right instead of Skip, and Done instead of Next on page 5. It doesn't change whether the guide was completed. A link from a widget or notification closes it; the first-launch guide stays until it's finished (D-093).
+
+### Data
+Writes the part times in `settings` (page 6). Device-only: "guide completed" (`DeviceState.guideCompleted`, D-094).
+
+### Implementation (iOS)
+- Views: `Tempo/Views/Onboarding/OnboardingView`, `OnboardingViewModel`, `OnboardingPage`; `Components/OnboardingPageView`.
+- Presented by `RootView` with `.fullScreenCover(item: $router.guide)`; `GuideMode` (`firstLaunch`, `howToUse`) in `Tempo/App`.
+- Page 6 uses `SettingsViewModel` and `Tempo/Components/PartStartPickers` (shared with Settings).
+- `-ui-testing-guide` shows the guide in UI tests, which otherwise skip it.
+
+### Tests
+- `TempoTests/ViewModels/OnboardingViewModelTests.swift`: seven pages in order, Skip only on pages 1–5 and leading to page 6, page 6 saving part times, Allow asking and scheduling, Not now not asking, both marking the guide completed, How to use's five pages leaving it unchanged.
+- `TempoTests/Storage/DeviceStateTests.swift`: "guide completed" survives a restart and is cleared by a reset.
+- `TempoUITests/GuideUITests.swift`: the guide on first launch (Next, swipe, Skip to page 6 and its pickers, Allow, then Today), other launches without it, and How to use from Settings.
+- `TempoUITests/ScreenshotTests.swift` (`testGuide`, screenshots only).
+
+### Known gaps
+- None for F-23.
 
 ## F-24 · Empty states
 Status: Partly built (T-12–T-20) · Last updated: 2026-10-07 · T-20

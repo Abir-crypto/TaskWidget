@@ -70,6 +70,13 @@ struct RootView: View {
         .onOpenURL { url in
             router.open(DeepLink(url: url))
         }
+        .fullScreenCover(item: $router.guide) { mode in
+            OnboardingView(dependencies: dependencies, mode: mode)
+        }
+        // The guide shows once, on first launch (SPEC F-23).
+        .task {
+            if !dependencies.deviceState.guideCompleted { router.guide = .firstLaunch }
+        }
         .sheet(item: $router.missedPopup, onDismiss: markPopupSeen) { content in
             MissedPopupView(
                 content: content,
@@ -110,7 +117,7 @@ struct RootView: View {
     private func showMissedPopupIfNeeded() {
         Task {
             try? await Task.sleep(for: .milliseconds(500))
-            guard router.missedPopup == nil else { return }
+            guard router.missedPopup == nil, router.guide == nil else { return }
             let items = dependencies.missed.popupItems(openedFromLink: router.openedFromLinkThisActivation)
             guard !items.isEmpty else { return }
             shownPopup = MissedPopupContent(items: items)
