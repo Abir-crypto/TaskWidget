@@ -74,7 +74,8 @@ struct StatsView: View {
                 Button {
                     model.goBack()
                 } label: {
-                    Image(systemName: "chevron.left")
+                    // 44-point targets, as the accessibility audit asks.
+                    Image(systemName: "chevron.left").frame(width: 44, height: 44).contentShape(Rectangle())
                 }
                 .disabled(!model.canGoBack)
                 .accessibilityLabel("Previous")
@@ -84,7 +85,7 @@ struct StatsView: View {
                 Button {
                     model.goForward()
                 } label: {
-                    Image(systemName: "chevron.right")
+                    Image(systemName: "chevron.right").frame(width: 44, height: 44).contentShape(Rectangle())
                 }
                 .disabled(!model.canGoForward)
                 .accessibilityLabel("Next")

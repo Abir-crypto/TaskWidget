@@ -54,8 +54,7 @@ struct NowTimerView: View {
                 Button(intent: FinishHabitTimerIntent()) {
                     Label("Done", systemImage: "checkmark").frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .widgetAccentable()
+                .modifier(ProminentWidgetButton())
             }
             .font(.subheadline.weight(.semibold))
             Button(role: .destructive, intent: DiscardTimerIntent()) {

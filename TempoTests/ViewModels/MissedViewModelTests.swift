@@ -73,6 +73,7 @@ struct MissedViewModelTests {
         let made = try makeTasks()
         model.load()
         model.markDone(try #require(model.todayItems.first))
+        #expect(model.completions == 1)  // a haptic for marking done (T-31)
         #expect(model.todayItems.map(\.occurrence.task.id) == [made.stretch.id])
         try tasks.logTime(taskID: made.stretch.id, minutes: 15)
         model.load()

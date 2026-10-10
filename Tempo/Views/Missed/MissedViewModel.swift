@@ -21,6 +21,8 @@ final class MissedViewModel {
     /// Occurrence ids the missed popup asked to highlight (T-17).
     var highlighted: Set<String> = []
     var errorMessage: String?
+    /// Counts completions made here, so the screen can give haptic feedback for each (SPEC T-31).
+    private(set) var completions = 0
     private(set) var isLoaded = false
 
     private var snapshot: Snapshot?
@@ -102,19 +104,25 @@ final class MissedViewModel {
     // MARK: Actions on today's items
 
     func markDone(_ item: MissedItem) {
-        perform { try tasks.complete(taskID: item.occurrence.task.id, day: item.day) }
+        if perform({ try tasks.complete(taskID: item.occurrence.task.id, day: item.day) }) {
+            completions += 1
+        }
     }
 
     func moveToTomorrow(_ item: MissedItem) {
         perform { try tasks.moveToNextDay(taskID: item.occurrence.task.id) }
     }
 
-    private func perform(_ action: () throws -> Void) {
+    /// Runs a change and reloads. Returns whether the change was made.
+    @discardableResult
+    private func perform(_ action: () throws -> Void) -> Bool {
+        defer { load() }
         do {
             try action()
+            return true
         } catch {
             errorMessage = TaskEditorViewModel.message(for: error)
+            return false
         }
-        load()
     }
 }

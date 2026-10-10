@@ -40,6 +40,13 @@ struct MinuteIntervalPicker: UIViewRepresentable {
         picker.accessibilityLabel = accessibilityLabel
     }
 
+    /// The picker's own size, so a row makes room for it at large text sizes instead of overlapping it, and at
+    /// least 44 points tall so it's easy to tap.
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UIDatePicker, context: Context) -> CGSize? {
+        let size = uiView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
+        return CGSize(width: size.width, height: max(size.height, 44))
+    }
+
     @MainActor
     final class Coordinator: NSObject {
         var parent: MinuteIntervalPicker

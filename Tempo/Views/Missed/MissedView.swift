@@ -7,6 +7,7 @@ struct MissedView: View {
     @Bindable var router: NavigationRouter
     @State private var model: MissedViewModel
     @State private var isFiltering = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     init(dependencies: AppDependencies, router: NavigationRouter) {
         self.dependencies = dependencies
@@ -44,6 +45,8 @@ struct MissedView: View {
             }
         }
         .safeAreaInset(edge: .bottom) { TimerBar() }
+        // A light tap for each task marked done (ios.md §12).
+        .sensoryFeedback(.success, trigger: model.completions)
         .task(id: dependencies.refresh.revision) { model.load() }
         .onChange(of: router.missedTaskFilter, initial: true) { _, taskID in
             guard let taskID else { return }
@@ -101,8 +104,12 @@ struct MissedView: View {
         }
     }
 
+    /// Side by side, or one under another at accessibility text sizes (SPEC T-31).
     private func actions(for item: MissedItem) -> some View {
-        HStack(spacing: 8) {
+        let layout =
+            typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8)) : AnyLayout(HStackLayout(spacing: 8))
+        return layout {
             if model.canMarkDone(item) {
                 Button("Mark done") { model.markDone(item) }
             }

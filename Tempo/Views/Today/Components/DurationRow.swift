@@ -26,15 +26,15 @@ struct DurationRow: View {
             .frame(width: 24, height: 24)
             .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.task.title)
-                Text(DurationFormatter.progress(minutes: item.minutes, target: target))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
-            }
-            Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 2) {
+            RowDetailsLayout {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.task.title)
+                    Text(DurationFormatter.progress(minutes: item.minutes, target: target))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+            } details: {
                 if let minute = item.occurrence.timing.fixedMinute {
                     Text(TimeOfDayFormatter.string(minute: minute))
                         .font(.subheadline)
@@ -55,7 +55,6 @@ struct DurationRow: View {
             }
         }
         .padding(.vertical, 2)
-        .accessibilityElement(children: .contain)
     }
 }
 

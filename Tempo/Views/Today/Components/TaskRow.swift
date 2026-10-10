@@ -21,19 +21,19 @@ struct TaskRow: View {
             .accessibilityLabel(isDone ? Text("Mark not done") : Text("Mark done"))
             .accessibilityValue(Text(item.task.title))
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.task.title)
-                    .strikethrough(isDone)
-                    .foregroundStyle(isDone ? .secondary : .primary)
-                if item.task.type == .progress {
-                    Label("Habit", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .labelStyle(.titleAndIcon)
+            RowDetailsLayout {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.task.title)
+                        .strikethrough(isDone)
+                        .foregroundStyle(isDone ? .secondary : .primary)
+                    if item.task.type == .progress {
+                        Label("Habit", systemImage: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .labelStyle(.titleAndIcon)
+                    }
                 }
-            }
-            Spacer(minLength: 8)
-            VStack(alignment: .trailing, spacing: 2) {
+            } details: {
                 if let minute = item.occurrence.timing.fixedMinute {
                     Text(TimeOfDayFormatter.string(minute: minute))
                         .font(.subheadline)

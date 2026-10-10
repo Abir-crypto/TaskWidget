@@ -29,8 +29,7 @@ struct TimerWidgetView: View {
                     Label("Start", systemImage: "play.fill")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .widgetAccentable()
+                .modifier(ProminentWidgetButton())
             }
         case .generic(let clock):
             VStack(alignment: .leading, spacing: 6) {
@@ -61,8 +60,7 @@ struct TimerWidgetView: View {
                     Button(intent: FinishGenericTimerIntent()) {
                         Text("Done").frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .widgetAccentable()
+                    .modifier(ProminentWidgetButton())
                 }
                 .font(.footnote.weight(.semibold))
             }

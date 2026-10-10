@@ -17,14 +17,15 @@ struct MonthCalendar: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack {
-                Button(action: onBack) { Image(systemName: "chevron.left") }
+                // 44-point targets, as the accessibility audit asks.
+                Button(action: onBack) { arrow("chevron.left") }
                     .disabled(!canGoBack)
                     .accessibilityLabel("Previous month")
                 Spacer()
                 Text(month.startDate(in: calendar).formatted(.dateTime.month(.wide).year()))
                     .font(.headline)
                 Spacer()
-                Button(action: onForward) { Image(systemName: "chevron.right") }
+                Button(action: onForward) { arrow("chevron.right") }
                     .disabled(!canGoForward)
                     .accessibilityLabel("Next month")
             }
@@ -79,6 +80,10 @@ struct MonthCalendar: View {
         case .short: AnyShapeStyle(Color.orange.opacity(0.35))
         case .upcoming, .notScheduled: AnyShapeStyle(Color.clear)
         }
+    }
+
+    private func arrow(_ systemName: String) -> some View {
+        Image(systemName: systemName).frame(width: 44, height: 44).contentShape(Rectangle())
     }
 }
 

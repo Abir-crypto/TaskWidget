@@ -12,29 +12,36 @@ struct MissedRow: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 24)
                 .accessibilityLabel(item.occurrence.type.title)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.occurrence.task.title)
-                Text(dueText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 8)
-            if let target = item.targetMinutes, item.status == .short {
-                Text(DurationFormatter.progress(minutes: item.minutes, target: target))
-                    .font(.subheadline)
-                    .foregroundStyle(.orange)
-                    .monospacedDigit()
-            } else {
-                HStack(spacing: 4) {
-                    Image(systemName: "xmark.circle")
-                    Text("Missed")
+            RowDetailsLayout {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.occurrence.task.title)
+                    Text(dueText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                .font(.subheadline)
-                .foregroundStyle(.red)
+            } details: {
+                details
             }
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var details: some View {
+        if let target = item.targetMinutes, item.status == .short {
+            Text(DurationFormatter.progress(minutes: item.minutes, target: target))
+                .font(.subheadline)
+                .foregroundStyle(.orange)
+                .monospacedDigit()
+        } else {
+            HStack(spacing: 4) {
+                Image(systemName: "xmark.circle")
+                Text("Missed")
+            }
+            .font(.subheadline)
+            .foregroundStyle(.red)
+        }
     }
 }
 

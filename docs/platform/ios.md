@@ -404,6 +404,8 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
 - When `showsWidgetContainerBackground` is false, drop the tinted fills.
 - A status always comes with an SF Symbol or text.
 
+**Tinted and clear styles:** a filled (`.borderedProminent`) button marked `widgetAccentable()` loses its label when the system tints it, so main buttons use `ProminentWidgetButton`, which switches to `.bordered` unless `widgetRenderingMode == .fullColor`.
+
 **Privacy:** when `hide_lock_screen_titles` is on, apply `.privacySensitive()` to titles in the Lock Screen widget.
 
 **Previews:** every widget has a `#Preview(as:)` for each state in its SPEC section.
@@ -509,7 +511,8 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   ```
   - Sheets keep the system's form-sheet size on iPad, which is already narrower than 700 points.
 
-- **Haptics:** `.sensoryFeedback(.success, trigger:)` on completing a task, and `.selection` on changing day.
+- **Haptics:** `.sensoryFeedback(.success, trigger:)` on completing a task, and `.selection` on changing day. The view models count completions (`completions`) so each one triggers it, and undoing doesn't.
+- **Large text:** `RowDetailsLayout` puts a row's details under its title when `dynamicTypeSize.isAccessibilitySize`; Today's day strip uses `.dynamicTypeSize(...DynamicTypeSize.xxxLarge)` with `accessibilityShowsLargeContentViewer` (D-097). `MinuteIntervalPicker` implements `sizeThatFits` so rows make room for the UIKit picker.
 
 ---
 
@@ -611,4 +614,5 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
 - **T-31:**
   - Use Dynamic Type sizes up to AX5 in the app, and confirm widgets don't clip at the largest non-accessibility size.
   - Test with VoiceOver, and run the Accessibility Inspector audit.
+  - `AccessibilityUITests` runs `performAccessibilityAudit` on every screen at the default size and at AX5 (`-UIPreferredContentSizeCategoryName`). For screenshots, `xcrun simctl ui <device> content_size <size>` and `appearance dark|light` set the whole simulator, widgets included; `ScreenshotTests.testWidgetStyles` switches the Home Screen to Tinted or Clear through Edit › Customize.
 - **T-32:** Run the manual QA checklist in §13.

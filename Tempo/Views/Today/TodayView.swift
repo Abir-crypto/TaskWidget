@@ -33,6 +33,9 @@ struct TodayView: View {
             .floatingAddButton { router.openEditor(.new(day: max(model.selectedDay, model.today))) }
         }
         .safeAreaInset(edge: .bottom) { TimerBar() }
+        // A light tap for each completion and each change of day (ios.md §12).
+        .sensoryFeedback(.success, trigger: model.completions)
+        .sensoryFeedback(.selection, trigger: model.selectedDay)
         .task(id: dependencies.refresh.revision) { model.load() }
         .onChange(of: router.todayFocus, initial: true) { _, focus in
             guard let focus else { return }

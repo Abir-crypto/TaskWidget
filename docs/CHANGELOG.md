@@ -14,6 +14,12 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-10 · Accessibility notes (T-31)
+- Platform: ios.md §9 — main widget buttons switch to a bordered style outside full color.
+- Platform: ios.md §12 — how haptics are triggered, and the large-text layouts (D-097).
+- Platform: ios.md §15 — the accessibility audit test and how to set text size, appearance and widget styles for screenshots.
+- No changes to SPEC.md.
+
 ## 2026-10-10 · Readable width on iPad (T-30)
 - Platform: ios.md §12 — lists and forms keep to the readable width with content margins (`readableScrollContent()`), fixed content with `readableWidth()`; sheets keep the system form-sheet size (D-096).
 - Platform: ios.md §15 — how to test narrow windows and take landscape screenshots on iPad.

@@ -153,16 +153,18 @@ struct TaskEditorView: View {
         return Button {
             model.part = part
         } label: {
-            HStack {
+            RowDetailsLayout {
                 Text(part.title)
                     .foregroundStyle(isOver ? .secondary : .primary)
-                Spacer()
-                if isOver {
-                    Text("Already over").font(.footnote).foregroundStyle(.secondary)
-                }
-                if isSelected {
-                    Image(systemName: "checkmark").foregroundStyle(.tint)
-                        .accessibilityHidden(true)
+            } details: {
+                HStack {
+                    if isOver {
+                        Text("Already over").font(.footnote).foregroundStyle(.secondary)
+                    }
+                    if isSelected {
+                        Image(systemName: "checkmark").foregroundStyle(.tint)
+                            .accessibilityHidden(true)
+                    }
                 }
             }
             .contentShape(Rectangle())

@@ -14,17 +14,18 @@ final class SettingsUITests: XCTestCase {
         for part in ["Morning", "Noon", "Evening", "Night"] {
             XCTAssertTrue(app.staticTexts[part].exists, "\(part) start is missing")
         }
-        for toggle in ["Part starts", "Ending soon", "Fixed-time tasks", "End-of-day recap", "Running timer alert"] {
-            XCTAssertTrue(app.switches[toggle].exists, "\(toggle) is missing")
+        // The form is longer than the screen, so scroll down to each item in turn.
+        let items = [
+            app.switches["Part starts"], app.switches["Ending soon"], app.staticTexts["Before the part ends"],
+            app.switches["Fixed-time tasks"], app.staticTexts["Before the task"], app.switches["End-of-day recap"],
+            app.staticTexts["Recap time"], app.switches["Running timer alert"], app.staticTexts["Alert after"],
+            app.staticTexts["Notifications"], app.switches["Hide task names on the Lock Screen"],
+            app.buttons["How to use"], app.staticTexts["Version"],
+        ]
+        for item in items {
+            for _ in 0..<4 where !item.exists { app.swipeUp() }
+            XCTAssertTrue(item.exists, "\(item) is missing")
         }
-        XCTAssertTrue(app.staticTexts["Before the part ends"].exists)
-        XCTAssertTrue(app.staticTexts["Before the task"].exists)
-        XCTAssertTrue(app.staticTexts["Recap time"].exists)
-        app.swipeUp()
-        XCTAssertTrue(app.staticTexts["Alert after"].exists)
-        XCTAssertTrue(app.staticTexts["Notifications"].exists)
-        XCTAssertTrue(app.switches["Hide task names on the Lock Screen"].exists)
-        XCTAssertTrue(app.staticTexts["Version"].exists)
     }
 
 }

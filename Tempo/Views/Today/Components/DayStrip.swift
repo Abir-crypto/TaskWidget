@@ -25,6 +25,9 @@ struct DayStrip: View {
                     onSwipe(value.translation.width < 0 ? 1 : -1)
                 }
         )
+        // Seven days must fit across, so the strip stops growing at the largest standard text size; at accessibility
+        // sizes a long press shows the day in the Large Content Viewer (D-097).
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .accessibilityElement(children: .contain)
         .accessibilityAction(named: Text("Next week")) { onSwipe(1) }
         .accessibilityAction(named: Text("Previous week")) { onSwipe(-1) }
@@ -59,6 +62,9 @@ struct DayStrip: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityShowsLargeContentViewer {
+            Text(date.formatted(.dateTime.weekday(.abbreviated).day()))
+        }
         .accessibilityLabel(date.formatted(.dateTime.weekday(.wide).day().month(.wide)))
         .accessibilityValue(accessibilityValue(for: day))
         .accessibilityAddTraits(isSelected ? .isSelected : [])

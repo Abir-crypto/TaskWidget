@@ -371,7 +371,7 @@ Reads everything plus `deviceState.timer`; reads the notification permission fro
 - None beyond the guide's permission page. Widget buttons rebuild notifications since T-22.
 
 ## F-08 · Missed tasks
-Status: Built (T-03, T-07, T-16, T-17) · Last updated: 2026-10-07 · T-17
+Status: Built (T-03, T-07, T-16, T-17) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 The Missed tab lists today's Missed and Short tasks, which can still be fixed, and every earlier one, read-only, with sort and filters. A popup points out new missed tasks when the app is opened normally.
@@ -385,6 +385,8 @@ The Missed tab lists today's Missed and Short tasks, which can still be fixed, a
 - **Badge:** see F-09.
 - The tab updates every minute and after every change.
 - **Queries** (`Core`): missed today, missed earlier with filters and sort, and unseen (for the popup) as described in SPEC §5.8 (`MissedQueries`, `MissedFilter`).
+- **Haptics (T-31):** Mark done gives a light success tap.
+- **Large text (T-31):** at accessibility text sizes the status moves under the title, and Mark done, Log time and Move to tomorrow stack one under another.
 
 ### Data
 Reads everything through a `Snapshot`; writes completions and copies through `TaskManager`. The popup's seen list is `deviceState.missedSeen` (F-26).
@@ -458,7 +460,7 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 - None for F-09.
 
 ## F-10 · Today screen
-Status: Partly built (T-12) · Last updated: 2026-10-07 · T-12
+Status: Partly built (T-12) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening, Night and Anytime, with the actions F-04 allows. It updates every minute while open.
@@ -487,6 +489,8 @@ The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening,
 - If an action fails, an alert "Couldn't change the task" explains why.
 - Reloads after every change (`RefreshManager.revision`) and when the app becomes active.
 - **Log time sheet** (F-05): see F-05.
+- **Haptics (T-31):** a light success tap when a task is completed (not on undo), and a selection tick when the shown day changes.
+- **Large text (T-31):** at accessibility text sizes a row's time and status move under its title (`RowDetailsLayout`), and the day strip stops growing at the largest standard size, with the Large Content Viewer on a long press (D-097).
 
 ### Data
 Reads everything through a `Snapshot`; writes completions, dates (move), copies, time entries and deletes through `TaskManager`.
@@ -498,6 +502,7 @@ Reads everything through a `Snapshot`; writes completions, dates (move), copies,
 - App: `Tempo/App/Route` (Habit detail), `LogTimeRequest`; `NavigationRouter.logTime`.
 - Placeholder: `Tempo/Views/HabitDetail/HabitDetailView` (T-15).
 - `Tempo/App/SampleData` fills previews and UI tests (`-ui-testing-sample`) with a realistic week.
+- Large text: `Tempo/Components/RowDetailsLayout` (also used by `MissedRow` and the editor's part rows).
 
 ### Tests
 - `Packages/Core/Tests/CoreTests/Schedule/DayPlanTests.swift`: section order, items per part, phases, before Morning, other days, counts and progress.
@@ -574,7 +579,7 @@ Reads completions, tasks and time entries; writes completions (undo) and new hab
 - None for F-12.
 
 ## F-13 · Habit detail
-Status: Partly built (T-15) · Last updated: 2026-10-07 · T-15
+Status: Partly built (T-15) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 Pushed from a habit row in Today, Tasks or History, it shows one habit's schedule, this week, a month calendar, stats, streak, today's time entries and recent missed days.
@@ -591,6 +596,7 @@ Pushed from a habit row in Today, Tasks or History, it shows one habit's schedul
 - **Recent missed days:** up to 10 Missed or Short days, newest first, including today's (D-080). Short days show "20 of 30 min"; missed days show a red "Missed" with an icon. "See all" switches to the Missed tab with Earlier filtered to this habit (the filter is applied by the Missed tab, T-16).
 - **No data yet** (F-24): until the habit has a counted day or any time logged, the week, calendar, stats, streak and missed sections are replaced by "No data yet. Check back after its first day."
 - If the habit was deleted, the screen says "This habit no longer exists".
+- **Accessibility (T-31):** the month arrows and "See all" have 44-point tap targets, and the target and length line is one sentence that wraps at large text sizes.
 
 ### Data
 Reads everything through a `Snapshot`; deletes time entries, ends habits and starts them again through `TaskManager`.
@@ -608,7 +614,7 @@ Reads everything through a `Snapshot`; deletes time entries, ends habits and sta
 - None for F-13.
 
 ## F-14 · Stats
-Status: Built (T-08, T-18) · Last updated: 2026-10-07 · T-18
+Status: Built (T-08, T-18) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 The Stats tab shows a week, month or year: an overview, a completion chart, time per duration habit, parts of the day, streaks and each habit's rate. The formulas are SPEC §5.7, computed in `Core`.
@@ -628,6 +634,7 @@ The Stats tab shows a week, month or year: an overview, a completion chart, time
 - **Empty state** (F-24): with no habits, "Add a habit to see your stats" with "Add a habit" (progress habit preset).
 - Reloads after every change and when the app becomes active.
 - **Formulas** (T-08, `StatsCalculator`): counted days up to and including today (today only once final), rates rounded half up, change in rounded points, one-time tasks by date up to today, total time, goals including future days, part rates over final statuses, streaks skipping unscheduled days and an open today (D-062).
+- **Accessibility (T-31):** the range arrows have 44-point tap targets.
 
 ### Implementation (iOS)
 - Views: `Tempo/Views/Stats/StatsView`, `StatsViewModel`; `Components/WeekChart`, `MonthGrid`, `YearChart`, `RateColor`.
@@ -693,7 +700,7 @@ Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
 - Ending or deleting a habit whose timer is running asks first and discards the timer (T-19/T-20).
 
 ## F-16 · Settings
-Status: Built (T-10, T-28) · Last updated: 2026-10-10 · T-28
+Status: Built (T-10, T-28) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 Settings is pushed from the gear on Today. Every change is saved as soon as it's made and keeps its value after a restart.
@@ -714,6 +721,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 - **Validation** (`SettingsValue.validationError`): part times follow F-02; leads and the alert period must be one of their choices; the recap must be a 15-minute step from Night's start to 23:45. A change that breaks a rule isn't saved, and the screen reloads what's stored.
 - Times show in the user's 12- or 24-hour format (`TimeOfDayFormatter`).
 - Saving refreshes the widgets and rebuilds the notifications through `RefreshManager`, so a kind turned off or a new lead time applies at once.
+- **Large text (T-31):** the part pickers report their real height (at least 44 points), so rows make room for them at every text size.
 
 ### Data
 `settings` (every column). Reads the notification permission from the system.
@@ -734,7 +742,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 - None for F-16.
 
 ## F-17 · Widgets: general rules
-Status: Built (T-22–T-27) · Last updated: 2026-10-10 · T-27
+Status: Built (T-22–T-27) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 The foundation every widget shares: one timeline provider that reads the app's store, entries for each moment the widgets must change, a fallback when the data can't be read, and widget buttons (App Intents) that refresh everything after they act.
@@ -747,6 +755,7 @@ The foundation every widget shares: one timeline provider that reads the app's s
 - **After any change** — in the app, from a widget button or from a notification action — every widget reloads (`WidgetCenter.reloadAllTimelines`) and the notifications are rebuilt (`RefreshManager`). Widget buttons wait for both before returning (`refreshNowAndWait`), since the extension's process may end right after.
 - **Widget buttons** (`Shared/Intents/`, compiled into the app and the extension, hidden from Shortcuts with `isDiscoverable = false`): `ToggleCompletionIntent` (the Now widget's checkboxes, a button that carries the state it sets) completes or undoes a task by id and day, following F-04; the timer intents are in F-18 and F-21.
 - The T-01 placeholder widget used this provider until the Timer widget replaced it (T-23).
+- **Tinted and clear styles (T-31):** main buttons are filled in full color and bordered in the tinted and clear Home Screen styles, where a filled button's label would vanish (`ProminentWidgetButton`). Checked in the Default, Dark, Tinted and Clear styles and at the largest standard text size on the iOS 27 simulator.
 
 ### Data
 Reads everything; buttons write through the same managers as the app.
@@ -755,6 +764,7 @@ Reads everything; buttons write through the same managers as the app.
 - Shared (app and extension): `Shared/Widgets/WidgetSnapshot`, `SnapshotLoader`, `WidgetTimelinePlan`; `Shared/Intents/IntentEnvironment`, `ToggleCompletionIntent` (D-089).
 - Extension: `TempoWidgets/Provider/TodayTimelineProvider`, `TodayEntry`; `TempoWidgets/Components/WidgetFailureView`.
 - Rules: `Packages/Core/Sources/Core/Timeline/TimelinePlanner`.
+- `TempoWidgets/Components/ProminentWidgetButton` (reads `widgetRenderingMode`).
 
 ### Tests
 - `Packages/Core/Tests/CoreTests/Timeline/TimelinePlannerTests.swift`: part starts and midnight for two days, fixed times and an hour before, custom part times, the timer's target moment, next midnight.
@@ -764,7 +774,7 @@ Reads everything; buttons write through the same managers as the app.
 - Dark mode, tinted styles and status icons are checked per widget and again in T-31.
 
 ## F-18 · Timer widget (small)
-Status: Built (T-23) · Last updated: 2026-10-07 · T-23
+Status: Built (T-23) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 A small widget that starts a generic timer, pauses, resumes and finishes it without opening the app, except Done, which opens the task picker. A habit timer started elsewhere shows here without controls.
@@ -780,6 +790,7 @@ A small widget that starts a generic timer, pauses, resumes and finishes it with
 - **Load failure:** "Open Tempo to refresh" (F-17).
 - The clock, title and main button are accented in tinted and accented styles (`widgetAccentable`). The background is the extension's `WidgetBackground` color.
 - Checked on a real Home Screen in the iOS 27 simulator: added from the gallery, Start, Pause, Done opening the task picker, and a habit timer from the app shown without controls.
+- **Tinted and clear styles (T-31):** Start and Done use a bordered style, so their labels stay visible.
 
 ### Data
 Reads `deviceState.timer` and the timed habit's title; writes the timer and `deviceState.pendingOpenAction`.
@@ -799,7 +810,7 @@ Reads `deviceState.timer` and the timed habit's title; writes the timer and `dev
 - None for F-18.
 
 ## F-19 · Day widget (medium)
-Status: Built (T-25) · Last updated: 2026-10-07 · T-25
+Status: Built (T-25) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 A medium widget showing today part by part: a column of marks for Morning, Noon, Evening and Night. It has no buttons.
@@ -815,6 +826,7 @@ A medium widget showing today part by part: a column of marks for Morning, Noon,
 - **Load failure:** "Open Tempo to refresh" (F-17).
 - VoiceOver reads each column as its part name with "2 done, 1 missed, 3 left" or "No tasks".
 - Checked on a real Home Screen in the iOS 27 simulator.
+- **Without the widget background** (StandBy, some styles) the current part keeps its bold accent name but drops its fill (T-31).
 
 ### Implementation (iOS)
 - Widget: `TempoWidgets/Widgets/Day/DayWidget`, `DayWidgetView`.
@@ -865,7 +877,7 @@ A medium widget with the one thing to do next, from the next-task rule (SPEC §5
 - None for F-20. The Lock Screen widgets (F-22) use the same rule.
 
 ## F-21 · Now widget (large)
-Status: Built (T-24) · Last updated: 2026-10-07 · T-26
+Status: Built (T-24) · Last updated: 2026-10-10 · T-31
 
 ### What it does
 A large widget with what's on now and next: checkboxes that complete and undo without opening the app, and ▶ that turns the widget into the habit's timer.
@@ -884,6 +896,7 @@ A large widget with what's on now and next: checkboxes that complete and undo wi
 - **Timer mode** (while a habit timer exists, started here, in the app or anywhere else): "Timer", the habit's title, the clock (or "Paused"), a progress bar toward today's target that fills by itself while running, "22 of 30 min today", Pause/Resume, Done and Discard. Done (`FinishHabitTimerIntent`) saves the time without opening the app (nothing under a minute) and returns to the list; Discard (`DiscardTimerIntent`) saves nothing and returns to the list. Tapping elsewhere opens the timer screen. The Timer widget shows the same timer, display only.
 - **Load failure:** "Open Tempo to refresh" (F-17).
 - Checked on a real Home Screen in the iOS 27 simulator: added from the gallery, list mode, and a checkbox tap completing the task in the app.
+- **Tinted and clear styles (T-31):** timer mode's Done uses a bordered style, so its label stays visible.
 
 ### Data
 Reads everything through the widget snapshot; writes completions, the timer and time entries through the intents.

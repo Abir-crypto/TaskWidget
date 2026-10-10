@@ -143,8 +143,10 @@ struct TodayViewModelTests {
         #expect(model.canLogTime(try #require(item(read))))
         model.toggleCompletion(call)
         #expect(item(task)?.status == .done)
+        #expect(model.completions == 1)  // a haptic for completing (T-31)
         #expect(!model.canMove(try #require(item(task))))  // done tasks don't move (D-060)
         model.toggleCompletion(try #require(item(task)))
+        #expect(model.completions == 1)  // none for undoing
         model.moveToNextDay(try #require(item(task)))
         #expect(item(task) == nil)
         #expect(try store.task(id: task.id)?.date == day(7))

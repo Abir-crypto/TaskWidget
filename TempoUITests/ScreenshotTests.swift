@@ -57,6 +57,7 @@ final class ScreenshotTests: XCTestCase {
             let suffix = orientation == .portrait ? "portrait" : "landscape"
             let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
             _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
+            sleep(2)
             saveScreen("today-\(suffix)")
             app.buttons["Settings"].tap()
             sleep(1)
@@ -73,7 +74,9 @@ final class ScreenshotTests: XCTestCase {
             }
             app.buttons["Tasks"].firstMatch.tap()
             app.buttons["Habits"].tap()
-            app.staticTexts["Read"].firstMatch.tap()
+            let read = app.staticTexts["Read"].firstMatch
+            for _ in 0..<4 where !read.isHittable { app.swipeUp() }
+            read.tap()
             sleep(1)
             saveScreen("habit-\(suffix)")
             app.navigationBars.buttons.element(boundBy: 0).tap()
@@ -643,6 +646,93 @@ final class ScreenshotTests: XCTestCase {
             if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
             if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
         }
+    }
+
+    /// Photographs Home Screen pages 1–3 in each style named in `TEMPO_STYLES` (default "Tinted,Clear") next to a
+    /// real task, then puts the Default style back and deletes the task (SPEC F-17: widgets adapt to tinted
+    /// styles).
+    @MainActor
+    func testWidgetStyles() {
+        let app = XCUIApplication()
+        app.launch()
+        finishGuideIfShown(app)
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Add task"].firstMatch.tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Style check")
+        app.buttons["Anytime"].tap()
+        app.buttons["Save"].tap()
+        sleep(1)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let styles = (ProcessInfo.processInfo.environment["TEMPO_STYLES"] ?? "Tinted,Clear")
+            .split(separator: ",").map(String.init)
+        for style in styles {
+            applyHomeScreenStyle(style, springboard)
+            XCUIDevice.shared.press(.home)
+            sleep(1)
+            XCUIDevice.shared.press(.home)
+            sleep(2)
+            for page in 1...3 {
+                saveScreen("style-\(style.lowercased())-\(page)")
+                springboard.swipeLeft()
+                sleep(1)
+            }
+        }
+        if styles.last != "Default" { applyHomeScreenStyle("Default", springboard) }
+        app.activate()
+        app.buttons["Today"].firstMatch.tap()
+        let row = app.staticTexts["Style check"].firstMatch
+        if row.waitForExistence(timeout: 3) {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
+    }
+
+    /// Home Screen › Edit › Customize › Default, Dark, Clear or Tinted.
+    @MainActor
+    private func applyHomeScreenStyle(_ style: String, _ springboard: XCUIApplication) {
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        springboard.swipeLeft()
+        sleep(1)
+        // The empty end of the dock opens the edit menu without touching a widget.
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.82, dy: 0.935)).press(forDuration: 2)
+        if springboard.buttons["Edit"].waitForExistence(timeout: 3) { springboard.buttons["Edit"].tap() }
+        if springboard.buttons["Customize"].waitForExistence(timeout: 3) { springboard.buttons["Customize"].tap() }
+        if springboard.buttons[style].waitForExistence(timeout: 3) { springboard.buttons[style].tap() }
+        sleep(1)
+        springboard.otherElements["PopoverDismissRegion"].firstMatch.tap()
+        sleep(1)
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+    }
+
+    /// Deletes tasks that interrupted widget tests left in the simulator's real store, by the titles in
+    /// `TEMPO_DELETE` (comma-separated), from Today.
+    @MainActor
+    func testDeleteLeftoverTasks() {
+        let app = XCUIApplication()
+        app.launch()
+        finishGuideIfShown(app)
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Today"].firstMatch.tap()
+        let titles = (ProcessInfo.processInfo.environment["TEMPO_DELETE"] ?? "").split(separator: ",").map(String.init)
+        for title in titles {
+            for _ in 0..<10 {
+                let row = app.staticTexts[title].firstMatch
+                guard row.waitForExistence(timeout: 2) else { break }
+                for _ in 0..<4 where !row.isHittable { app.swipeUp() }
+                row.swipeLeft()
+                if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+                if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+                sleep(1)
+            }
+        }
+        save(app, "leftovers-after")
     }
 
     /// Photographs each Home Screen page, to plan where widgets can go.

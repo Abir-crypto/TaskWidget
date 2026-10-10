@@ -15,6 +15,8 @@ final class TodayViewModel {
     /// A delete waiting for confirmation.
     var pendingDelete: DayItem?
     var errorMessage: String?
+    /// Counts completions made here, so the screen can give haptic feedback for each (SPEC T-31).
+    private(set) var completions = 0
 
     private(set) var snapshot: Snapshot?
     private let tasks: TaskManager
@@ -142,7 +144,10 @@ final class TodayViewModel {
     // MARK: Actions
 
     func toggleCompletion(_ item: DayItem) {
-        perform { try tasks.toggleCompletion(taskID: item.task.id, day: item.occurrence.day) }
+        let completes = item.status != .done
+        if perform({ try tasks.toggleCompletion(taskID: item.task.id, day: item.occurrence.day) }), completes {
+            completions += 1
+        }
     }
 
     func moveToNextDay(_ item: DayItem) {
@@ -165,13 +170,16 @@ final class TodayViewModel {
         perform { try tasks.deleteWithHistory(taskID: item.task.id) }
     }
 
-    private func perform(_ action: () throws -> Void) {
+    /// Runs a change and reloads. Returns whether the change was made.
+    @discardableResult
+    private func perform(_ action: () throws -> Void) -> Bool {
+        defer { load() }
         do {
             try action()
-            load()
+            return true
         } catch {
             errorMessage = TaskEditorViewModel.message(for: error)
-            load()
+            return false
         }
     }
 }

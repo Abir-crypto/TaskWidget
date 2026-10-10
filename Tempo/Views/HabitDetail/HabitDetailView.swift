@@ -104,15 +104,11 @@ struct HabitDetailView: View {
                     .font(.title2.weight(.semibold))
                 Text(model.scheduleSummary)
                     .foregroundStyle(.secondary)
-                HStack(spacing: 6) {
-                    if let target = model.targetText {
-                        Text(target)
-                        Text(verbatim: "·").accessibilityHidden(true)
-                    }
-                    Text(model.lengthText)
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                // One text, so it wraps as a sentence at large text sizes.
+                Text([model.targetText, model.lengthText].compactMap { $0 }.joined(separator: " · "))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel([model.targetText, model.lengthText].compactMap { $0 }.joined(separator: ", "))
             }
             .padding(.vertical, 4)
             .accessibilityElement(children: .combine)
@@ -276,9 +272,15 @@ struct HabitDetailView: View {
             HStack {
                 Text("Recent missed days")
                 Spacer()
-                Button("See all") { router.showMissed(for: model.taskID) }
-                    .font(.footnote)
-                    .textCase(nil)
+                // A 44-point target inside the header's line height: the label grows and the button gives it back.
+                Button {
+                    router.showMissed(for: model.taskID)
+                } label: {
+                    Text("See all").padding(.vertical, 13).contentShape(Rectangle())
+                }
+                .padding(.vertical, -13)
+                .font(.footnote)
+                .textCase(nil)
             }
         }
     }

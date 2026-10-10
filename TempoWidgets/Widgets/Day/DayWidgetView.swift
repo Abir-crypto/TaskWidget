@@ -5,6 +5,7 @@ import WidgetKit
 /// The Day widget's columns, marks and footer (SPEC F-19).
 struct DayWidgetView: View {
     let entry: TodayEntry
+    @Environment(\.showsWidgetContainerBackground) private var showsBackground
 
     var body: some View {
         if let snapshot = entry.snapshot {
@@ -62,7 +63,9 @@ struct DayWidgetView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.vertical, 6)
         .background {
-            if column.isCurrent {
+            // Without the widget's background (StandBy, some tinted styles) the fill is dropped; the part's bold
+            // accent name still marks it (ios.md §9).
+            if column.isCurrent && showsBackground {
                 RoundedRectangle(cornerRadius: 10).fill(.tint.opacity(0.12))
             }
         }
