@@ -33,6 +33,21 @@ final class GuideUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Welcome to Tempo"].exists)
     }
 
+    /// A widget link on first launch waits for the guide, then opens (D-095).
+    @MainActor
+    func testLinkOpensAfterTheGuide() throws {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", guide: true)
+        XCTAssertTrue(app.staticTexts["Welcome to Tempo"].waitForExistence(timeout: 5))
+        app.open(try XCTUnwrap(URL(string: "tempo://new?day=20261006")))
+        XCTAssertTrue(app.buttons["Skip"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        app.buttons["Skip"].tap()
+        app.buttons["Next"].tap()
+        app.buttons["Not now"].tap()
+        XCTAssertTrue(app.buttons["Cancel"].waitForExistence(timeout: 3), "The editor didn't open after the guide")
+        XCTAssertTrue(app.staticTexts["New task"].exists)
+    }
+
     @MainActor
     func testOtherLaunchesSkipTheGuide() {
         let app = UITestApp.launch()

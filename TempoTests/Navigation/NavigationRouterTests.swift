@@ -49,6 +49,27 @@ struct NavigationRouterTests {
         #expect(!router.isSettingsPresented)
     }
 
+    @Test func linkWaitsForTheFirstLaunchGuide() {
+        router.guide = .firstLaunch
+        router.openAfterGuide(.newTask(day: DayKey(rawValue: 20_261_006), type: nil))
+        #expect(router.editor == nil)
+        #expect(router.guide == .firstLaunch)
+        #expect(router.openedFromLinkThisActivation)
+        router.guide = nil
+        router.guideDidClose()
+        #expect(router.editor?.mode == .new(day: DayKey(rawValue: 20_261_006), type: nil))
+        #expect(router.linkAfterGuide == nil)
+    }
+
+    @Test func linksCloseHowToUseButNotTheFirstLaunchGuide() {
+        router.guide = .howToUse
+        router.open(.missed)
+        #expect(router.guide == nil)
+        router.guide = .firstLaunch
+        router.open(.missed)
+        #expect(router.guide == .firstLaunch)
+    }
+
     @Test func backgroundResetsTheLinkFlag() {
         router.open(.missed)
         router.didEnterBackground()

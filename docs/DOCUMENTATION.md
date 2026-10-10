@@ -413,7 +413,7 @@ Reads everything through a `Snapshot`; writes completions and copies through `Ta
 - None for F-08. The end-of-day recap (F-07) lists all of today's missed tasks, including ones the popup has shown.
 
 ## F-09 · Navigation and app structure
-Status: Built (T-09) · Last updated: 2026-10-07 · T-09
+Status: Built (T-09) · Last updated: 2026-10-10 · T-29
 
 ### What it does
 The app opens to four tabs. Settings, History, the editor, the timer screen and the task picker open from buttons and from links. Some screens are still placeholders that later tasks fill in.
@@ -431,7 +431,8 @@ The app opens to four tabs. Settings, History, the editor, the timer screen and 
   - `missed` → the Missed tab.
   - `timer` → the timer screen.
   - Anything else, or a different scheme, → Today. Unknown or malformed parameters are ignored.
-  - Opening a link first closes whatever was presented (a sheet, Settings or History).
+  - Opening a link first closes whatever was presented (a sheet, Settings, History or How to use).
+  - Before the first-launch guide is finished, a link waits and opens when the guide closes; so does a widget button's pending action (D-095).
 - **Pending open action:** when the app becomes active, a stored "choose a task for the finished timer" action opens the task picker and is cleared.
 - **Opened from a link:** a link or pending action marks the activation as not normal (`openedFromLinkThisActivation`), for the missed popup (T-17). It resets when the app goes to the background.
 - When the app becomes active, open screens reload, in case a widget changed something.
@@ -936,7 +937,7 @@ Two Lock Screen widgets with the one thing to do next, from the next-task rule (
 - Titles hidden while locked can only be seen on a device with a passcode.
 
 ## F-23 · First-launch guide
-Status: Built (T-28) · Last updated: 2026-10-10 · T-28
+Status: Built (T-28) · Last updated: 2026-10-10 · T-29
 
 ### What it does
 Seven swipeable pages shown once, over everything, the first time the app opens: five that introduce the app, one to set the parts of the day, and one to allow notifications. Settings › How to use shows the first five again.
@@ -953,6 +954,7 @@ Seven swipeable pages shown once, over everything, the first time the app opens:
 - **Moving between pages:** swipe, or tap **Next** at the bottom of pages 1–6. Page dots show where you are (D-093).
 - **Skip** (top right, pages 1–5) jumps to page 6, so the setup pages are never skipped.
 - Closing page 7, either way, marks the guide completed; it never shows on its own again. Closing the app before then shows it again next time, keeping any part times already saved. The guide can't be swiped away.
+- A link (for example a tap on an empty widget) or a widget button's pending action that arrives before the guide is finished waits, and opens when the guide closes (D-095).
 - The missed popup waits while the guide is showing. Today's empty state appears once it closes.
 - **How to use** (Settings › Help) opens pages 1–5 with **Done** at the top right instead of Skip, and Done instead of Next on page 5. It doesn't change whether the guide was completed. A link from a widget or notification closes it; the first-launch guide stays until it's finished (D-093).
 
@@ -975,41 +977,51 @@ Writes the part times in `settings` (page 6). Device-only: "guide completed" (`D
 - None for F-23.
 
 ## F-24 · Empty states
-Status: Partly built (T-12–T-20) · Last updated: 2026-10-07 · T-20
+Status: Built (T-12–T-29) · Last updated: 2026-10-10 · T-29
 
 ### What it does
-Screens that can be empty show a message, with an Add button where SPEC F-24 lists one.
+Every place that can be empty shows a message, with an Add button where SPEC F-24 lists one. T-29 checked every row in the running app and the widgets.
 
 ### Behavior
 | Where | As built |
 |---|---|
-| Today, no tasks today | "No tasks today" with "Add a task" (editor preset to today) |
-| Today, a future day | "Nothing planned for Thu 8 Oct" with "Add a task" (preset to that day) |
-| Today, an empty past day | "Nothing was planned for Mon 5 Oct" |
+| The app opened for the first time | The guide (F-23), then "No tasks today". A link that arrives first waits for the guide (D-095). |
+| Today, no tasks today | "No tasks today" with "Add a task" (editor: one-time, today) |
+| Today, a future day | "Nothing planned for Thu 8 Oct" with "Add a task" (editor: one-time, that day) |
+| Today, an empty past day | "Nothing was planned for Mon 5 Oct", no button |
 | Today, an empty part | Small grey text, e.g. "Nothing this evening" (wording per day in F-10, D-074) |
-| Tasks › Habits | "No habits yet" with "Add a habit" (progress habit preset) |
-| Tasks › One-time | "No upcoming tasks" with "Add a task" (one-time preset) |
+| Tasks › Habits | "No habits yet" with "Add a habit" (editor: progress habit) |
+| Tasks › One-time | "No upcoming tasks" with "Add a task" (editor: one-time, today) |
 | History › One-time | "Nothing completed yet" |
 | History › Habits | "Finished habits will appear here" |
 | History, a search with no results | "No matches" |
-| Habit detail, with no data yet | "No data yet. Check back after its first day." |
 | Missed › Today | "You haven't missed a task today" |
 | Missed › Earlier | "Nothing missed before today" |
 | Missed, filters with no results | "No missed tasks match these filters" with "Clear filters" |
-| Stats, with no habits | "Add a habit to see your stats" with "Add a habit" |
-| Task picker, with no duration habits | "No duration tasks yet" with "Add a duration task" and "Discard" |
-| Now widget, with no tasks | "No tasks today"; tapping opens the editor for today |
+| Stats, with no habits | "Add a habit to see your stats" with "Add a habit" (editor: progress habit) |
+| Habit detail, with no data yet | "No data yet. Check back after its first day." |
+| Task picker, with no duration habits | "No duration tasks yet" with "Add a duration task" (editor: duration habit; the picker comes back after, D-084) and "Discard" |
+| Day and Now widgets, with no tasks | "No tasks today" with a sun icon; tapping opens the editor for today (one-time) |
 | Now widget, nothing left | "You're free today" |
-| Day widget, with no tasks | "No tasks today"; tapping opens the editor for today |
 | Day widget, everything done | Every mark ✓ and "You're free today" |
 | Focus widget, nothing left | "You're free today", plus "All N tasks done" when every task was done |
-| Lock Screen widgets | Not built yet (T-27) |
+| Lock Screen widgets, nothing left | Rectangular: "You're free today" (plus "All N tasks done"); inline: "You're free today" |
+- The editor presets come from `EditorRequest.new(day:type:)`.
+- Checked on the iOS 27 simulator: every app row by `EmptyStatesUITests` and the tests listed below; the Now and Focus widgets' empty states on the real Home Screen, and tapping the empty Now widget, which opened the guide and then the editor for today.
 
 ### Implementation (iOS)
-- `ContentUnavailableView` in `Tempo/Views/Today/TodayView.swift`, `Tempo/Views/Tasks/TasksView.swift` and `Tempo/Views/History/HistoryView.swift`.
+- `ContentUnavailableView` in `TodayView`, `TasksView`, `HistoryView`, `StatsView`, `HabitDetailView` and `TaskPickerView`; Missed's section messages and the empty parts' grey text are plain `Text` in `MissedView` and `TodayView`.
+- Widgets: `DayWidgetView`, `NowListView`, `FocusWidgetView`, `LockScreenWidgetView`.
+
+### Tests
+- `TempoUITests/EmptyStatesUITests.swift`: Today (no tasks, a future day, an empty past day, empty parts), Tasks › Habits and One-time, Stats, Habit detail and the task picker, tapping each Add button and checking the editor's type and date; the empty widgets' link opening the editor for today.
+- `HistoryUITests`, `MissedUITests` (`testEmptyStates`), `StatsUITests` (`testEmptyState`) and `TimerUITests` (`testPickerEmptyState`) cover the History, Missed, Stats and task picker messages.
+- Widgets: `DayWidgetTests`, `NowWidgetTests` (`freeAndEmptyStates`), `FocusWidgetTests` and `LockScreenWidgetTests` (`freeWhenNothingIsLeft`).
+- `GuideUITests.testLinkOpensAfterTheGuide`, `NavigationRouterTests.linkWaitsForTheFirstLaunchGuide` (D-095).
+- `ScreenshotTests.testEmptyNowWidgetOpensTheEditor` (screenshots only).
 
 ### Known gaps
-- The rest of the F-24 table, with its screens; T-29 checks every row.
+- None for F-24.
 
 ## F-25 · iPad
 Status: Not built · Last updated: —

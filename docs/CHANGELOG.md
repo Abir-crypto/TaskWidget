@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-10 · Links on first launch (T-29)
+- Platform: ios.md §11 — a link or pending open action that arrives before the first-launch guide is finished waits for the guide to close (D-095).
+- No changes to SPEC.md.
+
 ## 2026-10-10 · First-launch guide storage (T-28)
 - Platform: ios.md §3, §6, §12 — "guide completed" is kept in `DeviceState` (App Group defaults) instead of `@AppStorage`, and the guide is presented through `NavigationRouter.guide` in first-launch or How to use mode (D-094).
 - No changes to SPEC.md.

@@ -449,6 +449,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
 
 - `DeepLink` (in `Shared/DeepLink/`) parses and builds these URLs, and has unit tests.
 - Unknown or malformed URLs open Today.
+- Before the first-launch guide is finished, `RootView` hands a link to `router.openAfterGuide` and leaves a pending open action in place; both are opened when the guide closes (D-095).
 - The pending open action from `FinishGenericTimerIntent` is read when the app becomes active, and opens the task picker.
 
 **Missed popup timing (SPEC F-08).** iOS can deliver `onOpenURL` slightly after `scenePhase` becomes `.active`. So wait briefly before deciding:

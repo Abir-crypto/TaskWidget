@@ -25,6 +25,8 @@ final class NavigationRouter {
     var isHistoryPresented = false
     /// The first-launch guide, or its pages 1–5 from Settings › How to use (SPEC F-23).
     var guide: GuideMode?
+    /// A link that arrived before the first-launch guide was finished; it opens when the guide closes (D-095).
+    private(set) var linkAfterGuide: DeepLink?
 
     /// True when this activation came from a widget, a notification or a pending open action. The missed popup
     /// waits for a normal open (SPEC F-08). Reset when the app goes to the background.
@@ -45,6 +47,19 @@ final class NavigationRouter {
         case .timer:
             isTimerScreenPresented = true
         }
+    }
+
+    /// Keeps a link for when the first-launch guide closes, so the guide still shows first (D-095).
+    func openAfterGuide(_ link: DeepLink) {
+        openedFromLinkThisActivation = true
+        linkAfterGuide = link
+    }
+
+    /// Opens the link that waited for the guide, if any.
+    func guideDidClose() {
+        guard let link = linkAfterGuide else { return }
+        linkAfterGuide = nil
+        open(link)
     }
 
     /// Acts on something a widget button asked for before opening the app (SPEC §4.6).

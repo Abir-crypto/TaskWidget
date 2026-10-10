@@ -68,9 +68,15 @@ struct RootView: View {
             handlePendingOpenAction()
         }
         .onOpenURL { url in
-            router.open(DeepLink(url: url))
+            // Before the first-launch guide is finished, a link waits for it (D-095).
+            let link = DeepLink(url: url)
+            if dependencies.deviceState.guideCompleted {
+                router.open(link)
+            } else {
+                router.openAfterGuide(link)
+            }
         }
-        .fullScreenCover(item: $router.guide) { mode in
+        .fullScreenCover(item: $router.guide, onDismiss: guideDidClose) { mode in
             OnboardingView(dependencies: dependencies, mode: mode)
         }
         // The guide shows once, on first launch (SPEC F-23).
@@ -100,10 +106,19 @@ struct RootView: View {
     }
 
     /// Acts on what a widget button left for the app, such as choosing a task for a finished timer (SPEC §4.6).
+    /// It waits until the first-launch guide is finished (D-095).
     private func handlePendingOpenAction() {
-        guard let action = dependencies.deviceState.pendingOpenAction else { return }
+        guard dependencies.deviceState.guideCompleted,
+            let action = dependencies.deviceState.pendingOpenAction
+        else { return }
         dependencies.deviceState.pendingOpenAction = nil
         router.handle(action)
+    }
+
+    /// Opens whatever waited for the guide: a link, or a widget button's pending action.
+    private func guideDidClose() {
+        router.guideDidClose()
+        handlePendingOpenAction()
     }
 
     private func timeChanged() {

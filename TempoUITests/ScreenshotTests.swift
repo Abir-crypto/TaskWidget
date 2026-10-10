@@ -486,6 +486,28 @@ final class ScreenshotTests: XCTestCase {
         }
     }
 
+    /// Taps the empty Now widget (top of the second Home Screen page) and photographs what opens: the editor for
+    /// today, after the first-launch guide if the app hasn't finished it on this simulator.
+    @MainActor
+    func testEmptyNowWidgetOpensTheEditor() {
+        let app = XCUIApplication()
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        springboard.swipeLeft()
+        sleep(2)
+        save(springboard, "empty-1-home")
+        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3)).tap()
+        sleep(3)
+        save(app, "empty-2-opened")
+        finishGuideIfShown(app)
+        sleep(1)
+        save(app, "empty-3-after-guide")
+        if app.buttons["Cancel"].waitForExistence(timeout: 2) { app.buttons["Cancel"].tap() }
+    }
+
     /// Photographs each Home Screen page, to plan where widgets can go.
     @MainActor
     func testHomeScreenPages() {
