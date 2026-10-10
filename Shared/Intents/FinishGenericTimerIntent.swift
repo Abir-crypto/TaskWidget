@@ -28,5 +28,5 @@ struct FinishGenericTimerIntent: AppIntent {
 
 extension Notification.Name {
     /// Posted when a widget button leaves a pending open action for the app.
-    static let pendingOpenActionWritten = Notification.Name("com.applab.tempo.pendingOpenActionWritten")
+    static let pendingOpenActionWritten = Notification.Name("com.akumatech.tempo.pendingOpenActionWritten")
 }

@@ -3,7 +3,7 @@ import SwiftData
 
 /// Opens the SwiftData store in the App Group, shared by the app and the widget extension (ios.md §6).
 enum StoreFactory {
-    static let appGroup = "group.com.applab.tempo"
+    static let appGroup = "group.akumatech.tempo"
     static let fileName = "Tempo.store"
 
     /// The process's one container. Each read or write makes its own fresh `ModelContext` from it.

@@ -22,12 +22,12 @@
 
 | Item | Value |
 |---|---|
-| App target / bundle ID | `Tempo` / `com.applab.tempo` |
-| Widget extension / bundle ID | `TempoWidgets` / `com.applab.tempo.widgets` |
+| App target / bundle ID | `Tempo` / `com.akumatech.tempo` |
+| Widget extension / bundle ID | `TempoWidgets` / `com.akumatech.tempo.widgets` |
 | Logic package | `Packages/Core` (library `Core`) |
-| App Group | `group.com.applab.tempo` |
+| App Group | `group.akumatech.tempo` |
 | URL scheme | `tempo` |
-| Background refresh task | `com.applab.tempo.refresh` |
+| Background refresh task | `com.akumatech.tempo.refresh` |
 | Notification category | `TIMER_ALERT`, with actions `STOP` and `KEEP_GOING` |
 
 **Capabilities**
@@ -36,11 +36,11 @@
 - **No iCloud or CloudKit.** v1 has no sync (SPEC F-26).
 
 **App `Info.plist`**
-- `BGTaskSchedulerPermittedIdentifiers` = `["com.applab.tempo.refresh"]`.
+- `BGTaskSchedulerPermittedIdentifiers` = `["com.akumatech.tempo.refresh"]`.
 - A URL type with the scheme `tempo`.
 - Orientations: iPhone portrait only; iPad all four.
 
-To rename the app, replace `Tempo`, `com.applab.tempo` and `tempo://` everywhere in one pass.
+To rename the app or move it to another developer team, replace `Tempo`, `com.akumatech.tempo`, the App Group `group.akumatech.tempo` (in both entitlements files and `StoreFactory.appGroup`) and `tempo://` everywhere in one pass. `ProjectConfigurationTests` fails if the store's App Group isn't one the app is entitled to.
 
 ---
 
@@ -230,7 +230,7 @@ final class TodayViewModel {
 - **One `ModelContainer` per process,** held in a static. **Each read or write uses a fresh `ModelContext`.** No `@Query` anywhere.
   - On iOS 17, SwiftData doesn't reliably show writes made by another process (the widget extension), and fresh contexts avoid that problem.
 - **Mapping:** records are converted to `Core` value types in `SwiftDataTaskStore`. Views never receive records.
-- **Device-only state** (SPEC §4.6) lives in `UserDefaults(suiteName: "group.com.applab.tempo")` as Codable JSON: the timer, the missed seen list, and the pending open action, plus the "guide completed" flag as a plain bool. The flag lives here rather than in `@AppStorage` so UI tests control it with the rest of the device-only state (D-094).
+- **Device-only state** (SPEC §4.6) lives in `UserDefaults(suiteName: "group.akumatech.tempo")` as Codable JSON: the timer, the missed seen list, and the pending open action, plus the "guide completed" flag as a plain bool. The flag lives here rather than in `@AppStorage` so UI tests control it with the rest of the device-only state (D-094).
 
 ```swift
 enum SchemaV1: VersionedSchema {
@@ -256,7 +256,7 @@ enum SchemaV1: VersionedSchema {
 }
 
 enum StoreFactory {
-    static let appGroup = "group.com.applab.tempo"
+    static let appGroup = "group.akumatech.tempo"
     static let shared: Result<ModelContainer, Error> = Result { try make(inMemory: false) }
 
     static func make(inMemory: Bool) throws -> ModelContainer {
@@ -429,7 +429,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   - after every change (`RefreshManager`);
   - when settings change;
   - on a time zone change (`.NSSystemTimeZoneDidChange`) and a day change (`.NSCalendarDayChanged`);
-  - during background refresh: `.backgroundTask(.appRefresh("com.applab.tempo.refresh"))`, which also submits the next `BGAppRefreshTaskRequest` with an earliest start one hour away.
+  - during background refresh: `.backgroundTask(.appRefresh("com.akumatech.tempo.refresh"))`, which also submits the next `BGAppRefreshTaskRequest` with an earliest start one hour away.
 - **The timer alert's category:** `TIMER_ALERT`, with `STOP` (`.foreground`; pauses the timer and opens the timer screen) and `KEEP_GOING`.
 - **Delegate** (in `AppDelegate`, through `UIApplicationDelegateAdaptor`):
   - Use the completion-handler forms of `willPresent` and `didReceive`, and call the handler on the main actor. The system calls the `async` forms' handlers off the main thread, and a tap then crashes UIKit (found in T-32).

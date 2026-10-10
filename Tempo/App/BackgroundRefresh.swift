@@ -3,7 +3,7 @@ import Foundation
 
 /// The background refresh that tops up the notification plan while the app isn't open (SPEC F-07, ios.md §10).
 enum BackgroundRefresh {
-    static let identifier = "com.applab.tempo.refresh"
+    static let identifier = "com.akumatech.tempo.refresh"
 
     /// Asks the system to run the refresh again, no sooner than an hour from now.
     static func schedule(after now: Date) {

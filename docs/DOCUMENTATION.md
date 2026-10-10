@@ -49,7 +49,7 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Built (T-01–T-32) · Last updated: 2026-10-10 · App icon
+Status: Built (T-01–T-32) · Last updated: 2026-10-10 · Team move
 
 ### What it does
 Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the time of day, with widgets at its core. Every feature in SPEC F-01–F-26 is built, and each section below describes it as it is.
@@ -66,17 +66,17 @@ Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the tim
 | Item | Value |
 |---|---|
 | Project / shared scheme | `Tempo.xcodeproj` / `Tempo` (builds the app and extension; tests `TempoTests`) |
-| App target | `Tempo`, bundle ID `com.applab.tempo`, display name "Tempo" |
-| Widget extension | `TempoWidgets`, bundle ID `com.applab.tempo.widgets`, embedded in the app |
-| App tests | `TempoTests`, bundle ID `com.applab.tempo.tests`, hosted in the app |
-| UI tests | `TempoUITests`, bundle ID `com.applab.tempo.uitests`, in the `Tempo` scheme; the app runs with `-ui-testing` (in-memory store) (D-064) |
+| App target | `Tempo`, bundle ID `com.akumatech.tempo`, display name "Tempo" |
+| Widget extension | `TempoWidgets`, bundle ID `com.akumatech.tempo.widgets`, embedded in the app |
+| App tests | `TempoTests`, bundle ID `com.akumatech.tempo.tests`, hosted in the app |
+| UI tests | `TempoUITests`, bundle ID `com.akumatech.tempo.uitests`, in the `Tempo` scheme; the app runs with `-ui-testing` (in-memory store) (D-064) |
 | Logic package | `Packages/Core` (Swift 6 tools, iOS 17 and macOS 14), linked into the app and the extension |
 | Deployment target | iOS 17.0, iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`) |
 | Swift | App, extension and tests use Swift 5 mode with strict concurrency set to `complete` and `InferSendableFromCaptures` on (D-055). Default actor isolation stays `nonisolated` (D-047). |
-| App Group | `group.com.applab.tempo`, in both targets' entitlements |
+| App Group | `group.akumatech.tempo`, in both targets' entitlements and `StoreFactory.appGroup` |
 | URL scheme | `tempo` (app `Info.plist`) |
-| Background refresh | `UIBackgroundModes = [fetch]` and `BGTaskSchedulerPermittedIdentifiers = [com.applab.tempo.refresh]`. `TempoApp` handles it with `.backgroundTask(.appRefresh(…))`, and `BackgroundRefresh` schedules the next run after each rebuild (F-07). |
-| Signing | Automatic, team `QAUG82L94Y` |
+| Background refresh | `UIBackgroundModes = [fetch]` and `BGTaskSchedulerPermittedIdentifiers = [com.akumatech.tempo.refresh]`. `TempoApp` handles it with `.backgroundTask(.appRefresh(…))`, and `BackgroundRefresh` schedules the next run after each rebuild (F-07). |
+| Signing | Automatic, team `L9B6N63T2Q` (moved from `QAUG82L94Y` on 2026-10-10) |
 
 The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is kept out of the bundles (D-048). `Tempo/`, `TempoWidgets/`, `Shared/` and `TempoTests/` are folder-synchronized groups: a file added on disk joins its target automatically. `Shared/` belongs to both the app and the extension.
 
@@ -88,7 +88,7 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
 
 ### Tests
-- `TempoTests/ProjectConfigurationTests.swift`: the app's bundle ID, the `tempo` URL scheme, the background refresh settings, the App Group container and the embedded extension's bundle ID.
+- `TempoTests/ProjectConfigurationTests.swift`: the app's bundle ID, the `tempo` URL scheme, the background refresh settings, the App Group container (and that the store's App Group is the entitled one) and the embedded extension's bundle ID.
 - Each feature section lists its tests. `TempoUITests/AccessibilityUITests` audits every screen (T-31), and `ScreenshotTests` holds the checks on the real Home Screen and Lock Screen (screenshots only).
 
 ### Known gaps
@@ -347,7 +347,7 @@ The app keeps the next 72 hours of reminders scheduled (the earliest 60): part s
   - Timer: "Read timer is still running" or "Timer is still running" / "It's been running for 2 hours."
   - Times follow the user's 12- or 24-hour setting.
 - **Delivery:** each notification uses a calendar trigger with year, month, day, hour and minute and no time zone, so reminders float with local time like the tasks. Sound is on. The timer alert has the `TIMER_ALERT` category with "Stop" (opens the app) and "Keep going".
-- **Rebuilding** (`ReminderManager.rebuild`) replaces every pending notification. It runs at launch, whenever the app becomes active, after every change (through `RefreshManager`, 0.5 s after a burst of changes; so Settings changes apply at once), on a day change or time zone change, and in the background refresh (`com.applab.tempo.refresh`, asked for again each time, no sooner than an hour later). Rebuilds run one at a time; one asked for during another runs once more afterward.
+- **Rebuilding** (`ReminderManager.rebuild`) replaces every pending notification. It runs at launch, whenever the app becomes active, after every change (through `RefreshManager`, 0.5 s after a burst of changes; so Settings changes apply at once), on a day change or time zone change, and in the background refresh (`com.akumatech.tempo.refresh`, asked for again each time, no sooner than an hour later). Rebuilds run one at a time; one asked for during another runs once more afterward.
 - **Permission:** with permission refused or not yet given, nothing is scheduled (any pending requests are cleared) and nothing fails.
 - **While the app is open,** notifications still appear as banners, in the list, with sound.
 - **Tapping** a notification opens its place: part summaries and ending-soon → Today at that day and part; fixed time → Today at that task; recap → the Missed tab; timer alert → the timer screen. A tap counts as opening from a link, so the missed popup waits.
@@ -1066,7 +1066,7 @@ The same app on iPad, with content kept to a readable width, every orientation, 
 - Split View and Stage Manager were checked only by resizing the app's window from a UI test, not by placing a second app beside it.
 
 ## F-26 · Data and future sync
-Status: Built (T-03, T-04, T-22, T-28) · Last updated: 2026-10-10 · T-32
+Status: Built (T-03, T-04, T-22, T-28) · Last updated: 2026-10-10 · Team move
 
 ### What it does
 Everything is stored on the device in one SwiftData store inside the App Group, shared by the app and the widget extension. Device-only state lives in the App Group's `UserDefaults`. There's no account and no server.
@@ -1079,7 +1079,7 @@ Everything is stored on the device in one SwiftData store inside the App Group, 
 - **Reading order:** tasks by `createdAt` (creation order), schedules by `effectiveFrom`, completions by `day`, time entries by `createdAt`.
 - **Bad data:** a row with an unknown enum string, or a schedule whose timing columns don't fit together, is skipped and logged rather than crashing. A time entry with 0 seconds or fewer is rejected with `StorageError.invalidValue`.
 - **Settings row:** created with the defaults (SPEC §4.5) the first time the app launches. Later launches keep what's saved. New part start times are checked against the F-02 rules before saving.
-- **Device-only state** (SPEC §4.6), one JSON value per key in `UserDefaults(suiteName: "group.com.applab.tempo")`:
+- **Device-only state** (SPEC §4.6), one JSON value per key in `UserDefaults(suiteName: "group.akumatech.tempo")`:
   - `deviceState.timer` — the timer: kind (`generic`/`habit`), habit id, start day, accumulated seconds, current segment start (empty while paused).
   - `deviceState.missedSeen` — the popup's seen list: a day and occurrence ids.
   - `deviceState.pendingOpenAction` — for now only "choose a task for a finished timer", with the frozen time.

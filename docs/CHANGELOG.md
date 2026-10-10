@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-10 · New developer team and identifiers
+- Platform: ios.md §2, §6, §10 — bundle IDs are `com.akumatech.tempo` (app) and `com.akumatech.tempo.widgets`, the App Group is `group.akumatech.tempo`, and the background refresh task is `com.akumatech.tempo.refresh`, after the move to team `L9B6N63T2Q`. The rename note lists everything that has to change together.
+- No changes to SPEC.md.
+
 ## 2026-10-10 · Notification delegate (T-32)
 - Platform: ios.md §10 — the notification delegate uses the completion-handler callbacks on the main actor; the async ones crashed the app when a notification was tapped.
 - No changes to SPEC.md.

@@ -981,7 +981,7 @@ final class ScreenshotTests: XCTestCase {
         sleep(2)
         let widgetArea = springboard.buttons["grouped-widgets-reticle-view"].firstMatch
         _ = widgetArea.waitForExistence(timeout: 5)
-        if !springboard.buttons["com.applab.tempo.widgets:LockScreenWidget"].exists {
+        if !springboard.buttons["com.akumatech.tempo.widgets:LockScreenWidget"].exists {
             widgetArea.tap()
             sleep(2)
             let tempo = springboard.cells["Tempo"]
