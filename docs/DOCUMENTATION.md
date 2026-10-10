@@ -922,7 +922,7 @@ Two Lock Screen widgets with the one thing to do next, from the next-task rule (
 - **Tapping** opens Today at the task shown, or Today when free.
 - **Updates on its own** at the same moments as the other widgets (F-17); the countdown updates in between.
 - **Load failure:** "Open Tempo to refresh", with a refresh icon on the inline size (F-17).
-- Checked on a real Lock Screen in the iOS 26.5 simulator: both sizes, the shrinking first line, and a tap opening Today at the task. The iOS 27 simulator can't edit the Lock Screen, and no simulator can have a passcode, so the hidden names were not seen locked; the `Names hidden while locked` preview shows how they're drawn.
+- Checked on a real Lock Screen in the iOS 26.5 simulator, on iPhone and on iPad (T-30): both sizes, the shrinking first line, and a tap opening Today at the task. The iOS 27 simulator can't edit the Lock Screen, and no simulator can have a passcode, so the hidden names were not seen locked; the `Names hidden while locked` preview shows how they're drawn.
 
 ### Implementation (iOS)
 - Widget: `TempoWidgets/Widgets/LockScreen/LockScreenWidget`, `LockScreenWidgetView` (`.accessoryRectangular`, `.accessoryInline`; `.privacySensitive()` on titles).
@@ -1024,9 +1024,31 @@ Every place that can be empty shows a message, with an Add button where SPEC F-2
 - None for F-24.
 
 ## F-25 · iPad
-Status: Not built · Last updated: —
+Status: Built (T-30) · Last updated: 2026-10-10 · T-30
 
-_Not built yet. Intended behavior: SPEC F-25._
+### What it does
+The same app on iPad, with content kept to a readable width, every orientation, and resizable windows that look like the phone when narrow.
+
+### Behavior
+- **Readable width:** on screens wider than 700 points, the rows of Today, Tasks, Missed, Stats, History, Habit detail and Settings keep to 700 points, centered; the list, its grey background and its scrolling fill the screen. Today's day strip, the Tasks and History segmented controls, the timer bar and the timer confirmation keep to the same width. Narrower screens keep the usual margins (D-096).
+- **Sheets** (editor, Log time, timer screen, task picker, missed popup) open as the system's form sheets on iPad, already narrower than 700 points. The guide's pages keep to 560 points.
+- **Navigation:** on iPad the four tabs show at the top of the screen, as the system draws a tab view there; in a narrow window they move to the bottom, as on the phone. Navigation titles and the floating + button stay at the screen's edges.
+- **Orientations:** iPad supports all four; iPhone stays portrait.
+- **Multitasking:** windows can be resized; a narrow window shows the phone layout.
+- **Widgets:** Timer, Day, Focus and Now on the iPad Home Screen, and both Lock Screen widgets on the iPad Lock Screen, look and work as on iPhone.
+- Checked on the iPad Pro 13-inch simulator (iOS 27.0): every screen in portrait and landscape, a window dragged narrow and back, and the four Home Screen widgets with a real task. The Lock Screen widgets were checked on the iOS 26.5 iPad simulator, whose Lock Screen editor works: both sizes added, shown locked, and a tap opening Today.
+
+### Implementation (iOS)
+- `Shared/Utilities/Extensions/View+ReadableWidth` (`readableWidth()`, `readableScrollContent()`), `Shared/Utilities/Layout/ReadableWidth`, `ReadableScrollContent`.
+- Used in `TodayView`, `TasksView`, `MissedView`, `StatsView`, `HistoryView`, `HabitDetailView`, `SettingsView` and `Components/TimerBar`.
+- Orientations: `INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad` (all four); `UIRequiresFullScreen` isn't set, so multitasking works.
+
+### Tests
+- `TempoTests/Utilities/ReadableWidthTests.swift`: the margins for phone, iPad mini, and iPad Pro portrait and landscape widths.
+- `TempoUITests/ScreenshotTests.swift` (screenshots only): `testEveryScreenInBothOrientations`, `testNarrowWindow`, `testWidgetsOnIPadHomeScreen`, `testLockScreenWidgets` (also runs on iPad).
+
+### Known gaps
+- Split View and Stage Manager were checked only by resizing the app's window from a UI test, not by placing a second app beside it.
 
 ## F-26 · Data and future sync
 Status: Partly built (T-03) · Last updated: 2026-10-07 · T-04

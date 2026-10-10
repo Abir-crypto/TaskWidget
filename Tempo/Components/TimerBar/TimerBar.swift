@@ -8,11 +8,14 @@ struct TimerBar: View {
     @Environment(NavigationRouter.self) private var router
 
     var body: some View {
+        // Both keep to the readable width on iPad (SPEC F-25).
         if let toast = controller.toast {
             ConfirmationToast(
-                toast: toast, onUndo: { controller.undo(toast) }, onChangeTask: { controller.changeTask(toast) })
+                toast: toast, onUndo: { controller.undo(toast) }, onChangeTask: { controller.changeTask(toast) }
+            )
+            .readableWidth()
         } else if let timer = controller.active {
-            bar(timer)
+            bar(timer).readableWidth()
         }
     }
 

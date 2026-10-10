@@ -57,6 +57,7 @@ struct StatsView: View {
             streaks(stats)
             habits(stats)
         }
+        .readableScrollContent()
     }
 
     // MARK: Range

@@ -23,6 +23,7 @@ struct TasksView: View {
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
                 .padding(.bottom, 8)
+                .readableWidth()
                 switch segment {
                 case .habits: habitsList
                 case .oneTime: oneTimeList
@@ -68,6 +69,7 @@ struct TasksView: View {
                     HabitRow(habit: habit)
                 }
             }
+            .readableScrollContent()
         }
     }
 
@@ -95,6 +97,7 @@ struct TasksView: View {
                     }
                 }
             }
+            .readableScrollContent()
         }
     }
 }

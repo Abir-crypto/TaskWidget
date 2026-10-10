@@ -14,6 +14,11 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-10 · Readable width on iPad (T-30)
+- Platform: ios.md §12 — lists and forms keep to the readable width with content margins (`readableScrollContent()`), fixed content with `readableWidth()`; sheets keep the system form-sheet size (D-096).
+- Platform: ios.md §15 — how to test narrow windows and take landscape screenshots on iPad.
+- No changes to SPEC.md.
+
 ## 2026-10-10 · Links on first launch (T-29)
 - Platform: ios.md §11 — a link or pending open action that arrives before the first-launch guide is finished waits for the guide to close (D-095).
 - No changes to SPEC.md.

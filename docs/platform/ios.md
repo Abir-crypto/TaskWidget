@@ -498,13 +498,16 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
 - **Time pickers:** SwiftUI's `DatePicker` has no minute interval, so `MinuteIntervalPicker` wraps `UIDatePicker` (`.time` mode, `minuteInterval` 5, or 15 in Settings).
 - **Live statuses:** the Today screen and the timer screen sit inside `TimelineView(.everyMinute)`.
 - **Charts:** Swift Charts `BarMark` for the Week and Year ranges. The Month calendar is a custom grid.
-- **Readable width:**
+- **Readable width** (`Shared/Utilities/Extensions/View+ReadableWidth`, D-096):
+  - Lists and forms use `readableScrollContent()`, which sets horizontal `contentMargins(for: .scrollContent)` from the container's width (`ReadableWidth.margin(in:)`), so rows keep to 700 points while the list, its background and its scrolling still fill the screen. Below 700 points the default margins apply.
+  - Fixed content, such as Today's day strip, the Tasks and History segmented controls and the timer bar, uses `readableWidth()`:
 
   ```swift
   extension View {
       func readableWidth() -> some View { frame(maxWidth: 700).frame(maxWidth: .infinity) }
   }
   ```
+  - Sheets keep the system's form-sheet size on iPad, which is already narrower than 700 points.
 
 - **Haptics:** `.sensoryFeedback(.success, trigger:)` on completing a task, and `.selection` on changing day.
 
@@ -604,7 +607,7 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
 - **T-27:** `Widgets/LockScreen` (`.accessoryRectangular` and `.accessoryInline`), with `.privacySensitive()`.
 - **T-28:** `Views/Onboarding` (§12). Page 7 requests notification permission.
 - **T-29:** Go through SPEC F-24 one row at a time.
-- **T-30:** Use `readableWidth()` on every screen. Test in Stage Manager, Split View and every orientation.
+- **T-30:** Use `readableScrollContent()` or `readableWidth()` on every screen. Test in Stage Manager, Split View and every orientation. On iPadOS 26 and later, a UI test can make a narrow window by dragging the window's corner handle; landscape screenshots need `XCUIScreen.main.screenshot()`, because an app's screenshot comes out rotated and cropped.
 - **T-31:**
   - Use Dynamic Type sizes up to AX5 in the app, and confirm widgets don't clip at the largest non-accessibility size.
   - Test with VoiceOver, and run the Accessibility Inspector audit.

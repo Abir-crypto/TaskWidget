@@ -24,6 +24,7 @@ struct SettingsView: View {
             helpSection
             aboutSection
         }
+        .readableScrollContent()
         .navigationTitle("Settings")
         .task(id: dependencies.refresh.revision) { await model.load() }
     }

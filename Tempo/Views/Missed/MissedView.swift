@@ -75,6 +75,7 @@ struct MissedView: View {
             todaySection
             earlierSection
         }
+        .readableScrollContent()
     }
 
     // MARK: Today

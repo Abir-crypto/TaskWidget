@@ -89,6 +89,7 @@ struct HabitDetailView: View {
                 missedSection
             }
         }
+        .readableScrollContent()
     }
 
     // MARK: Header and buttons

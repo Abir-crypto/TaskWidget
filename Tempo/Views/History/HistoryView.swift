@@ -19,6 +19,7 @@ struct HistoryView: View {
             .pickerStyle(.segmented)
             .padding(.horizontal)
             .padding(.bottom, 8)
+            .readableWidth()
             switch model.segment {
             case .oneTime: oneTimeList
             case .habits: habitsList
@@ -64,6 +65,7 @@ struct HistoryView: View {
                     }
                 }
             }
+            .readableScrollContent()
         }
     }
 
@@ -80,6 +82,7 @@ struct HistoryView: View {
                     EndedHabitRow(habit: habit) { model.startAgain(habit) }
                 }
             }
+            .readableScrollContent()
         }
     }
 }

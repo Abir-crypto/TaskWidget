@@ -19,6 +19,14 @@ final class ScreenshotTests: XCTestCase {
         try? app.screenshot().pngRepresentation.write(to: folder.appending(path: "\(name).png"))
     }
 
+    /// The whole screen, which comes out the right way round in landscape on iPad, unlike an app's screenshot.
+    @MainActor
+    private func saveScreen(_ name: String) {
+        guard let folder else { return }
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try? XCUIScreen.main.screenshot().pngRepresentation.write(to: folder.appending(path: "\(name).png"))
+    }
+
     @MainActor
     func testSettings() {
         let app = UITestApp.launch(now: "2026-10-06T10:30:00+01:00")
@@ -39,6 +47,71 @@ final class ScreenshotTests: XCTestCase {
             sleep(1)
         }
         save(app, "guide-7")
+    }
+
+    /// Every screen in portrait and landscape, for checking the readable width on iPad (SPEC F-25).
+    @MainActor
+    func testEveryScreenInBothOrientations() {
+        for orientation in [UIDeviceOrientation.portrait, .landscapeLeft] {
+            XCUIDevice.shared.orientation = orientation
+            let suffix = orientation == .portrait ? "portrait" : "landscape"
+            let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+            _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
+            saveScreen("today-\(suffix)")
+            app.buttons["Settings"].tap()
+            sleep(1)
+            saveScreen("settings-\(suffix)")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            app.buttons["Add task"].tap()
+            sleep(1)
+            saveScreen("editor-\(suffix)")
+            app.buttons["Cancel"].tap()
+            for tab in ["Tasks", "Missed", "Stats"] {
+                app.buttons[tab].firstMatch.tap()
+                sleep(1)
+                saveScreen("\(tab.lowercased())-\(suffix)")
+            }
+            app.buttons["Tasks"].firstMatch.tap()
+            app.buttons["Habits"].tap()
+            app.staticTexts["Read"].firstMatch.tap()
+            sleep(1)
+            saveScreen("habit-\(suffix)")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            app.buttons["History"].firstMatch.tap()
+            sleep(1)
+            saveScreen("history-\(suffix)")
+            app.terminate()
+        }
+        XCUIDevice.shared.orientation = .portrait
+    }
+
+    /// Drags the window's corner handle to make Tempo a narrow window, photographs it, then restores the size
+    /// (SPEC F-25: a narrow window looks like the phone). iPad only.
+    @MainActor
+    func testNarrowWindow() {
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
+        sleep(1)
+        saveScreen("narrow-0-full")
+        let screen = app.coordinate(withNormalizedOffset: .zero)
+        let frame = app.windows.firstMatch.frame
+        let corner = screen.withOffset(CGVector(dx: frame.maxX - 6, dy: frame.maxY - 6))
+        corner.press(forDuration: 0.5, thenDragTo: screen.withOffset(CGVector(dx: 420, dy: frame.maxY - 60)))
+        sleep(2)
+        saveScreen("narrow-1-today")
+        app.buttons["Tasks"].firstMatch.tap()
+        sleep(1)
+        saveScreen("narrow-2-tasks")
+        app.buttons["Stats"].firstMatch.tap()
+        sleep(1)
+        saveScreen("narrow-3-stats")
+        let narrow = app.windows.firstMatch.frame
+        let back = screen.withOffset(CGVector(dx: narrow.maxX - 6, dy: narrow.maxY - 6))
+        back.press(forDuration: 0.5, thenDragTo: screen.withOffset(CGVector(dx: frame.maxX, dy: frame.maxY)))
+        sleep(2)
+        saveScreen("narrow-4-restored")
+        XCUIDevice.shared.orientation = .portrait
     }
 
     @MainActor
@@ -508,6 +581,70 @@ final class ScreenshotTests: XCTestCase {
         if app.buttons["Cancel"].waitForExistence(timeout: 2) { app.buttons["Cancel"].tap() }
     }
 
+    /// Adds Tempo widgets to an iPad's Home Screen next to a real task and photographs them, then deletes the
+    /// task (SPEC F-25). `TEMPO_WIDGET_SWIPES` lists how far into Tempo's gallery each widget is, e.g. "0,1,2".
+    @MainActor
+    func testWidgetsOnIPadHomeScreen() {
+        let app = XCUIApplication()
+        app.launch()
+        finishGuideIfShown(app)
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Add task"].firstMatch.tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("iPad check")
+        app.buttons["Anytime"].tap()
+        app.buttons["Save"].tap()
+        sleep(1)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let swipes = (ProcessInfo.processInfo.environment["TEMPO_WIDGET_SWIPES"] ?? "0")
+            .split(separator: ",").compactMap { Int($0) }
+        for (index, count) in swipes.enumerated() {
+            XCUIDevice.shared.press(.home)
+            sleep(2)
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75)).press(forDuration: 2)
+            sleep(1)
+            if springboard.buttons["Edit"].waitForExistence(timeout: 3) { springboard.buttons["Edit"].tap() }
+            sleep(1)
+            if springboard.buttons["Add Widget"].firstMatch.waitForExistence(timeout: 3) {
+                springboard.buttons["Add Widget"].firstMatch.tap()
+            }
+            sleep(2)
+            let search = springboard.searchFields.firstMatch
+            guard search.waitForExistence(timeout: 3) else {
+                saveScreen("ipad-x-no-gallery-\(index)")
+                return
+            }
+            search.tap()
+            search.typeText("Tempo")
+            sleep(1)
+            springboard.staticTexts["Tempo"].firstMatch.tap()
+            sleep(2)
+            for _ in 0..<count {
+                springboard.swipeLeft()
+                sleep(1)
+            }
+            saveScreen("ipad-\(index)-gallery")
+            let add = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget'"))
+                .allElementsBoundByIndex.last { $0.isHittable }
+            add?.tap()
+            sleep(2)
+            if springboard.buttons["Done"].firstMatch.waitForExistence(timeout: 2) {
+                springboard.buttons["Done"].firstMatch.tap()
+            }
+            sleep(3)
+            saveScreen("ipad-\(index)-home")
+        }
+        app.activate()
+        app.buttons["Today"].firstMatch.tap()
+        let row = app.staticTexts["iPad check"].firstMatch
+        if row.waitForExistence(timeout: 3) {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
+    }
+
     /// Photographs each Home Screen page, to plan where widgets can go.
     @MainActor
     func testHomeScreenPages() {
@@ -610,7 +747,7 @@ final class ScreenshotTests: XCTestCase {
         app.launch()
         finishGuideIfShown(app)
         if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
-        app.tabBars.buttons["Today"].tap()
+        app.buttons["Today"].firstMatch.tap()
         app.buttons["Add task"].tap()
         let title = app.textFields["Title"]
         title.tap()
@@ -624,8 +761,10 @@ final class ScreenshotTests: XCTestCase {
         sleep(2)
         springboard.buttons["posterboard-customize-button"].tap()
         sleep(2)
+        let widgetArea = springboard.buttons["grouped-widgets-reticle-view"].firstMatch
+        _ = widgetArea.waitForExistence(timeout: 5)
         if !springboard.buttons["com.applab.tempo.widgets:LockScreenWidget"].exists {
-            springboard.buttons["grouped-widgets-reticle-view"].firstMatch.tap()
+            widgetArea.tap()
             sleep(2)
             let tempo = springboard.cells["Tempo"]
             for _ in 0..<4 where !tempo.isHittable {
@@ -636,7 +775,9 @@ final class ScreenshotTests: XCTestCase {
             sleep(2)
             springboard.buttons["Tempo, Next task"].tap()
             sleep(2)
-            if springboard.buttons["close"].exists { springboard.buttons["close"].tap() }
+            // "close" on iPhone, "Close" on iPad.
+            let close = springboard.buttons.matching(NSPredicate(format: "label ==[c] 'close'")).firstMatch
+            if close.exists { close.tap() }
             sleep(1)
             dismissSheet(springboard)
         }
@@ -654,6 +795,11 @@ final class ScreenshotTests: XCTestCase {
             dismissSheet(springboard)
         }
         save(springboard, "lock-1-editor")
+        // On iPad the inline chooser is a popover; a tap beside it closes it.
+        if springboard.staticTexts["Choose Widget"].exists {
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.85, dy: 0.5)).tap()
+            sleep(1)
+        }
         springboard.buttons["editing-done"].tap()
         sleep(2)
         let poster = springboard.cells.matching(NSPredicate(format: "identifier BEGINSWITH 'posterboard-posteruuid'"))
@@ -664,8 +810,10 @@ final class ScreenshotTests: XCTestCase {
         lockAndWake()
         sleep(3)
         save(springboard, "lock-2-locked")
-        // The rectangular widget, below the clock on the left.
-        springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.82)).tap()
+        // The rectangular widget: the left of the widget row, low on an iPhone and lower still on an iPad.
+        let isPad = UIDevice.current.userInterfaceIdiom == .pad
+        springboard.coordinate(withNormalizedOffset: isPad ? CGVector(dx: 0.4, dy: 0.86) : CGVector(dx: 0.25, dy: 0.82))
+            .tap()
         sleep(3)
         save(app, "lock-3-opened")
 
@@ -678,14 +826,16 @@ final class ScreenshotTests: XCTestCase {
         app.activate()
         setHideTaskNames(app, false)
 
-        app.tabBars.buttons["Today"].tap()
-        let row = app.staticTexts["Lock check"].firstMatch
-        if row.waitForExistence(timeout: 3) {
+        app.buttons["Today"].firstMatch.tap()
+        // Earlier interrupted runs may have left tasks behind too.
+        for _ in 0..<10 {
+            let row = app.staticTexts["Lock check"].firstMatch
+            guard row.waitForExistence(timeout: 3) else { break }
             row.swipeLeft()
             if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
             if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+            sleep(1)
         }
-        sleep(1)
     }
 
     /// The real app shows the first-launch guide until it has been finished once on the simulator.

@@ -92,7 +92,9 @@ struct TodayView: View {
         VStack(spacing: 0) {
             DayStrip(
                 days: model.week(at: now), selected: model.selectedDay, calendar: model.calendar,
-                onSelect: { model.select($0) }, onSwipe: { model.moveWeek(by: $0) })
+                onSelect: { model.select($0) }, onSwipe: { model.moveWeek(by: $0) }
+            )
+            .readableWidth()
             Divider()
             if let plan = model.plan(at: now) {
                 if plan.isEmpty {
@@ -116,6 +118,7 @@ struct TodayView: View {
                         .id(section.id)
                 }
             }
+            .readableScrollContent()
             .onChange(of: model.scrollTarget, initial: true) { _, target in
                 guard let target else { return }
                 withAnimation { proxy.scrollTo(target, anchor: .top) }
