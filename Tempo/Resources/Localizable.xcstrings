@@ -240,6 +240,9 @@
     "Anytime tasks belong to no part of the day and stay open until midnight." : {
 
     },
+    "Appearance" : {
+
+    },
     "Before the part ends" : {
 
     },
@@ -315,6 +318,9 @@
     },
     "Daily target" : {
 
+    },
+    "Dark" : {
+      "comment" : "Appearance"
     },
     "Date" : {
 
@@ -497,6 +503,9 @@
     },
     "Less than a minute, nothing saved." : {
 
+    },
+    "Light" : {
+      "comment" : "Appearance"
     },
     "List" : {
 
@@ -875,6 +884,12 @@
     "Streaks" : {
 
     },
+    "System" : {
+      "comment" : "Appearance: follow the device's light or dark mode"
+    },
+    "System follows your device's light or dark mode, as the widgets always do. The color is used for buttons, checkboxes and highlights in the app and its widgets." : {
+
+    },
     "Tap a day to open it in Today." : {
 
     },
@@ -985,9 +1000,6 @@
 
     },
     "Upcoming" : {
-
-    },
-    "Used for buttons, checkboxes and highlights in the app and its widgets." : {
 
     },
     "Version" : {

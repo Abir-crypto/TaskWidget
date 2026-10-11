@@ -14,8 +14,8 @@ struct StoreFactoryTests {
         #expect(url.deletingLastPathComponent().standardizedFileURL == group.standardizedFileURL)
     }
 
-    /// A store written by version 1 opens under version 2 with its data, and its settings row gets the default
-    /// theme color (SPEC T-33, ios.md §6).
+    /// A store written by version 1 opens under the current version with its data, and its settings row gets the
+    /// default theme color and appearance (SPEC T-33, T-34, ios.md §6).
     @Test func versionOneStoreMigratesWithItsData() throws {
         let url = try StoreFactory.storeURL(fileName: "Tempo-v1-\(UUID().uuidString).store")
         defer { Self.removeStore(at: url) }
@@ -41,6 +41,35 @@ struct StoreFactoryTests {
         let settings = try #require(try store.settings())
         #expect(settings.hideLockScreenTitles)
         #expect(settings.tintColor == .preset(.blue))
+        #expect(settings.appearance == .system)
+    }
+
+    /// A store written by version 2 keeps its data and theme color, and gets System as its appearance (SPEC T-34).
+    @Test func versionTwoStoreMigratesWithItsData() throws {
+        let url = try StoreFactory.storeURL(fileName: "Tempo-v2-\(UUID().uuidString).store")
+        defer { Self.removeStore(at: url) }
+        let taskID = UUID()
+        do {
+            let schema = Schema(versionedSchema: SchemaV2.self)
+            let old = try ModelContainer(
+                for: schema, configurations: ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+            let context = ModelContext(old)
+            let task = SchemaV2.TaskRecord()
+            task.id = taskID
+            task.title = "Read"
+            context.insert(task)
+            let settings = SchemaV2.SettingsRecord()
+            settings.id = SwiftDataTaskStore.settingsID
+            settings.tintColor = "#1E90FF"
+            context.insert(settings)
+            try context.save()
+        }
+
+        let store = SwiftDataTaskStore(container: try StoreFactory.make(url: url), clock: TestEnvironment.clock())
+        #expect(try store.task(id: taskID)?.title == "Read")
+        let settings = try #require(try store.settings())
+        #expect(settings.tintColor == .custom(red: 30, green: 144, blue: 255))
+        #expect(settings.appearance == .system)
     }
 
     /// The app and the widget extension each open their own container on the App Group file. Two containers on

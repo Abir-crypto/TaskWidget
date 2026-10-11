@@ -117,16 +117,18 @@ final class ScreenshotTests: XCTestCase {
         XCUIDevice.shared.orientation = .portrait
     }
 
-    /// Chooses the theme in `TEMPO_THEME` (default "Pink") in Settings and photographs the screens it colors
-    /// (SPEC F-27).
+    /// Chooses the theme in `TEMPO_THEME` (default "Pink") in Settings, and the appearance in `TEMPO_APPEARANCE`
+    /// ("Dark" or "Light") if it's set, and photographs the screens they color (SPEC F-27, F-28).
     @MainActor
     func testThemeOnEveryScreen() {
-        let theme = ProcessInfo.processInfo.environment["TEMPO_THEME"] ?? "Pink"
+        let environment = ProcessInfo.processInfo.environment
+        let theme = environment["TEMPO_THEME"] ?? "Pink"
         let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
         _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
         app.buttons["Settings"].tap()
         let swatch = app.buttons[theme]
         for _ in 0..<4 where !swatch.isHittable { app.swipeUp() }
+        if let appearance = environment["TEMPO_APPEARANCE"] { app.buttons[appearance].tap() }
         swatch.tap()
         sleep(1)
         saveScreen("theme-1-settings")

@@ -122,16 +122,22 @@ struct SettingsView: View {
 
     // MARK: Theme
 
-    /// The app's color (SPEC F-27). It applies at once, through the root view's tint.
+    /// The app's appearance and color (SPEC F-28, F-27). Both apply at once, through the root view (ios.md §12).
     private var themeSection: some View {
         Section {
+            Picker("Appearance", selection: binding(\.appearance)) {
+                ForEach(Appearance.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.segmented)
             ThemePicker(selection: model.settings.tintColor) { color in
                 model.update { $0.tintColor = color }
             }
         } header: {
             Text("Theme")
         } footer: {
-            Text("Used for buttons, checkboxes and highlights in the app and its widgets.")
+            Text(
+                "System follows your device's light or dark mode, as the widgets always do. The color is used for buttons, checkboxes and highlights in the app and its widgets."
+            )
         }
     }
 

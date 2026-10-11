@@ -84,6 +84,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 - First-launch guide, and an empty state on every screen.
 - iPhone and iPad with the same layout.
 - A theme color for the app and its widgets (F-27).
+- An appearance for the app: the system's light or dark mode, or always one of them (F-28).
 
 ### 2.2 Not in v1
 
@@ -420,7 +421,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
   - End-of-day recap: on or off, with a time in 15-minute steps between Night's start and 23:45 (23:30 by default).
   - Running timer alert: on or off, after 1, 2 or 3 hours (2 by default).
   - The notification permission status, with a link to the system settings when notifications are off.
-- **Theme:** the app's color (F-27).
+- **Theme:** the app's appearance (F-28) and its color (F-27).
 - **Privacy:** Hide task names on the Lock Screen (off by default).
 - **Help:** How to use, which opens pages 1–5 of the guide (F-23).
 - **About:** the app version.
@@ -434,6 +435,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 - Widget buttons work without opening the app, unless a feature says otherwise.
 - Status is never shown by color alone; an icon or text always goes with it. Widgets adapt to dark mode and to tinted styles.
 - Widgets use the theme color (F-27) for their accents. In the tinted and clear Home Screen styles and on the Lock Screen, the system's colors apply instead.
+- Widgets follow the system's light or dark mode, whatever the app's appearance (F-28).
 - A widget never shows controls for a timer it doesn't control (F-06).
 - If a widget can't load its data, it shows "Open Tempo to refresh" and tries again 15 minutes later.
 
@@ -577,6 +579,15 @@ The user chooses the app's color in Settings › Theme.
 - **What doesn't change:** the status colors (done green, missed red, short orange), which always come with an icon or text, and the app icon.
 - A stored color the app can't read is treated as Blue.
 
+### F-28 · Appearance
+
+The user chooses whether the app follows the system's light or dark mode in Settings › Theme, above the colors.
+
+- **Choices:** System (the default), Dark and Light. System follows the device's mode as it changes; Dark and Light always use that mode.
+- **Where it applies,** at once: every screen of the app, with its sheets, dialogs and menus, the guide and the color picker.
+- **What doesn't change:** the widgets, the Lock Screen, notifications and the screen shown while the app launches keep following the device's mode.
+- A stored appearance the app can't read is treated as System.
+
 ---
 
 ## 4. Data model
@@ -660,9 +671,12 @@ A single row with a fixed id.
 | timer_alert_minutes | int | 120 |
 | hide_lock_screen_titles | bool | false |
 | tint_color | text | "blue" |
+| appearance | text | "system" |
 | updated_at | timestamp | |
 
 `tint_color` is a preset (`blue`, `indigo`, `purple`, `pink`, `red`, `orange`, `green` or `teal`) or a custom color written `#RRGGBB` (F-27).
+
+`appearance` is `system`, `dark` or `light` (F-28).
 
 ### 4.6 State kept on the device only (never synced)
 
@@ -840,6 +854,7 @@ For a range R (a week, month or year), counting up to and including today:
 | Notification horizon | At least 48 hours |
 | Readable width on tablets | About 700 points |
 | Theme color | Blue (8 presets, or a custom color) |
+| Appearance | System (or Dark, or Light) |
 
 ---
 
@@ -1181,3 +1196,12 @@ Acceptance
 - [ ] Choosing a preset or a custom color re-tints the whole app at once, and the Home Screen widgets' accents from their next update. The choice survives a restart.
 - [ ] Every preset reads well in light and dark mode. The status colors and the app icon don't change.
 - [ ] Existing data is kept when the store gains the new column, and a stored color the app can't read is treated as Blue.
+
+#### T-34 · Appearance
+Implements: F-28, F-16, F-17, §4.5 · Depends on: T-33
+
+Acceptance
+- [ ] Settings › Theme shows Appearance, with System, Dark and Light, above the colors. The current choice is marked, and each choice is named for VoiceOver.
+- [ ] Dark and Light change every screen of the app at once, with its sheets, dialogs and menus; System follows the device again. The choice survives a restart.
+- [ ] The widgets and notifications keep following the device's mode.
+- [ ] Existing data, the theme color included, is kept when the store gains the new column, and a stored appearance the app can't read is treated as System.

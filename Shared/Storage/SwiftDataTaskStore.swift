@@ -7,11 +7,11 @@ import SwiftData
 /// Every call makes a fresh `ModelContext`, so it always sees writes made by the other process (app or
 /// widget extension). Records are converted to `Core` values here and never leave this file.
 final class SwiftDataTaskStore: TaskStore {
-    typealias TaskRecord = SchemaV2.TaskRecord
-    typealias ScheduleRecord = SchemaV2.ScheduleRecord
-    typealias CompletionRecord = SchemaV2.CompletionRecord
-    typealias TimeEntryRecord = SchemaV2.TimeEntryRecord
-    typealias SettingsRecord = SchemaV2.SettingsRecord
+    typealias TaskRecord = SchemaV3.TaskRecord
+    typealias ScheduleRecord = SchemaV3.ScheduleRecord
+    typealias CompletionRecord = SchemaV3.CompletionRecord
+    typealias TimeEntryRecord = SchemaV3.TimeEntryRecord
+    typealias SettingsRecord = SchemaV3.SettingsRecord
 
     /// The settings table's one fixed id (SPEC §4.5).
     static let settingsID = UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1))
@@ -373,6 +373,7 @@ final class SwiftDataTaskStore: TaskStore {
             timerAlertMinutes: record.timerAlertMinutes,
             hideLockScreenTitles: record.hideLockScreenTitles,
             tintColor: ThemeColor(storedValue: record.tintColor),
+            appearance: Appearance(storedValue: record.appearance),
             updatedAt: record.updatedAt
         )
     }
@@ -402,6 +403,7 @@ final class SwiftDataTaskStore: TaskStore {
         record.timerAlertMinutes = stored.timerAlertMinutes
         record.hideLockScreenTitles = stored.hideLockScreenTitles
         record.tintColor = stored.tintColor.storedValue
+        record.appearance = stored.appearance.rawValue
         record.updatedAt = clock.now
         try context.save()
         return stored

@@ -49,10 +49,10 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Built (T-01–T-33) · Last updated: 2026-10-11 · T-33
+Status: Built (T-01–T-34) · Last updated: 2026-10-11 · T-34
 
 ### What it does
-Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the time of day, with widgets at its core. Every feature in SPEC F-01–F-26 is built, and each section below describes it as it is.
+Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the time of day, with widgets at its core. Every feature in SPEC F-01–F-28 is built, and each section below describes it as it is.
 
 ### Behavior
 - **App:** four tabs — Today, Tasks, Missed and Stats (F-09) — with Settings, History, Habit detail, the editor, Log time, the timer screen, the task picker, the missed popup and the first-launch guide.
@@ -61,6 +61,7 @@ Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the tim
 - **iPhone** runs in portrait only. **iPad** supports all four orientations and resizable windows (F-25).
 - **App icon:** a ring of four arcs, one per part of the day (amber, orange, pink, violet, clockwise from the top), around a white checkmark on a sky-blue to indigo gradient, with dark and tinted variants for the Home Screen styles (D-099). The widget extension uses the app's icon.
 - **Theme color:** eight presets or a custom color in Settings, for the app and its widgets (F-27).
+- **Appearance:** System, Dark or Light for the app in Settings; the widgets always follow the device (F-28).
 - **Accessibility:** every control has a spoken label and statuses are read as text; layouts hold up to the largest text size; dark mode and the tinted widget styles are supported; completing a task and changing day give haptic feedback (T-31).
 
 ### Project and targets
@@ -703,7 +704,7 @@ Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
 - None for F-15.
 
 ## F-16 · Settings
-Status: Built (T-10, T-28, T-33) · Last updated: 2026-10-11 · T-33
+Status: Built (T-10, T-28, T-33, T-34) · Last updated: 2026-10-11 · T-34
 
 ### What it does
 Settings is pushed from the gear on Today. Every change is saved as soon as it's made and keeps its value after a restart.
@@ -718,7 +719,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
   - "Running timer alert" (on/off), and when on, "Alert after": 1, 2 (default) or 3 hours.
   - Footer: "A summary when each part starts, a reminder before a part ends, a reminder before fixed-time tasks, a recap of the day, and an alert when a timer has been running a long time."
 - **Notifications** status row: "On"; "Off" with an "Open Settings" button that opens the app's notification settings in the system Settings app, and the footer "Notifications are off for Tempo, so no reminders are sent. Turn them on in the Settings app."; or "Not allowed yet" with an "Allow notifications" button that asks for permission (D-067). The status is re-read whenever the app becomes active.
-- **Theme:** the app's color, eight presets or a custom color (F-27).
+- **Theme:** the app's appearance, System, Dark or Light (F-28), and its color, eight presets or a custom color (F-27).
 - **Privacy:** "Hide task names on the Lock Screen", off by default. Footer: "Task names stay hidden on the Lock Screen widgets until your iPhone or iPad is unlocked." The Lock Screen widgets follow it (F-22).
 - **Help:** "How to use" opens pages 1–5 of the guide (F-23).
 - **About:** "Version" shows the marketing version and build, e.g. "1.0 (1)".
@@ -740,13 +741,13 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 ### Tests
 - `Packages/Core/Tests/CoreTests/Calendar/SettingsValueTests.swift`: defaults, recap choices, every validation error, the recap following Night.
 - `TempoTests/ViewModels/SettingsViewModelTests.swift`: defaults and permission, every setting saved and read back from a new container on the same file (a restart), invalid part times not saved, picker ranges, the recap following Night, asking for permission, "off" status.
-- `TempoUITests/SettingsUITests.swift`: every setting is on screen. `GuideUITests` opens How to use.
+- `TempoUITests/SettingsUITests.swift`: every setting is on screen; the theme's swatches (F-27) and appearance choices (F-28). `GuideUITests` opens How to use.
 
 ### Known gaps
 - None for F-16.
 
 ## F-17 · Widgets: general rules
-Status: Built (T-22–T-27, T-33) · Last updated: 2026-10-11 · T-33
+Status: Built (T-22–T-27, T-33, T-34) · Last updated: 2026-10-11 · T-34
 
 ### What it does
 The foundation every widget shares: one timeline provider that reads the app's store, entries for each moment the widgets must change, a fallback when the data can't be read, and widget buttons (App Intents) that refresh everything after they act.
@@ -761,6 +762,7 @@ The foundation every widget shares: one timeline provider that reads the app's s
 - The T-01 placeholder widget used this provider until the Timer widget replaced it (T-23).
 - **Tinted and clear styles (T-31):** main buttons are filled in full color and bordered in the tinted and clear Home Screen styles, where a filled button's label would vanish (`ProminentWidgetButton`). Checked in the Default, Dark, Tinted and Clear styles and at the largest standard text size on the iOS 27 simulator.
 - **Theme color (T-33):** the Home Screen widgets are tinted with the theme color from their snapshot's settings (`widgetTheme`), so their accents follow F-27. In the tinted and clear styles and on the Lock Screen, the system's colors apply.
+- **Light and dark (T-34):** widgets follow the device's mode. The app's appearance setting (F-28) isn't applied to them.
 
 ### Data
 Reads everything; buttons write through the same managers as the app.
@@ -1069,7 +1071,7 @@ The same app on iPad, with content kept to a readable width, every orientation, 
 - Split View and Stage Manager were checked only by resizing the app's window from a UI test, not by placing a second app beside it.
 
 ## F-26 · Data and future sync
-Status: Built (T-03, T-04, T-22, T-28, T-33) · Last updated: 2026-10-11 · T-33
+Status: Built (T-03, T-04, T-22, T-28, T-33, T-34) · Last updated: 2026-10-11 · T-34
 
 ### What it does
 Everything is stored on the device in one SwiftData store inside the App Group, shared by the app and the widget extension. Device-only state lives in the App Group's `UserDefaults`. There's no account and no server.
@@ -1091,14 +1093,14 @@ Everything is stored on the device in one SwiftData store inside the App Group, 
 - **Sharing with the widgets:** the store file is `Tempo.store` in the App Group container. Every read and write makes a fresh `ModelContext`, so each process sees the other's writes (CLAUDE.md, ios.md §6).
 - **If the store can't be opened,** the app shows "Can't open your tasks" / "Something went wrong while opening Tempo's data. Close the app and open it again." (D-057).
 - **After every write** through a manager, `RefreshManager.afterChange()` reloads every widget and rebuilds the notifications, 0.5 s after the last of a burst of writes. `refreshNow()` skips the wait; `refreshNowAndWait()` also waits for the notifications, for App Intents (T-21).
-- **Schema versions:** version 2 (T-33) adds `settings.tint_color`; a version-1 store migrates with a lightweight stage and keeps its data.
+- **Schema versions:** version 2 (T-33) adds `settings.tint_color`, and version 3 (T-34) adds `settings.appearance`. Older stores migrate through lightweight stages, V1 → V2 → V3, and keep their data.
 
 ### Data
 All tables in SPEC §4 and the device-only state in §4.6.
 
 ### Implementation (iOS)
-- Values: `Packages/Core/Sources/Core/Models/` — `TaskValue`, `TaskType`, `ScheduleValue`, `Timing`, `TimingKind`, `CompletionValue`, `TimeEntryValue`, `TimeEntrySource`, `SettingsValue`, `TaskData`, `PendingOpenAction`; `Core/Timer/` — `TimerState`, `TimerKind`, `FinishedTimer`; `Core/Missed/MissedSeenList`.
-- Storage: `Shared/Storage/` — `SchemaV1`, `SchemaV2` (records), `MigrationPlan`, `StoreFactory`, `TaskStore` (protocol), `SwiftDataTaskStore`, `StoreWrite` (atomic batches, T-04), `DeviceState`, `StorageError`.
+- Values: `Packages/Core/Sources/Core/Models/` — `TaskValue`, `TaskType`, `ScheduleValue`, `Timing`, `TimingKind`, `CompletionValue`, `TimeEntryValue`, `TimeEntrySource`, `SettingsValue`, `ThemeColor`, `ThemePreset`, `Appearance`, `TaskData`, `PendingOpenAction`; `Core/Timer/` — `TimerState`, `TimerKind`, `FinishedTimer`; `Core/Missed/MissedSeenList`.
+- Storage: `Shared/Storage/` — `SchemaV1`, `SchemaV2`, `SchemaV3` (records), `MigrationPlan`, `StoreFactory`, `TaskStore` (protocol), `SwiftDataTaskStore`, `StoreWrite` (atomic batches, T-04), `DeviceState`, `StorageError`.
 - Managers: `Shared/Managers/SettingsManager` (+ `SettingsError`), `RefreshManager`, `WidgetManager` (+ `WidgetReloading`).
 - Clock and logging: `Shared/Utilities/Clock/` (`Clock`, `SystemClock`, `FixedClock`; D-054), `Shared/Utilities/Logging/Log`.
 - App: `Tempo/App/AppDependencies` creates the managers and makes sure the settings row exists at launch; `Tempo/Views/Root/Components/StoreErrorView`.
@@ -1114,13 +1116,13 @@ All tables in SPEC §4 and the device-only state in §4.6.
 - No sync, by design for v1.
 
 ## F-27 · Theme color
-Status: Built (T-33) · Last updated: 2026-10-11 · T-33
+Status: Built (T-33, T-34) · Last updated: 2026-10-11 · T-34
 
 ### What it does
 Settings › Theme sets the app's color: eight presets or a custom color. It colors the whole app at once, and the Home Screen widgets' accents from their next update.
 
 ### Behavior
-- **Settings › Theme**, between Notifications and Privacy: swatches for Blue (the default), Indigo, Purple, Pink, Red, Orange, Green and Teal, then Custom, a color well that opens the system color picker without opacity. The chosen swatch has a checkmark and a ring; the Custom well shows the custom color once one is chosen, and Blue before (D-100). Each swatch is a 44-point target named for VoiceOver ("Purple"; "Custom", with the color's name as its value). Footer: "Used for buttons, checkboxes and highlights in the app and its widgets."
+- **Settings › Theme**, between Notifications and Privacy, below Appearance (F-28): swatches for Blue (the default), Indigo, Purple, Pink, Red, Orange, Green and Teal, then Custom, a color well that opens the system color picker without opacity. The chosen swatch has a checkmark and a ring; the Custom well shows the custom color once one is chosen, and Blue before (D-100). Each swatch is a 44-point target named for VoiceOver ("Purple"; "Custom", with the color's name as its value). The section's footer: "System follows your device's light or dark mode, as the widgets always do. The color is used for buttons, checkboxes and highlights in the app and its widgets."
 - **In the app,** the choice is saved at once and colors: the tab bar's selected tab, the day strip's selected day, the part in progress and its "ends in", checkboxes, progress rings and bars, the + and ▶ buttons, switches, links and buttons on every screen and sheet, Settings' menu values, the plain options in confirmation dialogs, the guide, Missed's buttons and its highlight, and Stats' and Habit detail's arrows. Presets are the system colors, with a light and a dark shade; a custom color is the same in both modes.
 - **Widgets:** the Timer widget's buttons, the Day widget's current part, the Focus widget's top line and the Now widget's buttons and progress follow the theme from their next update (choosing a color refreshes them). The Lock Screen widgets and the tinted and clear Home Screen styles use the system's colors (F-17).
 - **Unchanged:** the status colors (done green, missed red, short orange, always with an icon or text), destructive buttons (red), and the app icon.
@@ -1128,11 +1130,11 @@ Settings › Theme sets the app's color: eight presets or a custom color. It col
 - Checked on the iOS 27 simulator: every screen with Pink in light mode and Indigo in dark mode, and the Timer, Day, Focus and Now widgets on a real Home Screen with Pink.
 
 ### Data
-`settings.tint_color` (SPEC §4.5): a preset's name (`blue` … `teal`) or `#RRGGBB`. Stores from before T-33 migrate with their data (`SchemaV2`, lightweight stage from V1).
+`settings.tint_color` (SPEC §4.5): a preset's name (`blue` … `teal`) or `#RRGGBB`. Stores from before T-33 migrate with their data (`SchemaV2`, lightweight stage from V1; F-26).
 
 ### Implementation (iOS)
 - Core: `Packages/Core/Sources/Core/Models/ThemeColor` (parsing and writing the stored string), `ThemePreset`; `SettingsValue.tintColor`.
-- Storage: `Shared/Storage/SchemaV2`, `MigrationPlan`; `SwiftDataTaskStore` maps `tintColor`.
+- Storage: `Shared/Storage/SchemaV2` (and `SchemaV3` since T-34), `MigrationPlan`; `SwiftDataTaskStore` maps `tintColor`.
 - Utilities: `Shared/Utilities/Extensions/ThemeColor+Color`, `ThemePreset+Style` (system color and name).
 - App: `Tempo/Views/Settings/Components/ThemePicker`, `MenuValuePicker`; `RootViewModel.theme`; `RootView` applies `.tint` outermost and sets the window's `tintColor` for UIKit alerts and dialogs (D-101).
 - Widgets: `TempoWidgets/Components/View+WidgetTheme` on the Timer, Day, Focus and Now widgets.
@@ -1140,9 +1142,42 @@ Settings › Theme sets the app's color: eight presets or a custom color. It col
 ### Tests
 - `Packages/Core/Tests/CoreTests/Models/ThemeColorTests.swift`: presets by name, eight presets with Blue first and default, custom colors as hex in either case, clamping, anything else is Blue.
 - `TempoTests/ViewModels/ThemeTests.swift`: the root shows Blue until a color is chosen; choosing one refreshes the widgets and reaches their snapshot; a picked color becomes its sRGB components; every preset has a name and a color.
-- `TempoTests/ViewModels/SettingsViewModelTests.swift`: a custom color survives a restart. `TempoTests/Storage/SwiftDataTaskStoreTests.swift`: round trip. `TempoTests/Storage/StoreFactoryTests.swift` (`versionOneStoreMigratesWithItsData`): a version-1 store opens under version 2 with its data and Blue.
+- `TempoTests/ViewModels/SettingsViewModelTests.swift`: a custom color survives a restart. `TempoTests/Storage/SwiftDataTaskStoreTests.swift`: round trip. `TempoTests/Storage/StoreFactoryTests.swift` (`versionOneStoreMigratesWithItsData`): a version-1 store opens under the current version with its data and Blue.
 - `TempoUITests/SettingsUITests.swift` (`testThemeSwatches`): eight presets and Custom, Blue chosen, then Purple.
 - `TempoUITests/ScreenshotTests.swift` (screenshots only): `testThemeOnEveryScreen` (`TEMPO_THEME`), `testThemedWidgetsOnHomeScreen` (run on a simulator without the old `com.applab.tempo` app, whose widgets share the name "Tempo" in the gallery).
 
 ### Known gaps
 - None for F-27.
+
+## F-28 · Appearance
+Status: Built (T-34) · Last updated: 2026-10-11 · T-34
+
+### What it does
+Settings › Theme sets whether the app follows the device's light or dark mode, or always uses one of them. The widgets always follow the device.
+
+### Behavior
+- **Settings › Theme**, first row: a segmented control with System (the default), Dark and Light, in that order, above the color swatches (D-102). The selected segment is marked, and each is a button named "System", "Dark" or "Light" for VoiceOver. The section's footer is in F-27.
+- **Applies at once,** without leaving Settings, to every screen of the app and everything presented over it: sheets, the guide, confirmation dialogs, menus and the system color picker. System follows the device again, including later changes to the device's mode.
+- **Doesn't change:** the widgets (Home Screen and Lock Screen), notifications, and the launch screen, which the system draws in the device's mode. With Dark on a light device, the app opens from a light launch screen (D-102).
+- The theme color (F-27) is independent: each preset has a light and a dark shade, and a custom color is the same in both.
+- A stored appearance that can't be read is System.
+- Checked on the iOS 27 simulator: Dark (Teal) on a light simulator and Light (Orange) on a dark simulator on Today, Settings, the editor sheet and the "Delete with history" dialog; Dark on the guide, a Settings menu and the color picker; Light on the color picker; System going back to the device's dark mode.
+
+### Data
+`settings.appearance` (SPEC §4.5): `system`, `dark` or `light`. Stores from before T-34 migrate with their data and get `system` (`SchemaV3`, lightweight stage from V2; F-26).
+
+### Implementation (iOS)
+- Core: `Packages/Core/Sources/Core/Models/Appearance` (reading the stored string; Codable with the same fallback); `SettingsValue.appearance`.
+- Storage: `Shared/Storage/SchemaV3`, `MigrationPlan` (`v2ToV3`); `SwiftDataTaskStore` maps `appearance`.
+- Utilities: `Shared/Utilities/Extensions/Appearance+Style` (the windows' `UIUserInterfaceStyle` and the choice's name).
+- App: the segmented `Picker` in `Tempo/Views/Settings/SettingsView` (`themeSection`); `RootViewModel.appearance`; `RootView` sets every window's `overrideUserInterfaceStyle` (`.unspecified` for System), which presentations, alerts, menus and the color picker follow. `.preferredColorScheme` isn't used, since it doesn't reliably return to the device's mode (D-102).
+
+### Tests
+- `Packages/Core/Tests/CoreTests/Models/AppearanceTests.swift`: System, Dark and Light in that order with System the default; stored by name; anything else is System; decoding an unknown value gives System.
+- `TempoTests/ViewModels/AppearanceSettingTests.swift`: the root follows System until a choice is made, then each choice; choosing one keeps the theme color; each choice's window style and name.
+- `TempoTests/ViewModels/SettingsViewModelTests.swift`: the appearance survives a restart. `TempoTests/Storage/SwiftDataTaskStoreTests.swift`: round trip and the stored string. `TempoTests/Storage/StoreFactoryTests.swift` (`versionTwoStoreMigratesWithItsData`): a version-2 store keeps its data and custom color and gets System; the version-1 test gets System too.
+- `TempoUITests/SettingsUITests.swift` (`testAppearanceChoices`): System chosen at first; Dark makes Settings and the guide dark and Light makes Settings light (measured from screenshots, whatever the simulator's mode); back to System.
+- `TempoUITests/ScreenshotTests.swift` (screenshots only): `testThemeOnEveryScreen` with `TEMPO_APPEARANCE` set to Dark or Light.
+
+### Known gaps
+- None for F-28.

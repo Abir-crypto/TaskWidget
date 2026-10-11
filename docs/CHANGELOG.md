@@ -14,6 +14,16 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-11 · Appearance
+- Added: F-28 — Appearance: System, Dark or Light for the app, in Settings › Theme.
+- Changed: §2.1 — the appearance choice is in v1.
+- Changed: F-16 — the Theme section holds the appearance and the color.
+- Changed: F-17 — widgets follow the system's light or dark mode, whatever the app's appearance.
+- Changed: §4.5 — the `settings` table gains `appearance` (default `"system"`).
+- Changed: §7 — the appearance's default.
+- Added: T-34 — Appearance, in Phase G.
+- Platform: ios.md §3, §6, §9, §12, §15 — `SchemaV3` with a lightweight migration from V2, `Appearance`, the window's `overrideUserInterfaceStyle` (D-102).
+
 ## 2026-10-11 · Theme color details (T-33)
 - Platform: ios.md §3, §12 — Settings' menus use `MenuValuePicker`, because a menu-style `Picker` ignores the tint (D-101).
 - No changes to SPEC.md.

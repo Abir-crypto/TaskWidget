@@ -137,6 +137,9 @@
     "Blue" : {
       "comment" : "Theme color"
     },
+    "Dark" : {
+      "comment" : "Appearance"
+    },
     "Day" : {
 
     },
@@ -187,6 +190,9 @@
     },
     "Keep going" : {
 
+    },
+    "Light" : {
+      "comment" : "Appearance"
     },
     "Mark Task Done" : {
 
@@ -287,6 +293,9 @@
     },
     "Stop" : {
 
+    },
+    "System" : {
+      "comment" : "Appearance: follow the device's light or dark mode"
     },
     "Task" : {
 

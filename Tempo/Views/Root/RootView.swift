@@ -109,14 +109,19 @@ struct RootView: View {
         // and confirmation dialogs follow the window's tint instead (ios.md §12).
         .tint(model.theme.color)
         .onChange(of: model.theme, initial: true) { _, theme in
-            applyWindowTint(theme)
+            let color = UIColor(theme.color)
+            forEachWindow { $0.tintColor = color }
+        }
+        // The appearance (SPEC F-28) is the windows' interface style, which sheets, the guide, alerts, menus and the
+        // color picker all follow (ios.md §12, D-102).
+        .onChange(of: model.appearance, initial: true) { _, appearance in
+            forEachWindow { $0.overrideUserInterfaceStyle = appearance.userInterfaceStyle }
         }
     }
 
-    private func applyWindowTint(_ theme: ThemeColor) {
-        let color = UIColor(theme.color)
+    private func forEachWindow(_ body: (UIWindow) -> Void) {
         for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
-            for window in scene.windows { window.tintColor = color }
+            for window in scene.windows { body(window) }
         }
     }
 

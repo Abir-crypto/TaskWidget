@@ -2,12 +2,13 @@ import Core
 import Foundation
 import Observation
 
-/// State for the tab layout: the Missed tab's badge and the theme color (SPEC F-27).
+/// State for the tab layout: the Missed tab's badge, the theme color and the appearance (SPEC F-27, F-28).
 @Observable
 @MainActor
 final class RootViewModel {
     private(set) var missedCount = 0
     private(set) var theme = ThemeColor.default
+    private(set) var appearance = Appearance.default
 
     private let missed: MissedManager
     private let settings: SettingsManager
@@ -20,9 +21,11 @@ final class RootViewModel {
     func load() {
         missedCount = missed.missedTodayCount()
         do {
-            theme = try settings.loadOrCreate().tintColor
+            let value = try settings.loadOrCreate()
+            theme = value.tintColor
+            appearance = value.appearance
         } catch {
-            Log.settings.error("Couldn't read the theme color: \(error)")
+            Log.settings.error("Couldn't read the theme: \(error)")
         }
     }
 }

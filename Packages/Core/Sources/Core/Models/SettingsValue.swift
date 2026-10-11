@@ -19,6 +19,8 @@ public struct SettingsValue: Hashable, Codable, Sendable {
     public var hideLockScreenTitles: Bool
     /// The app's theme color (SPEC F-27).
     public var tintColor: ThemeColor
+    /// Whether the app follows the system's light or dark mode (SPEC F-28).
+    public var appearance: Appearance
     /// `nil` until the row is first saved.
     public var updatedAt: Date?
 
@@ -35,6 +37,7 @@ public struct SettingsValue: Hashable, Codable, Sendable {
         timerAlertMinutes: Int = 120,
         hideLockScreenTitles: Bool = false,
         tintColor: ThemeColor = .default,
+        appearance: Appearance = .default,
         updatedAt: Date? = nil
     ) {
         self.parts = parts
@@ -49,11 +52,12 @@ public struct SettingsValue: Hashable, Codable, Sendable {
         self.timerAlertMinutes = timerAlertMinutes
         self.hideLockScreenTitles = hideLockScreenTitles
         self.tintColor = tintColor
+        self.appearance = appearance
         self.updatedAt = updatedAt
     }
 
-    /// Every default from SPEC §4.5: the default part times, every reminder on, names shown on the Lock Screen, and
-    /// Blue as the theme color.
+    /// Every default from SPEC §4.5: the default part times, every reminder on, names shown on the Lock Screen, Blue
+    /// as the theme color, and the system's appearance.
     public static let defaults = SettingsValue()
 
     public static let endingSoonLeadChoices = [15, 30, 45, 60]

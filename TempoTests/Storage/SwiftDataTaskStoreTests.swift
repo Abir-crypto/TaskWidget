@@ -61,7 +61,7 @@ struct SwiftDataTaskStoreTests {
         try store.softDeleteTask(id: task.id)
         let id = task.id
         let records = try ModelContext(store.container).fetch(
-            FetchDescriptor<SchemaV2.TaskRecord>(predicate: #Predicate { $0.id == id }))
+            FetchDescriptor<SchemaV3.TaskRecord>(predicate: #Predicate { $0.id == id }))
         #expect(records.count == 1)
         #expect(records.first?.deletedAt == clock.now)
         #expect(records.first?.updatedAt == clock.now)
@@ -207,9 +207,11 @@ struct SwiftDataTaskStoreTests {
         settings.fixedLead = 15
         settings.hideLockScreenTitles = true
         settings.tintColor = .preset(.teal)
+        settings.appearance = .dark
         let saved = try store.save(settings)
         #expect(try store.settings() == saved)
         #expect(try store.settings()?.tintColor == .preset(.teal))
+        #expect(try store.settings()?.appearance == .dark)
 
         var custom = saved
         custom.tintColor = .custom(red: 30, green: 144, blue: 255)
@@ -220,8 +222,9 @@ struct SwiftDataTaskStoreTests {
         again.endingSoonLead = 45
         try store.save(again)
         #expect(try store.settings()?.endingSoonLead == 45)
-        let rows = try ModelContext(store.container).fetch(FetchDescriptor<SchemaV2.SettingsRecord>())
+        let rows = try ModelContext(store.container).fetch(FetchDescriptor<SchemaV3.SettingsRecord>())
         #expect(rows.count == 1)
+        #expect(rows.first?.appearance == "dark")
     }
 
     // MARK: Batch writes
