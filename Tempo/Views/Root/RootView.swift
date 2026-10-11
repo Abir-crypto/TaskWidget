@@ -1,4 +1,6 @@
+import Core
 import SwiftUI
+import UIKit
 
 /// The four tabs, what's presented over them, and where links lead (SPEC F-09).
 struct RootView: View {
@@ -13,7 +15,7 @@ struct RootView: View {
     init(dependencies: AppDependencies, router: NavigationRouter) {
         self.dependencies = dependencies
         self.router = router
-        _model = State(initialValue: RootViewModel(missed: dependencies.missed))
+        _model = State(initialValue: RootViewModel(missed: dependencies.missed, settings: dependencies.settings))
         _timerController = State(initialValue: TimerController(dependencies: dependencies, router: router))
     }
 
@@ -102,6 +104,19 @@ struct RootView: View {
             default:
                 break
             }
+        }
+        // The theme color (SPEC F-27), outermost so sheets, the guide and pushed screens inherit it. UIKit alerts
+        // and confirmation dialogs follow the window's tint instead (ios.md §12).
+        .tint(model.theme.color)
+        .onChange(of: model.theme, initial: true) { _, theme in
+            applyWindowTint(theme)
+        }
+    }
+
+    private func applyWindowTint(_ theme: ThemeColor) {
+        let color = UIColor(theme.color)
+        for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+            for window in scene.windows { window.tintColor = color }
         }
     }
 

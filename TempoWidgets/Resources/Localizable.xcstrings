@@ -134,6 +134,9 @@
     "Anytime · %lld left" : {
 
     },
+    "Blue" : {
+      "comment" : "Theme color"
+    },
     "Day" : {
 
     },
@@ -167,11 +170,17 @@
     "Focus" : {
 
     },
+    "Green" : {
+      "comment" : "Theme color"
+    },
     "Habit" : {
 
     },
     "In %lld min" : {
 
+    },
+    "Indigo" : {
+      "comment" : "Theme color"
     },
     "It's been running for ^[%lld hour](inflect: true)." : {
 
@@ -228,6 +237,9 @@
     "Open Tempo to refresh" : {
 
     },
+    "Orange" : {
+      "comment" : "Theme color"
+    },
     "Pause" : {
 
     },
@@ -237,8 +249,17 @@
     "Paused" : {
 
     },
+    "Pink" : {
+      "comment" : "Theme color"
+    },
     "Progress" : {
       "comment" : "Task type"
+    },
+    "Purple" : {
+      "comment" : "Theme color"
+    },
+    "Red" : {
+      "comment" : "Theme color"
     },
     "Resume" : {
 
@@ -269,6 +290,9 @@
     },
     "Task" : {
 
+    },
+    "Teal" : {
+      "comment" : "Theme color"
     },
     "The one thing to do next, and what comes after." : {
 

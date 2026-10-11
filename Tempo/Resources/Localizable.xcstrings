@@ -249,6 +249,9 @@
     "Best" : {
 
     },
+    "Blue" : {
+      "comment" : "Theme color"
+    },
     "Can't open your tasks" : {
 
     },
@@ -435,6 +438,9 @@
     "From" : {
 
     },
+    "Green" : {
+      "comment" : "Theme color"
+    },
     "Habit" : {
 
     },
@@ -467,6 +473,9 @@
     },
     "In %lld min" : {
 
+    },
+    "Indigo" : {
+      "comment" : "Theme color"
     },
     "It moves to History with its stats, and you can start it again later." : {
 
@@ -704,6 +713,9 @@
     "Opens the timer" : {
 
     },
+    "Orange" : {
+      "comment" : "Theme color"
+    },
     "Order" : {
 
     },
@@ -734,6 +746,9 @@
     "Pick today or a later day." : {
 
     },
+    "Pink" : {
+      "comment" : "Theme color"
+    },
     "Plan your day by its parts: morning, noon, evening and night. Every task belongs to a part, a set time, or anytime." : {
 
     },
@@ -752,6 +767,9 @@
     "Progress" : {
       "comment" : "Task type"
     },
+    "Purple" : {
+      "comment" : "Theme color"
+    },
     "Range" : {
 
     },
@@ -760,6 +778,9 @@
     },
     "Recent missed days" : {
 
+    },
+    "Red" : {
+      "comment" : "Theme color"
     },
     "Reminders" : {
 
@@ -869,10 +890,16 @@
     "Tasks" : {
 
     },
+    "Teal" : {
+      "comment" : "Theme color"
+    },
     "That part of the day is already over. Pick a later time." : {
 
     },
     "The type can't be changed after a task is created." : {
+
+    },
+    "Theme" : {
 
     },
     "This can't be undone." : {
@@ -958,6 +985,9 @@
 
     },
     "Upcoming" : {
+
+    },
+    "Used for buttons, checkboxes and highlights in the app and its widgets." : {
 
     },
     "Version" : {

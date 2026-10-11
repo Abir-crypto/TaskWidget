@@ -14,6 +14,20 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-11 · Theme color details (T-33)
+- Platform: ios.md §3, §12 — Settings' menus use `MenuValuePicker`, because a menu-style `Picker` ignores the tint (D-101).
+- No changes to SPEC.md.
+
+## 2026-10-10 · Theme color
+- Added: F-27 — Theme color: eight presets or a custom color, applied to the whole app and to the Home Screen widgets' accents.
+- Changed: §2.1 — the theme color is in v1.
+- Changed: F-16 — Settings has a Theme section.
+- Changed: F-17 — widgets use the theme color for their accents, except in the tinted and clear styles and on the Lock Screen.
+- Changed: §4.5 — the `settings` table gains `tint_color` (default `"blue"`).
+- Changed: §7 — the theme color's default.
+- Added: T-33 — Theme color, in a new Phase G.
+- Platform: ios.md §3, §6, §9, §12, §15 — `SchemaV2` with a lightweight migration, `ThemeColor`, the root and widget `.tint`, the Theme picker.
+
 ## 2026-10-10 · New developer team and identifiers
 - Platform: ios.md §2, §6, §10 — bundle IDs are `com.akumatech.tempo` (app) and `com.akumatech.tempo.widgets`, the App Group is `group.akumatech.tempo`, and the background refresh task is `com.akumatech.tempo.refresh`, after the move to team `L9B6N63T2Q`. The rename note lists everything that has to change together.
 - No changes to SPEC.md.

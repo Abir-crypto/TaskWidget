@@ -94,6 +94,7 @@ struct TimerWidgetView: View {
     TimerWidget()
 } timeline: {
     TodayEntry(date: .now, snapshot: .preview(timer: nil))
+    TodayEntry(date: .now, snapshot: .preview(timer: nil, theme: .preset(.green)))
 }
 
 #Preview("Generic", as: .systemSmall) {

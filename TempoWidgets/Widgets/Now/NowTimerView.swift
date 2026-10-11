@@ -37,7 +37,6 @@ struct NowTimerView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                .tint(.accentColor)
                 .widgetAccentable()
             }
             Spacer(minLength: 0)

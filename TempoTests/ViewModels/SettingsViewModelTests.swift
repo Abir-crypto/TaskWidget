@@ -43,6 +43,7 @@ struct SettingsViewModelTests {
             settings.notifyTimer = false
             settings.timerAlertMinutes = 180
             settings.hideLockScreenTitles = true
+            settings.tintColor = .custom(red: 30, green: 144, blue: 255)
         }
 
         // A new container on the same file stands in for relaunching the app.
@@ -58,6 +59,7 @@ struct SettingsViewModelTests {
         #expect(saved.recapMinute == 1425)
         #expect(saved.timerAlertMinutes == 180)
         #expect(saved.hideLockScreenTitles)
+        #expect(saved.tintColor == .custom(red: 30, green: 144, blue: 255))
     }
 
     @Test func invalidPartTimesAreNotSaved() async throws {

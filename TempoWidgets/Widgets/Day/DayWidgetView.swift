@@ -104,6 +104,7 @@ struct DayWidgetView: View {
     DayWidget()
 } timeline: {
     TodayEntry(date: .now, snapshot: .preview(timer: nil, data: .nowPreview))
+    TodayEntry(date: .now, snapshot: .preview(timer: nil, data: .nowPreview, theme: .preset(.pink)))
     TodayEntry(date: .now, snapshot: .preview(timer: nil))
     TodayEntry.failed(.now)
 }

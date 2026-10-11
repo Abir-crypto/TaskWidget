@@ -9,6 +9,7 @@ struct NowWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TodayTimelineProvider()) { entry in
             NowWidgetView(entry: entry)
+                .widgetTheme(entry)
                 .containerBackground(for: .widget) { Color("WidgetBackground") }
         }
         .configurationDisplayName("Now")

@@ -8,6 +8,7 @@ struct FocusWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TodayTimelineProvider()) { entry in
             FocusWidgetView(entry: entry)
+                .widgetTheme(entry)
                 .containerBackground(for: .widget) { Color("WidgetBackground") }
         }
         .configurationDisplayName("Focus")

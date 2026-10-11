@@ -117,6 +117,53 @@ final class ScreenshotTests: XCTestCase {
         XCUIDevice.shared.orientation = .portrait
     }
 
+    /// Chooses the theme in `TEMPO_THEME` (default "Pink") in Settings and photographs the screens it colors
+    /// (SPEC F-27).
+    @MainActor
+    func testThemeOnEveryScreen() {
+        let theme = ProcessInfo.processInfo.environment["TEMPO_THEME"] ?? "Pink"
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        _ = app.navigationBars["Today"].waitForExistence(timeout: 5)
+        app.buttons["Settings"].tap()
+        let swatch = app.buttons[theme]
+        for _ in 0..<4 where !swatch.isHittable { app.swipeUp() }
+        swatch.tap()
+        sleep(1)
+        saveScreen("theme-1-settings")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        sleep(1)
+        saveScreen("theme-2-today")
+        app.buttons["Add task"].tap()
+        sleep(1)
+        saveScreen("theme-3-editor")
+        app.buttons["Cancel"].tap()
+        // A habit's "Delete with history" dialog has a plain option (End habit), which shows the alert tint.
+        app.staticTexts["Gym"].firstMatch.tap()
+        app.buttons["Edit"].firstMatch.tap()
+        let delete = app.buttons["Delete with history"]
+        for _ in 0..<4 where !delete.isHittable { app.swipeUp() }
+        delete.tap()
+        sleep(1)
+        saveScreen("theme-4-dialog")
+        // A tap away closes the dialog; then leave the editor and Habit detail.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12)).tap()
+        sleep(1)
+        if app.buttons["Cancel"].exists { app.buttons["Cancel"].tap() }
+        sleep(1)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        sleep(1)
+        for tab in ["Tasks", "Missed", "Stats"] {
+            app.tabBars.buttons[tab].tap()
+            sleep(1)
+            saveScreen("theme-5-\(tab.lowercased())")
+        }
+        app.tabBars.buttons["Tasks"].tap()
+        app.buttons["Habits"].tap()
+        app.staticTexts["Read"].firstMatch.tap()
+        sleep(1)
+        saveScreen("theme-6-habit")
+    }
+
     @MainActor
     func testEditor() {
         let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00")
@@ -857,6 +904,90 @@ final class ScreenshotTests: XCTestCase {
         XCTAssertTrue(row.exists, "The task isn't on today in New York")
         XCTAssertTrue(app.staticTexts[time].exists, "\(time) changed in New York")
         if row.exists {
+            row.swipeLeft()
+            if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
+            if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }
+        }
+    }
+
+    /// On a clean simulator: chooses the theme in `TEMPO_THEME` (default "Pink") in the real app, adds a task, adds
+    /// the Now, Day, Timer and Focus widgets through the dock's edit menu, and photographs Home Screen pages 1–3
+    /// (SPEC F-27: widgets use the theme color). The task stays for the photos and is deleted at the end.
+    @MainActor
+    func testThemedWidgetsOnHomeScreen() {
+        let theme = ProcessInfo.processInfo.environment["TEMPO_THEME"] ?? "Pink"
+        let app = XCUIApplication()
+        app.launch()
+        finishGuideIfShown(app)
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Settings"].firstMatch.tap()
+        let swatch = app.buttons[theme]
+        for _ in 0..<4 where !swatch.isHittable { app.swipeUp() }
+        swatch.tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["Add task"].firstMatch.tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Theme check")
+        app.buttons["Anytime"].tap()
+        app.buttons["Save"].tap()
+        sleep(1)
+
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        // Gallery positions: Timer 0, Day 1, Focus 2, Now 3.
+        for (index, swipes) in [3, 1, 0, 2].enumerated() {
+            XCUIDevice.shared.press(.home)
+            sleep(1)
+            XCUIDevice.shared.press(.home)
+            sleep(1)
+            // The empty end of the dock opens the edit menu without touching an icon or widget.
+            springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.82, dy: 0.935)).press(forDuration: 2)
+            if springboard.buttons["Edit"].waitForExistence(timeout: 3) { springboard.buttons["Edit"].tap() }
+            if springboard.buttons["Add Widget"].firstMatch.waitForExistence(timeout: 3) {
+                springboard.buttons["Add Widget"].firstMatch.tap()
+            }
+            let search = springboard.searchFields.firstMatch
+            guard search.waitForExistence(timeout: 3) else {
+                saveScreen("themed-x-no-gallery-\(index)")
+                return
+            }
+            search.tap()
+            search.typeText("Tempo")
+            // A newly installed extension can take a moment to show up in the gallery.
+            let tempo = springboard.staticTexts["Tempo"].firstMatch
+            guard tempo.waitForExistence(timeout: 15) else {
+                saveScreen("themed-x-not-in-gallery-\(index)")
+                return
+            }
+            tempo.tap()
+            sleep(2)
+            for _ in 0..<swipes {
+                springboard.swipeLeft()
+                sleep(1)
+            }
+            let add = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget'"))
+                .allElementsBoundByIndex.last { $0.isHittable }
+            add?.tap()
+            sleep(2)
+            if springboard.buttons["Done"].firstMatch.waitForExistence(timeout: 2) {
+                springboard.buttons["Done"].firstMatch.tap()
+            }
+            sleep(1)
+        }
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        XCUIDevice.shared.press(.home)
+        sleep(4)
+        for page in 1...3 {
+            saveScreen("themed-\(theme.lowercased())-\(page)")
+            springboard.swipeLeft()
+            sleep(1)
+        }
+
+        app.activate()
+        app.buttons["Today"].firstMatch.tap()
+        let row = app.staticTexts["Theme check"].firstMatch
+        if row.waitForExistence(timeout: 3) {
             row.swipeLeft()
             if app.buttons["Delete"].waitForExistence(timeout: 2) { app.buttons["Delete"].tap() }
             if app.buttons["Delete task"].waitForExistence(timeout: 2) { app.buttons["Delete task"].tap() }

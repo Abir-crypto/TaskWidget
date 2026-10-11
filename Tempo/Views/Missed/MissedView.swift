@@ -93,7 +93,8 @@ struct MissedView: View {
                     MissedRow(item: item, dueText: model.dueText(item))
                     actions(for: item)
                 }
-                .listRowBackground(model.highlighted.contains(item.id) ? Color.accentColor.opacity(0.15) : nil)
+                .listRowBackground(
+                    model.highlighted.contains(item.id) ? Rectangle().fill(.tint.opacity(0.15)) : nil)
             }
         } header: {
             Text("Today")

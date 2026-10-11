@@ -4,11 +4,13 @@ import Foundation
 /// Snapshots and timers for widget previews.
 extension WidgetSnapshot {
     static func preview(
-        timer: TimerState?, habitTitle: String? = nil, data: TaskData = TaskData(), hidesTitles: Bool = false
+        timer: TimerState?, habitTitle: String? = nil, data: TaskData = TaskData(), hidesTitles: Bool = false,
+        theme: ThemeColor = .default
     ) -> WidgetSnapshot {
         WidgetSnapshot(
             core: Snapshot(
-                data: data, settings: SettingsValue(hideLockScreenTitles: hidesTitles), calendar: .autoupdatingCurrent),
+                data: data, settings: SettingsValue(hideLockScreenTitles: hidesTitles, tintColor: theme),
+                calendar: .autoupdatingCurrent),
             timer: timer, timerHabitTitle: habitTitle)
     }
 }

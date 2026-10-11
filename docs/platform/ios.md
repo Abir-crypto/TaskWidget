@@ -81,6 +81,7 @@ Tempo/
 │   │   └── RefreshManager.swift          # after every write: reload widgets and rebuild notifications
 │   ├── Storage/
 │   │   ├── SchemaV1.swift                # SwiftData records, one per table
+│   │   ├── SchemaV2.swift                # V1 plus SettingsRecord.tintColor (T-33)
 │   │   ├── MigrationPlan.swift
 │   │   ├── StoreFactory.swift
 │   │   ├── SwiftDataTaskStore.swift      # implements TaskStore
@@ -111,7 +112,7 @@ Tempo/
 │   │   ├── TaskEditor/
 │   │   ├── TimerScreen/
 │   │   ├── TaskPicker/
-│   │   ├── Settings/
+│   │   ├── Settings/                     # Components/ThemePicker, MenuValuePicker (T-33)
 │   │   └── Onboarding/
 │   ├── Components/                       # views used by more than one screen
 │   │   ├── FloatingAddButton/
@@ -226,6 +227,8 @@ final class TodayViewModel {
   - Enums are stored as raw `String`s, using the exact values from SPEC §4.
   - Day keys are stored as `Int`.
 - **Versioning:** use a `VersionedSchema` (`SchemaV1`) and a `SchemaMigrationPlan` from the start.
+  - `SchemaV2` (T-33) repeats every record and adds `SettingsRecord.tintColor` (default `"blue"`). `MigrationPlan` lists both versions with a lightweight stage from V1 to V2, so existing stores keep their data.
+  - Code uses the current version through the typealiases in `SwiftDataTaskStore` (`SettingsRecord = SchemaV2.SettingsRecord`, …), and `StoreFactory` opens `Schema(versionedSchema: SchemaV2.self)`.
 - **Location:** the store file lives in the App Group container, opened with `cloudKitDatabase: .none`.
 - **One `ModelContainer` per process,** held in a static. **Each read or write uses a fresh `ModelContext`.** No `@Query` anywhere.
   - On iOS 17, SwiftData doesn't reliably show writes made by another process (the widget extension), and fresh contexts avoid that problem.
@@ -404,6 +407,8 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
 - When `showsWidgetContainerBackground` is false, drop the tinted fills.
 - A status always comes with an SF Symbol or text.
 
+**Theme color (F-27):** each widget's view gets `.tint(...)` with the color from its snapshot's settings, so `.tint`, `.foregroundStyle(.tint)` and filled buttons follow it. Don't use `Color.accentColor`, which ignores it. In the accented rendering modes the system replaces it, as F-17 asks.
+
 **Tinted and clear styles:** a filled (`.borderedProminent`) button marked `widgetAccentable()` loses its label when the system tints it, so main buttons use `ProminentWidgetButton`, which switches to `.bordered` unless `widgetRenderingMode == .fullColor`.
 
 **Privacy:** when `hide_lock_screen_titles` is on, apply `.privacySensitive()` to titles in the Lock Screen widget.
@@ -512,6 +517,13 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   ```
   - Sheets keep the system's form-sheet size on iPad, which is already narrower than 700 points.
 
+- **Theme color (F-27):**
+  - `ThemeColor` (Core) is `.preset(ThemePreset)` or `.custom(red:green:blue:)`, stored as the SPEC string (`"blue"` or `"#RRGGBB"`).
+  - Presets map to the system's dynamic colors (`Color.blue`, `.indigo`, `.purple`, `.pink`, `.red`, `.orange`, `.green`, `.teal`), which have light and dark shades. A custom color is `Color(.sRGB, red:green:blue:)`.
+  - `RootView` applies `.tint(theme)` as its outermost modifier, so sheets, the guide and pushed screens inherit it. UIKit alerts and confirmation dialogs follow the window's `tintColor`, which `RootView` sets to the same color.
+  - Never use `Color.accentColor` for themed parts; use `.tint` (in fills, `Rectangle().fill(.tint.opacity(…))`).
+  - Settings › Theme: preset swatches as buttons, and `ColorPicker(selection:supportsOpacity: false)` for Custom. A picked color is stored as its sRGB components.
+  - A menu-style `Picker` draws its value in system blue whatever `.tint` or `.accentColor` is set, so Settings' menus use `MenuValuePicker`: a `Menu` holding the `Picker`, with the current value drawn in `.tint` (D-101).
 - **Haptics:** `.sensoryFeedback(.success, trigger:)` on completing a task, and `.selection` on changing day. The view models count completions (`completions`) so each one triggers it, and undoing doesn't.
 - **Large text:** `RowDetailsLayout` puts a row's details under its title when `dynamicTypeSize.isAccessibilitySize`; Today's day strip uses `.dynamicTypeSize(...DynamicTypeSize.xxxLarge)` with `accessibilityShowsLargeContentViewer` (D-097). `MinuteIntervalPicker` implements `sizeThatFits` so rows make room for the UIKit picker.
 
@@ -617,3 +629,7 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - Test with VoiceOver, and run the Accessibility Inspector audit.
   - `AccessibilityUITests` runs `performAccessibilityAudit` on every screen at the default size and at AX5 (`-UIPreferredContentSizeCategoryName`). For screenshots, `xcrun simctl ui <device> content_size <size>` and `appearance dark|light` set the whole simulator, widgets included; `ScreenshotTests.testWidgetStyles` switches the Home Screen to Tinted or Clear through Edit › Customize.
 - **T-32:** Run the manual QA checklist in §13.
+- **T-33:**
+  - `Core/Models/ThemeColor` and `ThemePreset`, with tests first: parsing and writing the stored string, and falling back to Blue.
+  - `SchemaV2` and the lightweight migration (§6), with a test that opens a version-1 store.
+  - `Views/Settings/Components/ThemePicker`, the root `.tint` and the window's tint (§12), and `.tint` in every widget (§9).

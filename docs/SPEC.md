@@ -83,6 +83,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 - Widgets: Timer (small), Day (medium), Focus (medium), Now (large), Lock Screen (rectangular and inline).
 - First-launch guide, and an empty state on every screen.
 - iPhone and iPad with the same layout.
+- A theme color for the app and its widgets (F-27).
 
 ### 2.2 Not in v1
 
@@ -419,6 +420,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
   - End-of-day recap: on or off, with a time in 15-minute steps between Night's start and 23:45 (23:30 by default).
   - Running timer alert: on or off, after 1, 2 or 3 hours (2 by default).
   - The notification permission status, with a link to the system settings when notifications are off.
+- **Theme:** the app's color (F-27).
 - **Privacy:** Hide task names on the Lock Screen (off by default).
 - **Help:** How to use, which opens pages 1–5 of the guide (F-23).
 - **About:** the app version.
@@ -431,6 +433,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 - Any change anywhere refreshes every widget, whether it was made in the app, through a widget button or from a notification action.
 - Widget buttons work without opening the app, unless a feature says otherwise.
 - Status is never shown by color alone; an icon or text always goes with it. Widgets adapt to dark mode and to tinted styles.
+- Widgets use the theme color (F-27) for their accents. In the tinted and clear Home Screen styles and on the Lock Screen, the system's colors apply instead.
 - A widget never shows controls for a timer it doesn't control (F-06).
 - If a widget can't load its data, it shows "Open Tempo to refresh" and tries again 15 minutes later.
 
@@ -561,6 +564,19 @@ Every place that can be empty shows a message. Buttons labelled with "Add" open 
   - Enum values are fixed strings, and they never change once shipped.
 - Some data stays on the device and will never sync: the timer, the missed popup's list of seen tasks, whether the guide was completed, the pending open action, and scheduled notifications.
 
+### F-27 · Theme color
+
+The user chooses the app's color in Settings › Theme.
+
+- **Choices:** eight presets, Blue (the default), Indigo, Purple, Pink, Red, Orange, Green and Teal, and Custom.
+  - Each preset has a light and a dark shade, so it reads well in light and dark mode.
+  - Custom opens the system color picker. The chosen color is used as it is in light and dark mode, without transparency.
+  - The current choice is marked. Once a custom color is chosen, the Custom swatch shows it.
+- **Where it applies,** at once and on every screen: buttons and links, checkboxes, the selected day in the day strip, the part in progress and its "ends in", progress rings and bars, the floating + button, the timer bar, the guide, and the highlight in Missed.
+- **Widgets:** the Home Screen widgets use it for their accents (the Day widget's current part, the Focus widget's top line, the Timer and Now widgets' buttons and progress) from their next update. The Lock Screen widgets and the tinted and clear Home Screen styles keep the system's colors (F-17).
+- **What doesn't change:** the status colors (done green, missed red, short orange), which always come with an icon or text, and the app icon.
+- A stored color the app can't read is treated as Blue.
+
 ---
 
 ## 4. Data model
@@ -643,7 +659,10 @@ A single row with a fixed id.
 | notify_timer | bool | true |
 | timer_alert_minutes | int | 120 |
 | hide_lock_screen_titles | bool | false |
+| tint_color | text | "blue" |
 | updated_at | timestamp | |
+
+`tint_color` is a preset (`blue`, `indigo`, `purple`, `pink`, `red`, `orange`, `green` or `teal`) or a custom color written `#RRGGBB` (F-27).
 
 ### 4.6 State kept on the device only (never synced)
 
@@ -820,6 +839,7 @@ For a range R (a week, month or year), counting up to and including today:
 | Day widget marks per column | 6, then "+N" |
 | Notification horizon | At least 48 hours |
 | Readable width on tablets | About 700 points |
+| Theme color | Blue (8 presets, or a custom color) |
 
 ---
 
@@ -1150,3 +1170,14 @@ Acceptance
 - [ ] Every acceptance item in T-01–T-31 has been re-run on the final build.
 - [ ] The manual QA checklist in the platform file passes.
 - [ ] `docs/DOCUMENTATION.md` describes every feature as built.
+
+### Phase G · Additions
+
+#### T-33 · Theme color
+Implements: F-27, F-16, F-17, §4.5 · Depends on: T-32
+
+Acceptance
+- [ ] Settings › Theme shows the eight presets and Custom, with the current choice marked and every swatch named for VoiceOver.
+- [ ] Choosing a preset or a custom color re-tints the whole app at once, and the Home Screen widgets' accents from their next update. The choice survives a restart.
+- [ ] Every preset reads well in light and dark mode. The status colors and the app icon don't change.
+- [ ] Existing data is kept when the store gains the new column, and a stored color the app can't read is treated as Blue.

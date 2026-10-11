@@ -6,6 +6,24 @@ final class SettingsUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// SPEC T-33: the eight presets and Custom, with the current choice marked.
+    @MainActor
+    func testThemeSwatches() {
+        let app = UITestApp.launch()
+        app.buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        let blue = app.buttons["Blue"]
+        for _ in 0..<4 where !blue.isHittable { app.swipeUp() }
+        for name in ["Blue", "Indigo", "Purple", "Pink", "Red", "Orange", "Green", "Teal"] {
+            XCTAssertTrue(app.buttons[name].exists, "\(name) is missing")
+        }
+        XCTAssertTrue(app.buttons["Custom"].exists)
+        XCTAssertTrue(blue.isSelected)
+        app.buttons["Purple"].tap()
+        XCTAssertTrue(app.buttons["Purple"].waitForSelection())
+        XCTAssertFalse(app.buttons["Blue"].isSelected)
+    }
+
     @MainActor
     func testEverySettingIsPresent() {
         let app = UITestApp.launch()
@@ -28,4 +46,14 @@ final class SettingsUITests: XCTestCase {
         }
     }
 
+}
+
+extension XCUIElement {
+    /// Waits briefly for the element to become selected.
+    @MainActor
+    fileprivate func waitForSelection(timeout: TimeInterval = 3) -> Bool {
+        let selected = NSPredicate(format: "isSelected == true")
+        return XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: selected, object: self)], timeout: timeout)
+            == .completed
+    }
 }

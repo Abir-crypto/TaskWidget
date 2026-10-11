@@ -17,6 +17,8 @@ public struct SettingsValue: Hashable, Codable, Sendable {
     /// The running-timer alert period in minutes: 60, 120 or 180.
     public var timerAlertMinutes: Int
     public var hideLockScreenTitles: Bool
+    /// The app's theme color (SPEC F-27).
+    public var tintColor: ThemeColor
     /// `nil` until the row is first saved.
     public var updatedAt: Date?
 
@@ -32,6 +34,7 @@ public struct SettingsValue: Hashable, Codable, Sendable {
         notifyTimer: Bool = true,
         timerAlertMinutes: Int = 120,
         hideLockScreenTitles: Bool = false,
+        tintColor: ThemeColor = .default,
         updatedAt: Date? = nil
     ) {
         self.parts = parts
@@ -45,10 +48,12 @@ public struct SettingsValue: Hashable, Codable, Sendable {
         self.notifyTimer = notifyTimer
         self.timerAlertMinutes = timerAlertMinutes
         self.hideLockScreenTitles = hideLockScreenTitles
+        self.tintColor = tintColor
         self.updatedAt = updatedAt
     }
 
-    /// Every default from SPEC §4.5: the default part times, every reminder on, names shown on the Lock Screen.
+    /// Every default from SPEC §4.5: the default part times, every reminder on, names shown on the Lock Screen, and
+    /// Blue as the theme color.
     public static let defaults = SettingsValue()
 
     public static let endingSoonLeadChoices = [15, 30, 45, 60]

@@ -9,6 +9,7 @@ struct TimerWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: TodayTimelineProvider()) { entry in
             TimerWidgetView(entry: entry)
+                .widgetTheme(entry)
                 .containerBackground(for: .widget) { Color("WidgetBackground") }
         }
         .configurationDisplayName("Timer")

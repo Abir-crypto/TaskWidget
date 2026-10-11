@@ -20,6 +20,7 @@ struct SettingsView: View {
             partsSection
             remindersSection
             notificationsSection
+            themeSection
             privacySection
             helpSection
             aboutSection
@@ -51,16 +52,17 @@ struct SettingsView: View {
 
             Toggle("Ending soon", isOn: binding(\.notifyEndingSoon))
             if model.settings.notifyEndingSoon {
-                Picker("Before the part ends", selection: binding(\.endingSoonLead)) {
-                    ForEach(SettingsValue.endingSoonLeadChoices, id: \.self) { Text("\($0) min").tag($0) }
-                }
+                MenuValuePicker(
+                    title: "Before the part ends", selection: binding(\.endingSoonLead),
+                    options: SettingsValue.endingSoonLeadChoices
+                ) { Text("\($0) min") }
             }
 
             Toggle("Fixed-time tasks", isOn: binding(\.notifyFixed))
             if model.settings.notifyFixed {
-                Picker("Before the task", selection: binding(\.fixedLead)) {
-                    ForEach(SettingsValue.fixedLeadChoices, id: \.self) { Text("\($0) min").tag($0) }
-                }
+                MenuValuePicker(
+                    title: "Before the task", selection: binding(\.fixedLead), options: SettingsValue.fixedLeadChoices
+                ) { Text("\($0) min") }
             }
 
             Toggle("End-of-day recap", isOn: binding(\.notifyRecap))
@@ -76,11 +78,10 @@ struct SettingsView: View {
 
             Toggle("Running timer alert", isOn: binding(\.notifyTimer))
             if model.settings.notifyTimer {
-                Picker("Alert after", selection: binding(\.timerAlertMinutes)) {
-                    ForEach(SettingsValue.timerAlertChoices, id: \.self) { minutes in
-                        Text("^[\(minutes / 60) hour](inflect: true)").tag(minutes)
-                    }
-                }
+                MenuValuePicker(
+                    title: "Alert after", selection: binding(\.timerAlertMinutes),
+                    options: SettingsValue.timerAlertChoices
+                ) { Text("^[\($0 / 60) hour](inflect: true)") }
             }
         } header: {
             Text("Reminders")
@@ -116,6 +117,21 @@ struct SettingsView: View {
             if model.permission == .denied {
                 Text("Notifications are off for Tempo, so no reminders are sent. Turn them on in the Settings app.")
             }
+        }
+    }
+
+    // MARK: Theme
+
+    /// The app's color (SPEC F-27). It applies at once, through the root view's tint.
+    private var themeSection: some View {
+        Section {
+            ThemePicker(selection: model.settings.tintColor) { color in
+                model.update { $0.tintColor = color }
+            }
+        } header: {
+            Text("Theme")
+        } footer: {
+            Text("Used for buttons, checkboxes and highlights in the app and its widgets.")
         }
     }
 
