@@ -41,8 +41,8 @@ public enum ReminderPlanner {
 
                 // Part starts: for Morning, Anytime tasks count too.
                 let partAnytime = part == .morning ? anytime : []
-                // Until T-42, any part's switch stands for the old single switch (D-109 comes with T-42).
-                if !settings.partStartSummaries.isEmpty, !items.isEmpty || !partAnytime.isEmpty {
+                // Each part's summary has its own switch; only Morning's is on by default (D-109).
+                if settings.partStartSummaries.contains(part), !items.isEmpty || !partAnytime.isEmpty {
                     plan.append(
                         PlannedNotification(
                             id: "part-start.\(day.rawValue).\(part.rawValue)", fireDate: start,

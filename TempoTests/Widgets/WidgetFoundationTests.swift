@@ -120,11 +120,11 @@ struct WidgetFoundationTests {
         #expect(try store.completions(taskID: call.id).count == 1)
         #expect(widgets.count >= 1)
         #expect(scheduler.replaceCount > replacementsBefore)
-        #expect(!scheduler.pending.contains { $0.id == "part-start.20261006.noon" })
+        #expect(!scheduler.pending.contains { $0.id == "ending-soon.20261006.noon" })
 
         intent.value = false
         try await intent.run(in: environment)
         #expect(try store.completions(taskID: call.id).isEmpty)
-        #expect(scheduler.pending.contains { $0.id == "part-start.20261006.noon" })
+        #expect(scheduler.pending.contains { $0.id == "ending-soon.20261006.noon" })
     }
 }

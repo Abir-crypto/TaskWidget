@@ -54,6 +54,9 @@
         }
       }
     },
+    "%@ starts" : {
+
+    },
     "%@ starts at" : {
 
     },
@@ -806,9 +809,6 @@
 
     },
     "Part of the day" : {
-
-    },
-    "Part starts" : {
 
     },
     "Parts of the day" : {

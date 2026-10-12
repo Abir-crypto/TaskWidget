@@ -15,6 +15,23 @@ struct ReminderManagerTests {
             clock: clock, store: try TestEnvironment.store(clock: clock), deviceState: TestEnvironment.deviceState(),
             notifications: scheduler, widgets: WidgetReloadCounter())
         dependencies.prepare()
+        // Every part's summary on, so the Afternoon summaries these tests check are planned (D-109).
+        var settings = try dependencies.settings.loadOrCreate()
+        settings.partStartSummaries = Set(DayPart.allCases)
+        _ = try dependencies.settings.update(settings)
+    }
+
+    /// SPEC T-42: turning a part's switch on plans that part's summaries at once.
+    @Test func turningOnAPartsSwitchPlansItsSummary() async throws {
+        var settings = try dependencies.settings.loadOrCreate()
+        settings.partStartSummaries = [.morning]
+        _ = try dependencies.settings.update(settings)
+        try dependencies.tasks.createOneTime(title: "Gym", date: TestEnvironment.today, timing: .part(.evening))
+        await dependencies.reminders.rebuild()
+        #expect(!ids.contains("part-start.20261006.evening"))
+        settings.partStartSummaries.insert(.evening)
+        _ = try dependencies.settings.update(settings)
+        #expect(await eventually { scheduler.pending.contains { $0.id == "part-start.20261006.evening" } })
     }
 
     private var ids: [String] { scheduler.pending.map(\.id) }

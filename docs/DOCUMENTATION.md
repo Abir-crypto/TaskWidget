@@ -333,14 +333,14 @@ One timer per device, generic or for a habit, which can be paused, resumed, fini
 - None for F-06.
 
 ## F-07 · Notifications
-Status: Built (T-21, T-28, T-32, T-39, T-40) · Last updated: 2026-10-12 · T-40
+Status: Built (T-21, T-28, T-32, T-39, T-40, T-42) · Last updated: 2026-10-12 · T-42
 
 ### What it does
 The app keeps the next 72 hours of reminders scheduled (the earliest 60): part summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap and the running-timer alert. The plan is rebuilt from the current data after every change. Asking for permission comes with the guide (T-28); until then Settings' "Allow notifications" asks.
 
 ### Behavior
 - **Planning** (`ReminderPlanner`, SPEC §5.9), for every day from today to 72 hours ahead, judged on the data at the time of the rebuild:
-  - `part-start.<day>.<part>` at the part's start, when the part has tasks that aren't done. Morning also counts the day's Anytime tasks, and is sent even when only Anytime tasks are left.
+  - `part-start.<day>.<part>` at the part's start, when that part's switch is on (only Morning's by default, D-109) and the part has tasks that aren't done. Morning also counts the day's Anytime tasks, and is sent even when only Anytime tasks are left.
   - `ending-soon.<day>.<part>` at the part's end minus the lead (30 min by default), never before the part starts, when the part has tasks that aren't done.
   - `fixed.<task_id>.<day>` at the fixed time minus the lead (10 min by default), when the task isn't done.
   - `recap.<day>` at the recap time (23:30 by default), when the day has tasks that aren't done. Each is classed by its status at the recap time: Missed or Short → "missed", still Upcoming or Open → "still open".
@@ -714,7 +714,7 @@ Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
 - None for F-15.
 
 ## F-16 · Settings
-Status: Built (T-10, T-28, T-33, T-34, T-39, T-40) · Last updated: 2026-10-12 · T-40
+Status: Built (T-10, T-28, T-33, T-34, T-39, T-40, T-42) · Last updated: 2026-10-12 · T-42
 
 ### What it does
 Settings is pushed from the gear on Today. Every change is saved as soon as it's made and keeps its value after a restart.
@@ -722,8 +722,8 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 ### Behavior
 - **Parts of the day:** Morning, Afternoon, Evening and Night, each with a compact time picker in 15-minute steps (`MinuteIntervalPicker`). Each picker only offers start times that keep the parts in order and at least 30 minutes long (`PartSettings.allowedStarts`), so invalid times can't be chosen. Footer: "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." If Night moves past the recap time, the recap moves to the first allowed time (D-066).
 - **Missed tasks** (T-40): a menu with Gentle (the default) and Strict, under Parts of the day (`MenuValuePicker`). Footer: "Gentle shows tasks you didn't get to as Not done, without a badge or a popup. Strict marks them Missed in red." The choice applies at once to the app (through the `missedStyle` environment value set by `RootView`), the widgets from their next update, and the notifications rebuilt after the change.
-- **Reminders**, all on by default:
-  - "Part starts" (on/off). Since T-37 the settings row has one switch per part; until T-42 this one switch sets them together (on means Morning's, the default) and any of them on sends every part's summary, as before.
+- **Reminders**, all on by default except the Afternoon, Evening and Night summaries:
+  - "Morning starts", "Afternoon starts", "Evening starts" and "Night starts": a summary switch for each part (T-42, D-109). Only Morning's is on by default.
   - "Ending soon" (on/off), and when on, "Before the part ends": 15, 30 (default), 45 or 60 min.
   - "Fixed-time tasks" (on/off), and when on, "Before the task": 5, 10 (default), 15 or 30 min.
   - "End-of-day recap" (on/off), and when on, "Recap time": 15-minute steps from Night's start to 23:45, 23:30 by default.

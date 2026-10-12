@@ -263,6 +263,7 @@ Pausing, Done or Discard cancels the alert.
 | End-of-day recap | At the recap time (23:30 by default) | At least one task today isn't done | "Today: 2 missed, 1 still open" (Strict; Gentle in F-30) / "Call the bank, Read (20 of 30 min), Plan tomorrow" | Missed tab |
 | Timer running | As described in F-06 | A timer is running | "Read timer is still running" / "It's been running for 2 hours." | Timer screen |
 
+- Each part's summary has its own switch (F-16). Only Morning's is on by default.
 - Lists show up to 3 names, then "and N more".
 - The Morning summary also lists open Anytime tasks, after Morning's own tasks ("…and 2 anytime"). It's sent even if Morning itself has no tasks, as long as there are Anytime tasks.
 - A duration habit counts as not done until it reaches its target.
@@ -430,7 +431,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 - **Parts of the day:** the start times of Morning, Afternoon, Evening and Night (rules in F-02).
 - **Missed tasks:** Gentle or Strict (F-30), Gentle by default. Footer: "Gentle shows tasks you didn't get to as Not done, without a badge or a popup. Strict marks them Missed in red."
 - **Reminders:**
-  - Part starts: on or off.
+  - When a part starts: Morning, Afternoon, Evening and Night, each on or off (Morning on, the others off).
   - Ending soon: on or off, with a lead time of 15, 30, 45 or 60 min (30 by default).
   - Fixed-time tasks: on or off, with a lead time of 5, 10, 15 or 30 min (10 by default).
   - End-of-day recap: on or off, with a time in 15-minute steps between Night's start and 23:45 (23:30 by default).
@@ -440,7 +441,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 - **Privacy:** Hide task names on the Lock Screen (off by default).
 - **Help:** How to use, which opens pages 1–5 of the guide (F-23).
 - **About:** the app version.
-- Every reminder is on by default.
+- Every reminder is on by default, except the Afternoon, Evening and Night summaries.
 
 ### F-17 · Widgets: general rules
 
@@ -849,7 +850,7 @@ For a range R (a week, month or year), counting up to and including today:
 
 | Id | Fires at | Included when (judged on current data) |
 |---|---|---|
-| `part-start.<day>.<part>` | `start(part)` | The part has candidates. For Morning, Anytime candidates count too. |
+| `part-start.<day>.<part>` | `start(part)` | The part's switch is on, and the part has candidates. For Morning, Anytime candidates count too. |
 | `ending-soon.<day>.<part>` | max(`start(part)`, `end(part) − lead`) | The part has candidates |
 | `fixed.<task_id>.<day>` | fixed time − lead | The task isn't done |
 | `recap.<day>` | `recap_minute` | That day will have tasks that aren't done |
@@ -936,6 +937,7 @@ editable(d, now):
 | Appearance | System (or Dark, or Light) |
 | Missed style | Gentle (or Strict) |
 | Correction window | Until today's Afternoon start |
+| Part-start summaries | Morning on; Afternoon, Evening and Night off |
 
 ---
 

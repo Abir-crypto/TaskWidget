@@ -92,6 +92,19 @@ final class SettingsUITests: XCTestCase {
         return Double(total) / Double(side * side * 3 * 255)
     }
 
+    /// SPEC T-42: a summary switch for each part, with only Morning's on for a new install.
+    @MainActor
+    func testOnlyMorningsSummaryIsOnByDefault() {
+        let app = UITestApp.launch()
+        app.buttons["Settings"].tap()
+        let night = app.switches["Night starts"]
+        for _ in 0..<4 where !night.isHittable { app.swipeUp() }
+        XCTAssertEqual(app.switches["Morning starts"].value as? String, "1")
+        for part in ["Afternoon", "Evening", "Night"] {
+            XCTAssertEqual(app.switches["\(part) starts"].value as? String, "0", "\(part)")
+        }
+    }
+
     @MainActor
     func testEverySettingIsPresent() {
         let app = UITestApp.launch()
@@ -102,7 +115,8 @@ final class SettingsUITests: XCTestCase {
         }
         // The form is longer than the screen, so scroll down to each item in turn.
         let items = [
-            app.switches["Part starts"], app.switches["Ending soon"], app.staticTexts["Before the part ends"],
+            app.switches["Morning starts"], app.switches["Afternoon starts"], app.switches["Evening starts"],
+            app.switches["Night starts"], app.switches["Ending soon"], app.staticTexts["Before the part ends"],
             app.switches["Fixed-time tasks"], app.staticTexts["Before the task"], app.switches["End-of-day recap"],
             app.staticTexts["Recap time"], app.switches["Running timer alert"], app.staticTexts["Alert after"],
             app.staticTexts["Notifications"], app.switches["Hide task names on the Lock Screen"],

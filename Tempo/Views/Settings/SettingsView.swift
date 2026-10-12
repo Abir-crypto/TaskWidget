@@ -65,14 +65,10 @@ struct SettingsView: View {
 
     private var remindersSection: some View {
         Section {
-            // One switch for every part's summary until T-42 gives each part its own (D-109).
-            Toggle(
-                "Part starts",
-                isOn: Binding(
-                    get: { !model.settings.partStartSummaries.isEmpty },
-                    set: { on in
-                        model.update { $0.partStartSummaries = on ? SettingsValue.defaults.partStartSummaries : [] }
-                    }))
+            // A summary when each part starts, with a switch per part; only Morning's is on by default (D-109).
+            ForEach(DayPart.allCases, id: \.self) { part in
+                Toggle(String(localized: "\(part.title) starts"), isOn: partStartBinding(part))
+            }
 
             Toggle("Ending soon", isOn: binding(\.notifyEndingSoon))
             if model.settings.notifyEndingSoon {
@@ -191,6 +187,20 @@ struct SettingsView: View {
     }
 
     /// A binding to one setting that saves on every change.
+    private func partStartBinding(_ part: DayPart) -> Binding<Bool> {
+        Binding(
+            get: { model.settings.partStartSummaries.contains(part) },
+            set: { on in
+                model.update { settings in
+                    if on {
+                        settings.partStartSummaries.insert(part)
+                    } else {
+                        settings.partStartSummaries.remove(part)
+                    }
+                }
+            })
+    }
+
     private func binding<Value: Equatable>(_ keyPath: WritableKeyPath<SettingsValue, Value>) -> Binding<Value> {
         Binding(
             get: { model.settings[keyPath: keyPath] },

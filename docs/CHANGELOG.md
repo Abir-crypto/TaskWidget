@@ -14,6 +14,11 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Part summaries per part (T-42)
+- Changed: F-07, F-16, §5.9 — each part's summary has its own switch; only Morning's is on by default (D-109, superseding D-016).
+- Changed: §7 — the summaries' defaults.
+- Platform: ios.md §15 — Settings' four switches; the planner checks `partStartSummaries`.
+
 ## 2026-10-12 · Correction window for yesterday (T-41)
 - Added: §5.11 — Editable days: yesterday can be corrected (complete, undo, log time, delete time entries) until today's Afternoon start (D-108, D-121).
 - Changed: §1.2 — honest records: today until midnight, yesterday until the afternoon starts, earlier days final.

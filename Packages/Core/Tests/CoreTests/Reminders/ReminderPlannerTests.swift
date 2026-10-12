@@ -4,8 +4,15 @@ import Testing
 @testable import Core
 
 struct ReminderPlannerTests {
+    /// Every part's summary switched on, so these tests see each kind; the defaults are checked on their own.
+    private static let everySummary: SettingsValue = {
+        var settings = SettingsValue.defaults
+        settings.partStartSummaries = Set(DayPart.allCases)
+        return settings
+    }()
+
     private func plan(
-        _ fixtures: Fixtures, at now: Date, settings: SettingsValue = .defaults,
+        _ fixtures: Fixtures, at now: Date, settings: SettingsValue = Self.everySummary,
         timer: ReminderPlanner.RunningTimer? = nil,
         limit: Int = ReminderPlanner.defaultLimit
     ) -> [PlannedNotification] {
@@ -142,7 +149,7 @@ struct ReminderPlannerTests {
     @Test func eachKindCanBeTurnedOff() {
         var fixtures = Fixtures()
         fixtures.oneTime("Interview", timing: .fixed(minute: 750))
-        var settings = SettingsValue.defaults
+        var settings = Self.everySummary
         settings.partStartSummaries = []
         settings.notifyEndingSoon = false
         settings.notifyFixed = false
@@ -215,5 +222,51 @@ struct ReminderPlannerTests {
         #expect(!ids.contains("part-start.20261006.morning"))
         #expect(!ids.contains("ending-soon.20261006.morning"))
         #expect(ids.contains("recap.20261006"))  // still ahead, and the task is missed
+    }
+
+    // MARK: A switch per part (SPEC F-07, F-16, D-109, T-42)
+
+    @Test func onlyMorningsSummaryIsPlannedByDefault() {
+        var fixtures = Fixtures()
+        fixtures.oneTime("Stretch", timing: .part(.morning))
+        fixtures.oneTime("Call", timing: .part(.noon))
+        fixtures.oneTime("Gym", timing: .part(.evening))
+        fixtures.oneTime("Read", timing: .part(.night))
+        fixtures.oneTime("Passport", timing: .anytime)
+        let ids = plan(fixtures, at: TestCalendar.today(5), settings: .defaults).map(\.id)
+        #expect(ids.contains("part-start.20261006.morning"))
+        #expect(!ids.contains { $0.hasPrefix("part-start.20261006.noon") })
+        #expect(!ids.contains { $0.hasPrefix("part-start.20261006.evening") })
+        #expect(!ids.contains { $0.hasPrefix("part-start.20261006.night") })
+        // Ending-soon, fixed-time and recap reminders are unchanged.
+        #expect(ids.contains("ending-soon.20261006.noon"))
+        #expect(ids.contains("ending-soon.20261006.evening"))
+        #expect(ids.contains("recap.20261006"))
+    }
+
+    @Test func morningsSummaryStillListsAnytimeTasks() throws {
+        var fixtures = Fixtures()
+        fixtures.oneTime("Passport", timing: .anytime)
+        let morning = try #require(
+            plan(fixtures, at: TestCalendar.today(5), settings: .defaults).first {
+                $0.id == "part-start.20261006.morning"
+            })
+        guard case .partStart(_, _, let items, let anytime) = morning.content else {
+            Issue.record("Not a part summary")
+            return
+        }
+        #expect(items.isEmpty)
+        #expect(anytime.map(\.title) == ["Passport"])
+    }
+
+    @Test func eachPartsSwitchPlansOnlyThatPart() {
+        var fixtures = Fixtures()
+        fixtures.oneTime("Stretch", timing: .part(.morning))
+        fixtures.oneTime("Gym", timing: .part(.evening))
+        var settings = SettingsValue.defaults
+        settings.partStartSummaries = [.evening]
+        let ids = plan(fixtures, at: TestCalendar.today(5), settings: settings).map(\.id)
+        #expect(ids.contains("part-start.20261006.evening"))
+        #expect(!ids.contains("part-start.20261006.morning"))
     }
 }

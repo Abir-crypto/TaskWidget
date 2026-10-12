@@ -3,8 +3,7 @@ import Foundation
 /// The single `settings` row (SPEC §4.5).
 public struct SettingsValue: Hashable, Codable, Sendable {
     public var parts: PartSettings
-    /// The parts whose start sends a summary: Morning only by default (SPEC §4.5). Until T-42 the planner treats any
-    /// of them as the old single switch, so either every part's summary is sent or none is.
+    /// The parts whose start sends a summary: Morning only by default (SPEC F-16, §4.5, D-109).
     public var partStartSummaries: Set<DayPart>
     public var notifyEndingSoon: Bool
     /// Minutes before a part ends: 15, 30, 45 or 60.
