@@ -6,6 +6,7 @@ struct WeekDots: View {
     let days: [(day: DayKey, result: DayResult)]
     let today: DayKey
     let calendar: Calendar
+    @Environment(\.missedStyle) private var missedStyle
 
     var body: some View {
         HStack {
@@ -20,7 +21,7 @@ struct WeekDots: View {
                 .frame(maxWidth: .infinity)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(item.day.weekday(in: calendar).name(in: calendar))
-                .accessibilityValue(item.result.label)
+                .accessibilityValue(item.result.label(missedStyle))
             }
         }
     }

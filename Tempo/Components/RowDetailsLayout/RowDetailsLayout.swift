@@ -8,7 +8,7 @@ struct RowDetailsLayout<Main: View, Details: View>: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        if typeSize.isAccessibilitySize {
+        if typeSize >= .xxLarge {
             // Grow downward rather than truncate.
             VStack(alignment: .leading, spacing: 4) {
                 main.fixedSize(horizontal: false, vertical: true)

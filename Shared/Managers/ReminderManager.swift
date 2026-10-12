@@ -57,7 +57,8 @@ final class ReminderManager {
         }
         return ReminderPlanner.plan(snapshot: snapshot, now: clock.now, timer: timer).map { planned in
             ScheduledNotification(
-                id: planned.id, fireDate: planned.fireDate, title: NotificationText.title(for: planned.content),
+                id: planned.id, fireDate: planned.fireDate,
+                title: NotificationText.title(for: planned.content, missedStyle: snapshot.settings.missedStyle),
                 body: NotificationText.body(for: planned.content),
                 url: NotificationText.url(for: planned.content.destination),
                 categoryIdentifier: planned.id == "timer-alert" ? NotificationCategory.timerAlert : nil)

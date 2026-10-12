@@ -535,7 +535,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   - The launch screen, widgets and notifications are drawn by the system, so they follow the device's mode (F-28).
   - Settings › Theme shows it as a segmented `Picker` above the swatches.
 - **Haptics:** `.sensoryFeedback(.success, trigger:)` on completing a task, and `.selection` on changing day. The view models count completions (`completions`) so each one triggers it, and undoing doesn't.
-- **Large text:** `RowDetailsLayout` puts a row's details under its title when `dynamicTypeSize.isAccessibilitySize`; Today's day strip uses `.dynamicTypeSize(...DynamicTypeSize.xxxLarge)` with `accessibilityShowsLargeContentViewer` (D-097). `MinuteIntervalPicker` implements `sizeThatFits` so rows make room for the UIKit picker.
+- **Large text:** `RowDetailsLayout` puts a row's details under its title when `dynamicTypeSize >= .xxLarge` (D-120; at `.accessibility…` sizes before T-40); Today's day strip uses `.dynamicTypeSize(...DynamicTypeSize.xxxLarge)` with `accessibilityShowsLargeContentViewer` (D-097). `MinuteIntervalPicker` implements `sizeThatFits` so rows make room for the UIKit picker.
 
 ---
 
@@ -662,3 +662,9 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - `Tempo/Components/NotesIndicator` (used by Today and Tasks) is a `note.text` image labelled "Has notes".
   - Widget content types and `ReminderItem` carry titles, never notes, so nothing on the Lock Screen or in a notification can show them.
 - **T-39:** `DayPart.title` returns "Afternoon" for `.noon`; stored values, `noon_start`, notification ids and link parameters (`part=noon`) don't change. Both string catalogs are synced, and the stale "Noon" entries removed. The Day widget's column titles already shrink to fit (`minimumScaleFactor(0.7)`).
+- **T-40:**
+  - `Shared/Utilities/Extensions/MissedStyle+Text.swift` holds every style-dependent word, icon and color, so the app, the widgets and `NotificationText` agree.
+  - `RootViewModel` reads the style with the other settings, and `RootView` sets `.environment(\.missedStyle, …)` (an `@Entry` value), names the tab, and shows the badge only in Strict.
+  - Widgets get the style from the settings in their snapshot (D-089): `DayWidgetContent.missedStyle`, `NowList.missedStyle`.
+  - `MissedManager.popupItems` returns nothing in Gentle; `markMissedTodaySeen()` runs when Settings switches to Strict.
+  - UI tests run in Gentle unless launched with `-ui-testing-strict` (`UITestApp.launch(strict:)`; popup tests always are).

@@ -22,7 +22,7 @@ struct DayWidgetView: View {
                     HStack(alignment: .top, spacing: 6) {
                         ForEach(content.columns, id: \.part) { column in
                             Link(destination: DeepLink.today(part: column.part).url) {
-                                columnView(column)
+                                columnView(column, style: content.missedStyle)
                             }
                         }
                     }
@@ -35,7 +35,7 @@ struct DayWidgetView: View {
         }
     }
 
-    private func columnView(_ column: DayColumn) -> some View {
+    private func columnView(_ column: DayColumn, style: MissedStyle) -> some View {
         VStack(spacing: 6) {
             Text(column.part.title)
                 .font(.caption.weight(column.isCurrent ? .bold : .medium))
@@ -45,9 +45,9 @@ struct DayWidgetView: View {
                 .widgetAccentable(column.isCurrent)
             VStack(spacing: 3) {
                 ForEach(Array(column.marks.enumerated()), id: \.offset) { _, mark in
-                    Image(systemName: mark.systemImage)
+                    Image(systemName: mark.systemImage(style))
                         .font(.caption)
-                        .foregroundStyle(color(for: mark))
+                        .foregroundStyle(color(for: mark, style: style))
                 }
                 if column.extraCount > 0 {
                     Text("+\(column.extraCount)").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
@@ -71,7 +71,7 @@ struct DayWidgetView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(column.part.title)
-        .accessibilityValue(accessibilityValue(for: column))
+        .accessibilityValue(accessibilityValue(for: column, style: style))
     }
 
     @ViewBuilder
@@ -83,20 +83,20 @@ struct DayWidgetView: View {
         }
     }
 
-    private func color(for mark: DayMark) -> Color {
+    private func color(for mark: DayMark, style: MissedStyle) -> Color {
         switch mark {
         case .done: .green
         case .notDone: .secondary
-        case .missed: .red
+        case .missed: style.color
         case .partial: .orange
         }
     }
 
-    private func accessibilityValue(for column: DayColumn) -> String {
+    private func accessibilityValue(for column: DayColumn, style: MissedStyle) -> String {
         guard column.hasTasks else { return String(localized: "No tasks") }
         let done = column.marks.filter { $0 == .done }.count
         let missed = column.marks.filter { $0 == .missed }.count
-        return String(localized: "\(done) done, \(missed) missed, \(column.leftCount) left")
+        return style.columnSummary(done: done, missed: missed, left: column.leftCount)
     }
 }
 

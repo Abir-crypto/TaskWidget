@@ -12,10 +12,12 @@ final class SettingsViewModel {
 
     private let manager: SettingsManager
     private let notifications: any NotificationScheduling
+    private let missed: MissedManager?
 
-    init(manager: SettingsManager, notifications: any NotificationScheduling) {
+    init(manager: SettingsManager, notifications: any NotificationScheduling, missed: MissedManager? = nil) {
         self.manager = manager
         self.notifications = notifications
+        self.missed = missed
     }
 
     func load() async {
@@ -47,6 +49,8 @@ final class SettingsViewModel {
         var changed = settings
         change(&changed)
         guard changed != settings else { return }
+        // Tasks already missed when Strict is chosen don't bring up the popup (SPEC F-30).
+        if settings.missedStyle == .gentle, changed.missedStyle == .strict { missed?.markMissedTodaySeen() }
         do {
             settings = try manager.update(changed)
         } catch {

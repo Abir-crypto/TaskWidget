@@ -43,7 +43,8 @@ struct NotesPrivacyTests {
         #expect(!plan.isEmpty)
         for notification in plan {
             let text =
-                NotificationText.title(for: notification.content) + NotificationText.body(for: notification.content)
+                NotificationText.title(for: notification.content, missedStyle: .gentle)
+                + NotificationText.body(for: notification.content)
             #expect(!text.contains(secret))
         }
     }

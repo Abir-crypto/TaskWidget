@@ -6,9 +6,10 @@ final class MissedUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// In the Strict style, with its 1.0 wording.
     @MainActor
     func testTodayActionsAndEarlierFilters() {
-        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true, strict: true)
         app.tabBars.buttons["Missed"].tap()
         XCTAssertTrue(app.staticTexts["Stretch"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["You can still change these"].exists)
@@ -32,9 +33,25 @@ final class MissedUITests: XCTestCase {
 
     @MainActor
     func testEmptyStates() {
-        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00")
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", strict: true)
         app.tabBars.buttons["Missed"].tap()
         XCTAssertTrue(app.staticTexts["You haven't missed a task today"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Nothing missed before today"].exists)
+    }
+
+    /// SPEC T-40: the Gentle style (the default) calls the tab Not done, has no badge, and says "not done".
+    @MainActor
+    func testGentleStyleWording() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
+        let tab = app.tabBars.buttons["Not done"]
+        XCTAssertTrue(tab.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.tabBars.buttons["Missed"].exists)
+        XCTAssertEqual(tab.value as? String ?? "", "")
+        tab.tap()
+        XCTAssertTrue(app.navigationBars["Not done"].waitForExistence(timeout: 3))
+        let notDone = NSPredicate(format: "label CONTAINS 'Not done'")
+        XCTAssertTrue(app.descendants(matching: .any).matching(notDone).firstMatch.exists)
+        app.buttons["Mark done"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Nothing left undone today"].waitForExistence(timeout: 3))
     }
 }

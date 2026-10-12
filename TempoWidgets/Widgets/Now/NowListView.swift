@@ -127,11 +127,11 @@ struct NowListView: View {
         if list.missedCount > 0 {
             Link(destination: DeepLink.missed.url) {
                 HStack(spacing: 4) {
-                    Image(systemName: "xmark.circle").accessibilityHidden(true)
-                    Text("\(list.missedCount) missed today ›")
+                    Image(systemName: list.missedStyle.systemImage).accessibilityHidden(true)
+                    Text(list.missedStyle.todayFooter(list.missedCount))
                 }
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.red)
+                .foregroundStyle(list.missedStyle.color)
             }
         }
     }

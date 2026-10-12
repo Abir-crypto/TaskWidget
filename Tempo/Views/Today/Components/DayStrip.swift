@@ -8,6 +8,7 @@ struct DayStrip: View {
     let calendar: Calendar
     let onSelect: (DayKey) -> Void
     let onSwipe: (Int) -> Void
+    @Environment(\.missedStyle) private var missedStyle
 
     var body: some View {
         HStack(spacing: 4) {
@@ -53,8 +54,11 @@ struct DayStrip: View {
                             Circle().fill(day.isToday ? AnyShapeStyle(.tint) : AnyShapeStyle(Color.primary))
                         }
                     }
+                // The red dot is Strict only; Gentle shows the usual dot (SPEC F-30).
                 Circle()
-                    .fill(day.dot == .missed ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
+                    .fill(
+                        day.dot == .missed && missedStyle == .strict ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary)
+                    )
                     .frame(width: 5, height: 5)
                     .opacity(day.dot == .none ? 0 : 1)
             }
@@ -80,7 +84,7 @@ struct DayStrip: View {
         switch day.dot {
         case .none: String(localized: "No tasks")
         case .tasks: String(localized: "Has tasks")
-        case .missed: String(localized: "Has missed tasks")
+        case .missed: missedStyle.dayHasMissed
         }
     }
 }

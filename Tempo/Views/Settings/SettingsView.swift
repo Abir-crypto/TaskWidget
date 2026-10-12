@@ -12,12 +12,14 @@ struct SettingsView: View {
     init(dependencies: AppDependencies) {
         self.dependencies = dependencies
         _model = State(
-            initialValue: SettingsViewModel(manager: dependencies.settings, notifications: dependencies.notifications))
+            initialValue: SettingsViewModel(
+                manager: dependencies.settings, notifications: dependencies.notifications, missed: dependencies.missed))
     }
 
     var body: some View {
         Form {
             partsSection
+            missedStyleSection
             remindersSection
             notificationsSection
             themeSection
@@ -40,6 +42,21 @@ struct SettingsView: View {
         } footer: {
             Text(
                 "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes."
+            )
+        }
+    }
+
+    // MARK: Missed tasks
+
+    /// Gentle or Strict (SPEC F-16, F-30).
+    private var missedStyleSection: some View {
+        Section {
+            MenuValuePicker(
+                title: "Missed tasks", selection: binding(\.missedStyle), options: MissedStyle.allCases
+            ) { Text($0.title) }
+        } footer: {
+            Text(
+                "Gentle shows tasks you didn't get to as Not done, without a badge or a popup. Strict marks them Missed in red."
             )
         }
     }

@@ -6,7 +6,8 @@ enum NotificationText {
     /// Lists show up to 3 names, then "and N more".
     static let maximumNames = 3
 
-    static func title(for content: ReminderContent) -> String {
+    /// The recap's title depends on the missed style (SPEC F-30); nothing else does.
+    static func title(for content: ReminderContent, missedStyle: MissedStyle) -> String {
         switch content {
         case .partStart(_, let part, let items, let anytime):
             return "\(part.title) · \(inflected("^[\(items.count + anytime.count) task](inflect: true)"))"
@@ -15,11 +16,7 @@ enum NotificationText {
         case .fixed(_, let item, _):
             return String(localized: "\(item.title) at \(TimeOfDayFormatter.string(minute: item.fixedMinute ?? 0))")
         case .recap(_, let missed, let open):
-            switch (missed.count, open.count) {
-            case (0, let open): return String(localized: "Today: \(open) still open")
-            case (let missed, 0): return String(localized: "Today: \(missed) missed")
-            case (let missed, let open): return String(localized: "Today: \(missed) missed, \(open) still open")
-            }
+            return missedStyle.recapTitle(missed: missed.count, open: open.count)
         case .timerAlert(let habitTitle, _):
             guard let habitTitle else { return String(localized: "Timer is still running") }
             return String(localized: "\(habitTitle) timer is still running")

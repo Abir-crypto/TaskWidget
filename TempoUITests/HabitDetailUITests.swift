@@ -45,6 +45,6 @@ final class HabitDetailUITests: XCTestCase {
         let seeAll = app.buttons["See all"]
         for _ in 0..<4 where !seeAll.isHittable { app.swipeUp() }
         seeAll.tap()
-        XCTAssertTrue(app.navigationBars["Missed"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["Not done"].waitForExistence(timeout: 3))
     }
 }

@@ -11,6 +11,7 @@ struct MonthCalendar: View {
     let canGoForward: Bool
     let onBack: () -> Void
     let onForward: () -> Void
+    @Environment(\.missedStyle) private var missedStyle
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
@@ -63,20 +64,26 @@ struct MonthCalendar: View {
             .monospacedDigit()
             .frame(maxWidth: .infinity, minHeight: 32)
             .background(background(for: result), in: Circle())
-            .foregroundStyle(result == .done || result == .missed ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
+            .foregroundStyle(filledWhite(result) ? AnyShapeStyle(.white) : AnyShapeStyle(.primary))
             .overlay {
                 if result == .upcoming { Circle().stroke(.secondary, lineWidth: 1) }
                 if day == today { Circle().stroke(.tint, lineWidth: 2) }
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(day.startDate(in: calendar).formatted(.dateTime.weekday(.wide).day().month(.wide)))
-            .accessibilityValue(result.label)
+            .accessibilityValue(result.label(missedStyle))
     }
 
+    /// Done days, and missed days in the Strict style, are filled with a strong color and take white numbers.
+    private func filledWhite(_ result: DayResult) -> Bool {
+        result == .done || (result == .missed && missedStyle == .strict)
+    }
+
+    /// A missed day is red in the Strict style and light grey in the Gentle style (SPEC F-30).
     private func background(for result: DayResult) -> AnyShapeStyle {
         switch result {
         case .done: AnyShapeStyle(Color.green)
-        case .missed: AnyShapeStyle(Color.red)
+        case .missed: missedStyle == .strict ? AnyShapeStyle(Color.red) : AnyShapeStyle(Color(uiColor: .systemGray4))
         case .short: AnyShapeStyle(Color.orange.opacity(0.35))
         case .upcoming, .notScheduled: AnyShapeStyle(Color.clear)
         }

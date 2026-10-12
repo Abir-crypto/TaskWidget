@@ -35,12 +35,7 @@ struct MissedRow: View {
                 .foregroundStyle(.orange)
                 .monospacedDigit()
         } else {
-            HStack(spacing: 4) {
-                Image(systemName: "xmark.circle")
-                Text("Missed")
-            }
-            .font(.subheadline)
-            .foregroundStyle(.red)
+            StatusLabel(status: .missed).font(.subheadline)
         }
     }
 }

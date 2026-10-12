@@ -9,6 +9,7 @@ struct HabitDetailView: View {
     @Environment(NavigationRouter.self) private var router
     @Environment(TimerController.self) private var timer
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.missedStyle) private var missedStyle
 
     init(dependencies: AppDependencies, taskID: UUID) {
         self.dependencies = dependencies
@@ -182,7 +183,7 @@ struct HabitDetailView: View {
     private func legend(_ result: DayResult) -> some View {
         HStack(spacing: 4) {
             DayResultMark(result: result).accessibilityHidden(true)
-            Text(result.label)
+            Text(result.label(missedStyle))
         }
     }
 
@@ -255,18 +256,14 @@ struct HabitDetailView: View {
     private var missedSection: some View {
         Section {
             if model.recentMissed.isEmpty {
-                Text("No missed days").foregroundStyle(.secondary)
+                Text(missedStyle.noRecentDays).foregroundStyle(.secondary)
             }
             ForEach(model.recentMissed) { item in
                 LabeledContent {
                     if let target = item.targetMinutes, item.status == .short {
                         Text(DurationFormatter.progress(minutes: item.minutes, target: target))
                     } else {
-                        HStack(spacing: 4) {
-                            Image(systemName: "xmark.circle")
-                            Text("Missed")
-                        }
-                        .foregroundStyle(.red)
+                        StatusLabel(status: .missed)
                     }
                 } label: {
                     Text(DayTitleFormatter.title(for: item.day, today: model.today, calendar: model.calendar))
@@ -274,7 +271,7 @@ struct HabitDetailView: View {
             }
         } header: {
             HStack {
-                Text("Recent missed days")
+                Text(missedStyle.recentDaysTitle)
                 Spacer()
                 // A 44-point target inside the header's line height: the label grows and the button gives it back.
                 Button {

@@ -16,11 +16,12 @@ enum DayMark: Hashable {
         }
     }
 
-    var systemImage: String {
+    /// A missed task is ✗ in the Strict style and – in the Gentle style (SPEC F-30).
+    func systemImage(_ style: MissedStyle) -> String {
         switch self {
         case .done: "checkmark.circle.fill"
         case .notDone: "circle"
-        case .missed: "xmark.circle"
+        case .missed: style == .strict ? "xmark.circle" : "minus.circle"
         case .partial: "circle.lefthalf.filled"
         }
     }

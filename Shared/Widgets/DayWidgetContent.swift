@@ -10,6 +10,8 @@ struct DayWidgetContent: Hashable {
     let hasNoTasks: Bool
     /// Every task is done: "You're free today".
     let isAllDone: Bool
+    /// Missed tasks are marked ✗ in the Strict style and – in the Gentle style (SPEC F-30).
+    let missedStyle: MissedStyle
 
     init(snapshot: WidgetSnapshot, at date: Date) {
         let plan = snapshot.plan(at: date)
@@ -17,5 +19,6 @@ struct DayWidgetContent: Hashable {
         anytimeLeft = plan.section(for: nil)?.leftCount ?? 0
         hasNoTasks = plan.isEmpty
         isAllDone = !plan.isEmpty && plan.items.allSatisfy { $0.status == .done }
+        missedStyle = snapshot.core.settings.missedStyle
     }
 }

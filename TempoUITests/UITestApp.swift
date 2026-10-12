@@ -6,18 +6,21 @@ enum UITestApp {
     /// - Parameters:
     ///   - now: an ISO 8601 moment to fix the app's clock at.
     ///   - sample: start with the sample tasks.
-    ///   - missedPopup: let the missed popup appear; other tests keep it away.
+    ///   - missedPopup: let the missed popup appear; other tests keep it away. The popup only exists in the Strict
+    ///     missed style, so this also chooses Strict.
+    ///   - strict: use the Strict missed style instead of Gentle, the default (SPEC F-30).
     ///   - finishedTimer: seconds of a finished generic timer waiting for the task picker.
     ///   - guide: show the first-launch guide; other tests skip it.
     static func launch(
-        now: String? = nil, sample: Bool = false, missedPopup: Bool = false, finishedTimer: Int? = nil,
-        guide: Bool = false
+        now: String? = nil, sample: Bool = false, missedPopup: Bool = false, strict: Bool = false,
+        finishedTimer: Int? = nil, guide: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing", "-ui-testing-timezone", "Europe/London"]
         if let now { app.launchArguments += ["-ui-testing-now", now] }
         if sample { app.launchArguments.append("-ui-testing-sample") }
         if !missedPopup { app.launchArguments.append("-ui-testing-no-popup") }
+        if missedPopup || strict { app.launchArguments.append("-ui-testing-strict") }
         if let finishedTimer { app.launchArguments += ["-ui-testing-finished-timer", String(finishedTimer)] }
         if guide { app.launchArguments.append("-ui-testing-guide") }
         app.launch()

@@ -56,6 +56,10 @@ final class AppDependencies {
                 deviceState: deviceState,
                 notifications: FixedNotificationScheduler(permission: .allowed),
                 widgets: WidgetManager())
+            if options.usesStrictMissedStyle, var settings = try? dependencies.settings.loadOrCreate() {
+                settings.missedStyle = .strict
+                _ = try? dependencies.settings.update(settings)
+            }
             if options.suppressesMissedPopup, let unseen = try? dependencies.missed.unseenToday() {
                 dependencies.missed.markSeen(unseen.map(\.id))
             }

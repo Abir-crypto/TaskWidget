@@ -9,7 +9,8 @@ final class NavigationUITests: XCTestCase {
     @MainActor
     func testFourTabs() {
         let app = UITestApp.launch()
-        for name in ["Tasks", "Missed", "Stats", "Today"] {
+        // The Missed tab is called Not done in the Gentle style, the default (SPEC F-30).
+        for name in ["Tasks", "Not done", "Stats", "Today"] {
             app.tabBars.buttons[name].tap()
             XCTAssertTrue(app.navigationBars[name].waitForExistence(timeout: 5), "\(name) didn't open")
         }
@@ -44,7 +45,7 @@ final class NavigationUITests: XCTestCase {
     @MainActor
     func testNoAddButtonOnMissedOrStats() {
         let app = UITestApp.launch()
-        app.tabBars.buttons["Missed"].tap()
+        app.tabBars.buttons["Not done"].tap()
         XCTAssertFalse(app.buttons["Add task"].exists)
         app.tabBars.buttons["Stats"].tap()
         XCTAssertFalse(app.buttons["Add task"].exists)
@@ -54,7 +55,7 @@ final class NavigationUITests: XCTestCase {
     func testLinksOpenEveryDestination() throws {
         let app = UITestApp.launch()
         app.open(try XCTUnwrap(URL(string: "tempo://missed")))
-        XCTAssertTrue(app.navigationBars["Missed"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Not done"].waitForExistence(timeout: 5))
 
         app.open(try XCTUnwrap(URL(string: "tempo://today?part=noon")))
         XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))

@@ -14,6 +14,15 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Missed style (T-40)
+- Added: F-30 — Missed style: Gentle (default, "Not done", grey, no badge or popup) or Strict (the 1.0 look) (D-107, D-120).
+- Changed: §2.1 — missed tracking is shown Gentle or Strict.
+- Changed: F-07, F-08, F-09, F-10, F-13, F-14, F-19, F-21, F-24 — the quoted missed strings are marked "(Strict; Gentle in F-30)"; the popup and the badge are Strict only.
+- Changed: F-16 — a Missed tasks setting under Parts of the day.
+- Changed: F-27 — missed is red in Strict and grey in Gentle.
+- Changed: §7 — the missed style's default.
+- Platform: ios.md §15 — `MissedStyle+Text`, the `missedStyle` environment value, `-ui-testing-strict`.
+
 ## 2026-10-12 · "Afternoon" on screen (T-39)
 - Changed: F-02 — the part that starts at `noon_start` is called Afternoon on screen; stored values and ids keep `noon` (D-106). The line "'Before night' in everyday speech means Evening" is removed.
 - Changed: §1.1, §1.3, F-04, F-07, F-08, F-10, F-15, F-16, F-19, F-20, F-22, F-24, §6, §7 — every user-facing "Noon" is now "Afternoon"; Afternoon's empty text is "Nothing this afternoon" / "Nothing in the afternoon".

@@ -19,21 +19,22 @@ enum DayResult: Hashable {
         }
     }
 
-    var systemImage: String {
+    /// A missed day is a cross in the Strict style and a dash in the Gentle style (SPEC F-30).
+    func systemImage(_ style: MissedStyle) -> String {
         switch self {
         case .done: "checkmark.circle.fill"
         case .short: "circle.lefthalf.filled"
-        case .missed: "xmark.circle.fill"
+        case .missed: style == .strict ? "xmark.circle.fill" : "minus.circle.fill"
         case .upcoming: "circle"
         case .notScheduled: "minus"
         }
     }
 
-    var label: String {
+    func label(_ style: MissedStyle) -> String {
         switch self {
         case .done: String(localized: "Done")
         case .short: String(localized: "Short")
-        case .missed: String(localized: "Missed")
+        case .missed: style.statusTitle
         case .upcoming: String(localized: "Upcoming")
         case .notScheduled: String(localized: "Not scheduled")
         }

@@ -42,6 +42,37 @@ struct MissedPopupTests {
         store = try TestEnvironment.store(clock: clock)
         tasks = TaskManager(store: store, clock: clock, refresh: RefreshManager(widgets: WidgetReloadCounter()))
         missed = MissedManager(tasks: tasks, deviceState: deviceState, clock: clock)
+        // The popup only exists in the Strict style (SPEC F-30).
+        var settings = SettingsValue.defaults
+        settings.missedStyle = .strict
+        try store.save(settings)
+    }
+
+    /// SPEC T-40: the Gentle style never shows the popup.
+    @Test func theGentleStyleNeverShowsThePopup() throws {
+        try store.save(SettingsValue.defaults)
+        try tasks.createOneTime(title: "Call", date: tasks.today, timing: .part(.morning))
+        clock.now = TestEnvironment.date(2026, 10, 6, 12, 0)
+        #expect(missed.popupItems(openedFromLink: false).isEmpty)
+        #expect(missed.missedTodayCount() == 1)
+    }
+
+    /// SPEC F-30: switching to Strict marks what's already missed as seen, so only later misses bring up the popup.
+    @Test func switchingToStrictMarksTodaysMissesSeen() async throws {
+        try store.save(SettingsValue.defaults)
+        let call = try tasks.createOneTime(title: "Call", date: tasks.today, timing: .part(.morning))
+        let lunch = try tasks.createOneTime(title: "Lunch", date: tasks.today, timing: .part(.noon))
+        clock.now = TestEnvironment.date(2026, 10, 6, 13, 0)
+        let model = SettingsViewModel(
+            manager: SettingsManager(store: store, refresh: RefreshManager(widgets: WidgetReloadCounter())),
+            notifications: FixedNotificationScheduler(permission: .allowed), missed: missed)
+        await model.load()
+        model.update { $0.missedStyle = .strict }
+        #expect(missed.popupItems(openedFromLink: false).isEmpty)
+        #expect(
+            deviceState.missedSeen?.occurrenceIDs.contains(Occurrence.id(taskID: call.id, day: tasks.today)) == true)
+        clock.now = TestEnvironment.date(2026, 10, 6, 17, 0)
+        #expect(missed.popupItems(openedFromLink: false).map(\.occurrence.task.id) == [lunch.id])
     }
 
     @Test func normalOpenWithUnseenMissedTasksShowsThem() throws {

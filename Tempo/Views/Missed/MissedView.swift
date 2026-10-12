@@ -8,6 +8,7 @@ struct MissedView: View {
     @State private var model: MissedViewModel
     @State private var isFiltering = false
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.missedStyle) private var missedStyle
 
     init(dependencies: AppDependencies, router: NavigationRouter) {
         self.dependencies = dependencies
@@ -20,7 +21,7 @@ struct MissedView: View {
             TimelineView(.everyMinute) { _ in
                 list
             }
-            .navigationTitle("Missed")
+            .navigationTitle(missedStyle.statusTitle)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -86,7 +87,7 @@ struct MissedView: View {
     private var todaySection: some View {
         Section {
             if model.isLoaded, model.todayItems.isEmpty {
-                Text("You haven't missed a task today").foregroundStyle(.secondary)
+                Text(missedStyle.todayEmpty).foregroundStyle(.secondary)
             }
             ForEach(model.todayItems) { item in
                 VStack(alignment: .leading, spacing: 8) {
@@ -131,10 +132,10 @@ struct MissedView: View {
     private var earlierSection: some View {
         Section {
             if model.isLoaded, !model.hasEarlier {
-                Text("Nothing missed before today").foregroundStyle(.secondary)
+                Text(missedStyle.earlierEmpty).foregroundStyle(.secondary)
             } else if model.isLoaded, model.earlierCount == 0 {
                 VStack(spacing: 8) {
-                    Text("No missed tasks match these filters").foregroundStyle(.secondary)
+                    Text(missedStyle.filtersEmpty).foregroundStyle(.secondary)
                     Button("Clear filters") { model.clearFilters() }
                         .buttonStyle(.bordered)
                 }
@@ -155,7 +156,7 @@ struct MissedView: View {
                 Text("Earlier")
                 Spacer()
                 if model.hasEarlier {
-                    Text("\(model.earlierCount) missed").textCase(nil)
+                    Text(missedStyle.count(model.earlierCount)).textCase(nil)
                 }
             }
         } footer: {

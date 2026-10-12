@@ -22,6 +22,8 @@ struct NowList: Hashable {
     let isFree: Bool
     /// Today has no tasks at all: "No tasks today", and tapping opens the editor.
     let hasNoTasks: Bool
+    /// The footer says "missed" in red or "not done" in grey (SPEC F-30).
+    let missedStyle: MissedStyle
 
     init(snapshot: WidgetSnapshot, at date: Date) {
         let plan = snapshot.plan(at: date)
@@ -63,6 +65,7 @@ struct NowList: Hashable {
         self.canStartTimers = snapshot.timer == nil
         self.isFree = remaining.isEmpty
         self.hasNoTasks = plan.isEmpty
+        self.missedStyle = snapshot.core.settings.missedStyle
     }
 
     /// Pending tasks in the header's part ("N left").

@@ -7,6 +7,7 @@ struct StatsView: View {
     let dependencies: AppDependencies
     @Bindable var router: NavigationRouter
     @State private var model: StatsViewModel
+    @Environment(\.missedStyle) private var missedStyle
 
     init(dependencies: AppDependencies, router: NavigationRouter) {
         self.dependencies = dependencies
@@ -168,7 +169,7 @@ struct StatsView: View {
             Text("Parts of the day")
         } footer: {
             if let worst = stats.mostMissed {
-                Text("Most missed: \(partTitle(worst))")
+                Text(missedStyle.mostMissed(partTitle(worst)))
             }
         }
     }

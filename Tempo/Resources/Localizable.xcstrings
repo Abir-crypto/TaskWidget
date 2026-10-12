@@ -86,6 +86,26 @@
     "%lld done" : {
 
     },
+    "%lld done, %lld missed, %lld left" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld done, %2$lld missed, %3$lld left"
+          }
+        }
+      }
+    },
+    "%lld done, %lld not done, %lld left" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld done, %2$lld not done, %3$lld left"
+          }
+        }
+      }
+    },
     "%lld left: %@" : {
       "localizations" : {
         "en" : {
@@ -103,6 +123,15 @@
 
     },
     "%lld missed" : {
+
+    },
+    "%lld missed today ›" : {
+
+    },
+    "%lld not done" : {
+
+    },
+    "%lld not done today ›" : {
 
     },
     "%lld of %lld" : {
@@ -447,6 +476,12 @@
     "From" : {
 
     },
+    "Gentle" : {
+      "comment" : "Missed style"
+    },
+    "Gentle shows tasks you didn't get to as Not done, without a badge or a popup. Strict marks them Missed in red." : {
+
+    },
     "Green" : {
       "comment" : "Theme color"
     },
@@ -466,6 +501,9 @@
 
     },
     "Has tasks" : {
+
+    },
+    "Has tasks not done" : {
 
     },
     "Help" : {
@@ -543,6 +581,9 @@
     "Missed gathers what slipped by, so you can still do it or move it to tomorrow. Stats shows your streaks and how each part of the day is going." : {
 
     },
+    "Missed tasks" : {
+
+    },
     "Month" : {
 
     },
@@ -550,6 +591,9 @@
       "comment" : "Part of the day"
     },
     "Most missed: %@" : {
+
+    },
+    "Most often not done: %@" : {
 
     },
     "Move %@ to" : {
@@ -622,6 +666,9 @@
     "No tasks" : {
 
     },
+    "No tasks match these filters" : {
+
+    },
     "No tasks today" : {
 
     },
@@ -635,6 +682,9 @@
 
     },
     "Not allowed yet" : {
+
+    },
+    "Not done" : {
 
     },
     "Not now" : {
@@ -664,6 +714,12 @@
     "Nothing in the morning" : {
 
     },
+    "Nothing left undone" : {
+
+    },
+    "Nothing left undone today" : {
+
+    },
     "Nothing missed before today" : {
 
     },
@@ -680,6 +736,9 @@
 
     },
     "Nothing tonight" : {
+
+    },
+    "Nothing undone before today" : {
 
     },
     "Nothing was planned for %@" : {
@@ -797,6 +856,9 @@
     "Recap time" : {
 
     },
+    "Recent days not done" : {
+
+    },
     "Recent missed days" : {
 
     },
@@ -895,6 +957,9 @@
     },
     "Streaks" : {
 
+    },
+    "Strict" : {
+      "comment" : "Missed style"
     },
     "System" : {
       "comment" : "Appearance: follow the device's light or dark mode"
@@ -999,8 +1064,21 @@
         }
       }
     },
+    "Today: %lld not done" : {
+
+    },
     "Today: %lld still open" : {
 
+    },
+    "Today: %lld still open, %lld not done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today: %1$lld still open, %2$lld not done"
+          }
+        }
+      }
     },
     "Tomorrow" : {
 

@@ -77,6 +77,16 @@
         }
       }
     },
+    "%lld done, %lld not done, %lld left" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld done, %2$lld not done, %3$lld left"
+          }
+        }
+      }
+    },
     "%lld left" : {
 
     },
@@ -90,7 +100,16 @@
         }
       }
     },
+    "%lld missed" : {
+
+    },
     "%lld missed today ›" : {
+
+    },
+    "%lld not done" : {
+
+    },
+    "%lld not done today ›" : {
 
     },
     "%lld of %lld min" : {
@@ -176,10 +195,19 @@
     "Focus" : {
 
     },
+    "Gentle" : {
+      "comment" : "Missed style"
+    },
     "Green" : {
       "comment" : "Theme color"
     },
     "Habit" : {
+
+    },
+    "Has missed tasks" : {
+
+    },
+    "Has tasks not done" : {
 
     },
     "In %lld min" : {
@@ -206,8 +234,17 @@
     "Mark not done" : {
 
     },
+    "Missed" : {
+
+    },
     "Morning" : {
       "comment" : "Part of the day"
+    },
+    "Most missed: %@" : {
+
+    },
+    "Most often not done: %@" : {
+
     },
     "Next" : {
 
@@ -228,10 +265,34 @@
     "Night" : {
       "comment" : "Part of the day"
     },
+    "No missed days" : {
+
+    },
+    "No missed tasks match these filters" : {
+
+    },
     "No tasks" : {
 
     },
+    "No tasks match these filters" : {
+
+    },
     "No tasks today" : {
+
+    },
+    "Not done" : {
+
+    },
+    "Nothing left undone" : {
+
+    },
+    "Nothing left undone today" : {
+
+    },
+    "Nothing missed before today" : {
+
+    },
+    "Nothing undone before today" : {
 
     },
     "Now" : {
@@ -264,6 +325,12 @@
     "Purple" : {
       "comment" : "Theme color"
     },
+    "Recent days not done" : {
+
+    },
+    "Recent missed days" : {
+
+    },
     "Red" : {
       "comment" : "Theme color"
     },
@@ -293,6 +360,9 @@
     },
     "Stop" : {
 
+    },
+    "Strict" : {
+      "comment" : "Missed style"
     },
     "System" : {
       "comment" : "Appearance: follow the device's light or dark mode"
@@ -334,8 +404,21 @@
         }
       }
     },
+    "Today: %lld not done" : {
+
+    },
     "Today: %lld still open" : {
 
+    },
+    "Today: %lld still open, %lld not done" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today: %1$lld still open, %2$lld not done"
+          }
+        }
+      }
     },
     "Tomorrow" : {
 
@@ -350,6 +433,9 @@
 
     },
     "Yesterday" : {
+
+    },
+    "You haven't missed a task today" : {
 
     },
     "You're free today" : {

@@ -78,7 +78,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 - Timing by fixed time, part of the day or anytime, with part-of-day start times set by the user.
 - Habit schedules on chosen weekdays, with an optional set length.
 - Time tracking with a timer and with manual logging; daily targets and weekly goals.
-- Missed tracking: a Missed tab and a missed-tasks popup.
+- Missed tracking: a Missed tab and a missed-tasks popup, shown Gentle or Strict (F-30).
 - Notifications: part-of-day summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap, and a running-timer alert.
 - Screens: Today, Tasks (with History), Missed, Stats, Habit detail, Task editor, Settings, Timer screen, Task picker.
 - Widgets: Timer (small), Day (medium), Focus (medium), Now (large), Lock Screen (rectangular and inline).
@@ -256,7 +256,7 @@ Pausing, Done or Discard cancels the alert.
 | Part starts | At the part's start | The part has at least one task today that isn't done | "Afternoon · 3 tasks" / "Call the bank, Interview at 12:30, Read" | Today, at that part |
 | Ending soon | The lead time before the part ends (30 min by default) | Something in the part still isn't done | "Evening ends in 30 min" / "2 left: Gym, Read (10 of 30 min)" | Today, at that part |
 | Fixed time | The lead time before the task (10 min by default) | The task isn't done | "Interview at 12:30" / "In 10 min" | Today, at that task |
-| End-of-day recap | At the recap time (23:30 by default) | At least one task today isn't done | "Today: 2 missed, 1 still open" / "Call the bank, Read (20 of 30 min), Plan tomorrow" | Missed tab |
+| End-of-day recap | At the recap time (23:30 by default) | At least one task today isn't done | "Today: 2 missed, 1 still open" (Strict; Gentle in F-30) / "Call the bank, Read (20 of 30 min), Plan tomorrow" | Missed tab |
 | Timer running | As described in F-06 | A timer is running | "Read timer is still running" / "It's been running for 2 hours." | Timer screen |
 
 - Lists show up to 3 names, then "and N more".
@@ -286,12 +286,13 @@ The Earlier section has **Sort** and **Filter**:
 - While any filter is active, a **Clear filters** button appears. Filters reset when the app restarts.
 
 Other details:
-- A count above Earlier reflects the active filters ("14 missed").
+- A count above Earlier reflects the active filters ("14 missed" (Strict; Gentle in F-30)).
 - Each row shows the title, a type icon, when it was due ("Tue 29 Sep · Afternoon" or "Tue 29 Sep · 12:30"), and for duration habits the minutes ("20 of 30 min").
-- The tab's badge shows how many tasks are Missed or Short today.
+- In the Strict style, the tab's badge shows how many tasks are Missed or Short today. The Gentle style has no badge (F-30).
 - Deleted tasks disappear from the list. Ended habits stay in it.
 
 **Missed popup**
+- Only in the Strict style (F-30).
 - It's shown when the app is opened normally, not from a widget or a notification, and today has missed tasks the user hasn't been shown yet.
 - It appears over the current screen, normally Today. It says "You missed 2 tasks today," lists them, and offers **Review missed tasks** and **Not now**. Review switches to the Missed tab and highlights those tasks in its Today section.
 - Each missed task appears in the popup only once, and either button counts as having seen it. The list of seen tasks is kept on the device and resets each day.
@@ -300,7 +301,7 @@ Other details:
 
 ### F-09 · Navigation and app structure
 
-- Four tabs: **Today**, **Tasks**, **Missed** (with a badge) and **Stats**.
+- Four tabs: **Today**, **Tasks**, **Missed** (called Not done in the Gentle style, F-30), with a badge in the Strict style, and **Stats**.
 - **Settings** opens from a gear button on Today. **History** opens from a clock button on Tasks.
 - A floating **+** button on Today and Tasks opens the task editor (F-15).
 - While a timer exists, the timer bar (F-06) sits above the tabs on every screen.
@@ -316,10 +317,10 @@ Other details:
 **Layout, top to bottom**
 1. **Header:** the day's title ("Today", "Tomorrow", "Yesterday", or a date like "Thu 8 Oct") and the gear button.
 2. **Day strip:** the seven days of the week. Swiping moves by a week, and tapping selects a day.
-   - Each day shows a dot if it has tasks, and a red dot if it has missed tasks.
+   - Each day shows a dot if it has tasks, and a red dot if it has missed tasks (Strict; Gentle in F-30).
    - A "Today" button returns to today whenever another day is selected.
 3. **Sections, in this order:** Morning, Afternoon, Evening, Night, Anytime.
-   - On today, parts that have ended collapse into one line, for example "Morning · 2 done · 1 missed". Tapping the line expands it.
+   - On today, parts that have ended collapse into one line, for example "Morning · 2 done · 1 missed" (Strict; Gentle in F-30). Tapping the line expands it.
    - The current part is highlighted and shows "ends in 1h 20m", updated every minute.
    - Later parts and Anytime are expanded.
    - A part with no tasks shows "Nothing this evening" in small grey text. Afternoon's reads "Nothing this afternoon" on today and "Nothing in the afternoon" on other days.
@@ -327,7 +328,7 @@ Other details:
 4. **The floating + button,** which adds a task to the selected day.
 
 **Rows**
-- **One-time and progress:** a checkbox, the title, and the time if it has a fixed time. Missed tasks are marked "Missed" in red, and done tasks have their title struck through.
+- **One-time and progress:** a checkbox, the title, and the time if it has a fixed time. Missed tasks are marked "Missed" in red (Strict; Gentle in F-30), and done tasks have their title struck through.
 - **Duration:** the title, progress ("10 of 30 min") and ▶. The ▶ is hidden while a timer exists. Once the target is reached the row shows Done, and time can still be added.
 - A small notes icon shows when a task has notes.
 - **Tapping a row:** a one-time task opens the editor, and a habit opens Habit detail.
@@ -372,7 +373,7 @@ The missed popup (F-08) appears on this screen.
 - **Stats for this week, this month and this year:** the completion rate. For duration habits it adds the total time and, for this week, the time against the weekly goal.
 - **Streak:** current and best (§5.7).
 - **Today's time entries** (duration habits): the source and minutes of each, and each can be deleted.
-- **Recent missed days:** up to 10, newest first. "See all" opens the Missed tab filtered to this habit.
+- **Recent missed days** (Strict; Gentle in F-30): up to 10, newest first. "See all" opens the Missed tab filtered to this habit.
 - **Buttons:**
   - Edit.
   - Log time (duration habits, when allowed today).
@@ -391,7 +392,7 @@ The missed popup (F-08) appears on this screen.
    - the total time logged.
 2. **Completion chart:** for Week, a bar for each day; for Month, a calendar grid colored by day; for Year, a bar for each month. Tapping a day opens it in Today, read-only for past days.
 3. **Time:** each duration habit's time logged in the range, against its goal for the range ("Read · 3h 10m of 3h 30m").
-4. **Parts of the day:** the completion rate for each part and for Anytime, plus "Most missed: Evening".
+4. **Parts of the day:** the completion rate for each part and for Anytime, plus "Most missed: Evening" (Strict; Gentle in F-30).
 5. **Streaks:** the current and best streak for each habit, highest current streak first.
 6. **Habits:** each habit's rate for the range. Tapping one opens Habit detail.
 
@@ -423,6 +424,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 ### F-16 · Settings
 
 - **Parts of the day:** the start times of Morning, Afternoon, Evening and Night (rules in F-02).
+- **Missed tasks:** Gentle or Strict (F-30), Gentle by default. Footer: "Gentle shows tasks you didn't get to as Not done, without a badge or a popup. Strict marks them Missed in red."
 - **Reminders:**
   - Part starts: on or off.
   - Ending soon: on or off, with a lead time of 15, 30, 45 or 60 min (30 by default).
@@ -463,7 +465,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 ### F-19 · Day widget (medium)
 
 - Four columns: Morning, Afternoon, Evening and Night. The current part is highlighted.
-- Each column shows one mark per task: ✓ done, ○ not done yet, ✗ missed, and ◐ short or a duration habit with some time logged. It shows at most 6 marks, then "+N".
+- Each column shows one mark per task: ✓ done, ○ not done yet, ✗ missed (Strict; Gentle in F-30), and ◐ short or a duration habit with some time logged. It shows at most 6 marks, then "+N".
 - Under each column: "done", "N left", or nothing if the part has no tasks.
 - A footer shows "Anytime · N left" while Anytime tasks are open.
 - Tapping a column opens Today at that part.
@@ -490,7 +492,7 @@ When nothing is left, it shows "You're free today", plus "All N tasks done" only
   - One-time and progress tasks have a checkbox; tap it to complete and tap again to undo.
   - Duration habits show their progress and ▶.
 - **"+N more"** appears when tasks don't fit; tapping it opens Today.
-- **Footer:** "2 missed today ›" when today has missed tasks. Tapping it opens the Missed tab.
+- **Footer:** "2 missed today ›" (Strict; Gentle in F-30) when today has missed tasks. Tapping it opens the Missed tab.
 - While a generic timer exists, a display-only line appears at the top, "Timer running · 05:12", and the ▶ buttons are hidden.
 
 **Timer mode** (while a habit timer exists)
@@ -549,9 +551,9 @@ Every place that can be empty shows a message. Buttons labelled with "Add" open 
 | History › One-time | Nothing completed yet | — |
 | History › Habits | Finished habits will appear here | — |
 | History, a search with no results | No matches | — |
-| Missed › Today | You haven't missed a task today | — |
-| Missed › Earlier | Nothing missed before today | — |
-| Missed, filters with no results | No missed tasks match these filters | Clear filters |
+| Missed › Today | You haven't missed a task today (Strict; Gentle in F-30) | — |
+| Missed › Earlier | Nothing missed before today (Strict; Gentle in F-30) | — |
+| Missed, filters with no results | No missed tasks match these filters (Strict; Gentle in F-30) | Clear filters |
 | Stats, with no habits | Add a habit to see your stats | Add a habit |
 | Habit detail, with no data yet | No data yet. Check back after its first day. | — |
 | Task picker, with no duration habits | No duration tasks yet | Add a duration task, Discard |
@@ -586,7 +588,7 @@ The user chooses the app's color in Settings › Theme.
   - The current choice is marked. Once a custom color is chosen, the Custom swatch shows it.
 - **Where it applies,** at once and on every screen: buttons and links, checkboxes, the selected day in the day strip, the part in progress and its "ends in", progress rings and bars, the floating + button, the timer bar, the guide, and the highlight in Missed.
 - **Widgets:** the Home Screen widgets use it for their accents (the Day widget's current part, the Focus widget's top line, the Timer and Now widgets' buttons and progress) from their next update. The Lock Screen widgets and the tinted and clear Home Screen styles keep the system's colors (F-17).
-- **What doesn't change:** the status colors (done green, missed red, short orange), which always come with an icon or text, and the app icon.
+- **What doesn't change:** the status colors (done green, missed red in the Strict style or grey in the Gentle style (F-30), short orange), which always come with an icon or text, and the app icon.
 - A stored color the app can't read is treated as Blue.
 
 ### F-28 · Appearance
@@ -597,6 +599,36 @@ The user chooses whether the app follows the system's light or dark mode in Sett
 - **Where it applies,** at once: every screen of the app, with its sheets, dialogs and menus, the guide and the color picker.
 - **What doesn't change:** the widgets, the Lock Screen, notifications and the screen shown while the app launches keep following the device's mode.
 - A stored appearance the app can't read is treated as System.
+
+### F-30 · Missed style
+
+The user chooses how missed tasks are shown in Settings: **Gentle** (the default) or **Strict**. The style changes only how missed tasks look and read. It never changes their status, the Missed queries (§5.8) or the stats (§5.7), so honest records (§1.2) still hold. Strict is the 1.0 behavior.
+
+| Where | Strict | Gentle (default) |
+|---|---|---|
+| Status on rows | "Missed", red | "Not done", secondary grey |
+| Ended-part line on Today | "Morning · 2 done · 1 missed" | "Morning · 2 done · 1 not done" |
+| Day widget mark | ✗ | – |
+| Habit detail week dots and calendar | Missed mark, red | – mark, grey |
+| Day strip | Red dot on days with Missed or Short | The usual dot, no extra marker |
+| Tab title | Missed | Not done |
+| Tab badge | Today's Missed and Short count | None |
+| Missed popup (F-08) | Shown | Never shown |
+| Earlier count | "14 missed" | "14 not done" |
+| Now widget footer | "2 missed today ›", red | "2 not done today ›", grey |
+| End-of-day recap title | "Today: 2 missed, 1 still open" | "Today: 1 still open, 2 not done" |
+| Stats, Parts of the day | "Most missed: Evening" | "Most often not done: Evening" |
+| Habit detail list | "Recent missed days" | "Recent days not done" |
+| Empty state, Missed › Today | "You haven't missed a task today" | "Nothing left undone today" |
+| Empty state, Missed › Earlier | "Nothing missed before today" | "Nothing undone before today" |
+| Empty state, filters | "No missed tasks match these filters" | "No tasks match these filters" |
+
+- **Short** looks the same in both styles: orange ◐ with "20 of 30 min".
+- In Gentle, the Missed tab's rows use secondary grey instead of red, and spoken descriptions say "not done" wherever they'd say "missed" (for example the day strip's "Has tasks not done").
+- The Stats charts color a completion rate, not a status, so they're the same in both styles.
+- The style applies at once, in the app, the widgets and the notifications planned from then on.
+- The popup never runs in Gentle, so nothing is added to its seen list (§4.6) there. Switching from Gentle to Strict adds today's tasks that are missed at that moment to the seen list, so the popup only shows tasks missed after the switch, at the next normal open.
+- A stored style the app can't read is treated as Gentle.
 
 ---
 
@@ -877,6 +909,7 @@ For a range R (a week, month or year), counting up to and including today:
 | Readable width on tablets | About 700 points |
 | Theme color | Blue (8 presets, or a custom color) |
 | Appearance | System (or Dark, or Light) |
+| Missed style | Gentle (or Strict) |
 
 ---
 

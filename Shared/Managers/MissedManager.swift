@@ -25,12 +25,15 @@ final class MissedManager {
         MissedQueries.unseen(in: try tasks.snapshot(), now: clock.now, seen: deviceState.missedSeen)
     }
 
-    /// What the missed popup should show now: nothing when the app was opened from a widget or a notification
-    /// (it waits for the next normal open), otherwise today's unseen missed tasks (SPEC F-08).
+    /// What the missed popup should show now: nothing in the Gentle style (SPEC F-30), nothing when the app was
+    /// opened from a widget or a notification (it waits for the next normal open), otherwise today's unseen missed
+    /// tasks (SPEC F-08).
     func popupItems(openedFromLink: Bool) -> [MissedItem] {
         guard !openedFromLink else { return [] }
         do {
-            return try unseenToday()
+            let snapshot = try tasks.snapshot()
+            guard snapshot.settings.missedStyle.showsBadgeAndPopup else { return [] }
+            return MissedQueries.unseen(in: snapshot, now: clock.now, seen: deviceState.missedSeen)
         } catch {
             Log.tasks.error("Couldn't check for missed tasks: \(error)")
             return []
@@ -43,6 +46,16 @@ final class MissedManager {
         var seen = deviceState.missedSeen.flatMap { $0.day == today ? $0 : nil } ?? MissedSeenList(day: today)
         seen.occurrenceIDs.formUnion(occurrenceIDs)
         deviceState.missedSeen = seen
+    }
+
+    /// Switching from Gentle to Strict: today's tasks missed so far count as seen, so the popup only shows tasks
+    /// missed after the switch (SPEC F-30). The popup never ran in Gentle, so nothing filled the list there.
+    func markMissedTodaySeen() {
+        do {
+            markSeen(try missedToday().map(\.id))
+        } catch {
+            Log.tasks.error("Couldn't mark today's missed tasks as seen: \(error)")
+        }
     }
 
     /// The Missed tab's badge: how many tasks are Missed or Short today.

@@ -6,6 +6,21 @@ final class SettingsUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// SPEC T-40: Missed tasks is Gentle on a new install, and choosing Strict renames the tab at once.
+    @MainActor
+    func testMissedStyleChoice() {
+        let app = UITestApp.launch()
+        XCTAssertTrue(app.tabBars.buttons["Not done"].waitForExistence(timeout: 5))
+        app.buttons["Settings"].tap()
+        let style = app.buttons["Missed tasks"]
+        XCTAssertTrue(style.waitForExistence(timeout: 5))
+        XCTAssertEqual(style.value as? String, "Gentle")
+        style.tap()
+        app.buttons["Strict"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Missed"].waitForExistence(timeout: 3))
+        XCTAssertEqual(app.buttons["Missed tasks"].value as? String, "Strict")
+    }
+
     /// SPEC T-33: the eight presets and Custom, with the current choice marked.
     @MainActor
     func testThemeSwatches() {

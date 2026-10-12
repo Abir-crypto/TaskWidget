@@ -48,7 +48,7 @@ final class AccessibilityUITests: XCTestCase {
         _ = app.buttons["Cancel"].waitForExistence(timeout: 3)
         audit(app, "Editor")
         app.buttons["Cancel"].tap()
-        for tab in ["Tasks", "Missed", "Stats"] {
+        for tab in ["Tasks", "Not done", "Stats"] {
             app.tabBars.buttons[tab].tap()
             sleep(1)
             audit(app, tab)
@@ -64,6 +64,15 @@ final class AccessibilityUITests: XCTestCase {
         app.buttons["History"].tap()
         sleep(1)
         audit(app, "History")
+    }
+
+    /// The Strict style's Missed tab, which the Gentle runs here don't show (SPEC F-30).
+    @MainActor
+    func testMissedTabInTheStrictStyle() {
+        let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true, strict: true)
+        app.tabBars.buttons["Missed"].tap()
+        sleep(1)
+        audit(app, "Missed")
     }
 
     @MainActor

@@ -11,7 +11,7 @@ enum AppTab: Hashable, CaseIterable {
         switch self {
         case .today: "Today"
         case .tasks: "Tasks"
-        case .missed: "Missed"
+        case .missed: "Missed"  // RootView names it after the missed style (SPEC F-30)
         case .stats: "Stats"
         }
     }

@@ -28,9 +28,10 @@ struct RootView: View {
                 .tabItem { Label(AppTab.tasks.title, systemImage: AppTab.tasks.systemImage) }
                 .tag(AppTab.tasks)
             MissedView(dependencies: dependencies, router: router)
-                .tabItem { Label(AppTab.missed.title, systemImage: AppTab.missed.systemImage) }
+                .tabItem { Label(model.missedStyle.statusTitle, systemImage: AppTab.missed.systemImage) }
                 .tag(AppTab.missed)
-                .badge(model.missedCount)
+                // Only the Strict style has a badge (SPEC F-30).
+                .badge(model.missedStyle.showsBadgeAndPopup ? model.missedCount : 0)
             StatsView(dependencies: dependencies, router: router)
                 .tabItem { Label(AppTab.stats.title, systemImage: AppTab.stats.systemImage) }
                 .tag(AppTab.stats)
@@ -58,6 +59,7 @@ struct RootView: View {
             LogTimeView(dependencies: dependencies, taskID: request.taskID)
         }
         .environment(timerController)
+        .environment(\.missedStyle, model.missedStyle)
         // A new day or a new time zone changes every status and reminder (SPEC §6, ios.md §10).
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
             timeChanged()

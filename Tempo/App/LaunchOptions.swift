@@ -10,6 +10,7 @@ import Foundation
 /// - `-ui-testing-finished-timer <seconds>`: leave a finished generic timer waiting for the task picker, as the
 ///   Timer widget's Done does.
 /// - `-ui-testing-guide`: show the first-launch guide, which UI tests otherwise skip.
+/// - `-ui-testing-strict`: use the Strict missed style (Gentle is the default), for the badge and the popup.
 struct LaunchOptions {
     var isUITesting = false
     var fixedNow: Date?
@@ -18,12 +19,14 @@ struct LaunchOptions {
     var suppressesMissedPopup = false
     var finishedTimerSeconds: Int?
     var showsGuide = false
+    var usesStrictMissedStyle = false
 
     init(arguments: [String] = ProcessInfo.processInfo.arguments) {
         isUITesting = arguments.contains("-ui-testing")
         usesSampleData = arguments.contains("-ui-testing-sample")
         suppressesMissedPopup = arguments.contains("-ui-testing-no-popup")
         showsGuide = arguments.contains("-ui-testing-guide")
+        usesStrictMissedStyle = arguments.contains("-ui-testing-strict")
         finishedTimerSeconds = value(after: "-ui-testing-finished-timer", in: arguments).flatMap(Int.init)
         fixedNow = value(after: "-ui-testing-now", in: arguments).flatMap { ISO8601DateFormatter().date(from: $0) }
         timeZone = value(after: "-ui-testing-timezone", in: arguments).flatMap(TimeZone.init(identifier:))

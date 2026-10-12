@@ -67,7 +67,7 @@ final class ScreenshotTests: XCTestCase {
             sleep(1)
             saveScreen("editor-\(suffix)")
             app.buttons["Cancel"].tap()
-            for tab in ["Tasks", "Missed", "Stats"] {
+            for tab in ["Tasks", "Not done", "Stats"] {
                 app.buttons[tab].firstMatch.tap()
                 sleep(1)
                 saveScreen("\(tab.lowercased())-\(suffix)")
@@ -154,7 +154,7 @@ final class ScreenshotTests: XCTestCase {
         sleep(1)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         sleep(1)
-        for tab in ["Tasks", "Missed", "Stats"] {
+        for tab in ["Tasks", "Not done", "Stats"] {
             app.tabBars.buttons[tab].tap()
             sleep(1)
             saveScreen("theme-5-\(tab.lowercased())")
@@ -238,7 +238,7 @@ final class ScreenshotTests: XCTestCase {
     @MainActor
     func testMissed() {
         let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00", sample: true)
-        app.tabBars.buttons["Missed"].tap()
+        app.tabBars.buttons["Not done"].tap()
         _ = app.staticTexts["Stretch"].waitForExistence(timeout: 5)
         save(app, "missed-1")
         app.buttons["Sort and filter"].tap()
