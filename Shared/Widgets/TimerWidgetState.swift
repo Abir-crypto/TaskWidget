@@ -1,13 +1,14 @@
 import Core
 import Foundation
 
-/// What the Timer widget shows (SPEC F-18). Only generic timers get controls here; a habit timer is display only.
+/// What the Timer widget shows (SPEC F-18). Every timer has Pause or Resume and Done (D-111).
 enum TimerWidgetState: Hashable {
     /// No timer: "Timer" and Start.
     case idle
-    /// A generic timer: the clock, Pause or Resume, and Done.
+    /// A generic timer: the clock, Pause or Resume, and Done, which opens the task picker.
     case generic(TimerClockValue)
-    /// A habit timer started elsewhere: the habit's name and the clock or "Paused"; tapping opens the app.
+    /// A habit timer: the habit's name, the clock or the time so far with "Paused", Pause or Resume, and Done, which
+    /// saves without opening the app.
     case habit(title: String, clock: TimerClockValue)
 
     init(timer: TimerState?, habitTitle: String?) {

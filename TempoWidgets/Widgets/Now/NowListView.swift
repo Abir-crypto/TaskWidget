@@ -21,14 +21,7 @@ struct NowListView: View {
         } else {
             VStack(alignment: .leading, spacing: 6) {
                 if let clock = list.genericTimer {
-                    HStack(spacing: 4) {
-                        Image(systemName: "timer").accessibilityHidden(true)
-                        Text("Timer running ·")
-                        WidgetClock(value: clock)
-                    }
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tint)
-                    .widgetAccentable()
+                    genericTimerLine(clock)
                 }
                 ForEach(Array(list.groups.enumerated()), id: \.offset) { index, group in
                     if index == 0 {
@@ -55,6 +48,39 @@ struct NowListView: View {
             }
             .widgetURL(DeepLink.today().url)
         }
+    }
+
+    /// "Timer · 05:12" with Pause or Resume and Done, which opens the task picker (SPEC F-21, D-111).
+    private func genericTimerLine(_ clock: TimerClockValue) -> some View {
+        HStack(spacing: 6) {
+            HStack(spacing: 4) {
+                Image(systemName: "timer").accessibilityHidden(true)
+                Text("Timer ·")
+                WidgetClock(value: clock)
+                if !clock.isRunning {
+                    Text("Paused").foregroundStyle(.secondary)
+                }
+            }
+            .foregroundStyle(.tint)
+            .widgetAccentable()
+            Spacer(minLength: 4)
+            if clock.isRunning {
+                Button(intent: PauseTimerIntent()) {
+                    Image(systemName: "pause.fill")
+                }
+                .accessibilityLabel(Text("Pause"))
+            } else {
+                Button(intent: ResumeTimerIntent()) {
+                    Image(systemName: "play.fill")
+                }
+                .accessibilityLabel(Text("Resume"))
+            }
+            Button(intent: FinishGenericTimerIntent()) {
+                Text("Done")
+            }
+            .modifier(ProminentWidgetButton())
+        }
+        .font(.caption.weight(.semibold))
     }
 
     // MARK: Header and rows

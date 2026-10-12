@@ -14,6 +14,12 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Same timer controls everywhere (T-44)
+- Changed: F-06 — every place that shows the timer can pause and resume it; the Timer widget's Done saves a habit timer without opening the app (D-111, superseding D-022).
+- Changed: F-17, F-18, F-21 — the Timer widget's habit states have Pause/Resume and Done; the Now widget's generic timer line, "Timer · 05:12", has Pause/Resume and Done.
+- Changed: T-23, T-24 acceptance — the display-only items now expect the controls.
+- Platform: ios.md §8, §15 — the Timer widget reuses `FinishHabitTimerIntent`; the Now widget's line reuses the pause, resume and generic finish intents.
+
 ## 2026-10-12 · Snooze reminders (T-43)
 - Changed: F-07 — fixed-time and ending-soon notifications can be snoozed for 15 minutes or an hour, when that lands at least 5 minutes before the part ends; the snooze is rebuilt from current data and replaces an earlier one (D-110, D-122).
 - Changed: §2.1, §2.2 — snoozing is in v1.

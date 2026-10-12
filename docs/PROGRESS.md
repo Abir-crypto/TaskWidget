@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-44 · Same timer controls everywhere
+**Current task:** T-45 · Timer Live Activity
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -53,7 +53,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-41 | Correction window | H · Pre-launch (1.1) | ✅ | 2026-10-12 | §5.11 in Core as `EditWindow` (today, future, correction until Afternoon's start, none); `Editability` takes it for completing, logging and deleting time. Yesterday during the window: Today's footnote "You can still change yesterday until 12:00" and its checkboxes and Log time; Missed's "Yesterday" group with Mark done and Log time (Earlier leaves it out, and it moves back when the window closes); Log time sheet for yesterday; History's Mark not done; Habit detail's "Yesterday's time". ▶ stays today-only (D-121). D-108 supersedes D-011 and partly D-020, D-077, D-079. Five old tests now check after the window; `CorrectionWindowTests` and a UI test cover it. 307 `TempoTests`, 50 UI tests, 204 Core tests pass. |
 | T-42 | Part summaries per part | H · Pre-launch (1.1) | ✅ | 2026-10-12 | Settings › Reminders has "Morning starts" … "Night starts" switches; only Morning's is on for a new install, and the planner plans a part's summary only when its switch is on (D-109). Morning's still lists open Anytime tasks; ending-soon, fixed-time and recap reminders are unchanged; turning a switch on plans that summary at once. Planner tests default to every summary on, with new tests for the defaults. 309 `TempoTests`, 51 UI tests (the full run's one unit failure was a test still expecting the Afternoon summary by default; fixed and rerun), 207 Core tests pass. |
 | T-43 | Snooze | H · Pre-launch (1.1) | ✅ | 2026-10-12 | Fixed-time and ending-soon notifications carry "Snooze 15 min" and "Snooze 1 hour", or only 15 min when an hour wouldn't land 5 minutes before the part ends (categories chosen when planned). The background action is handled by `AppDelegate` with its own managers, writes `DeviceState.snoozes` and rebuilds; it never opens the app. A late tap fires no later than 5 minutes before the part ends, or not at all (D-122). Snoozes are rebuilt from current data ("Started 6 min ago"), replace each other, and clear when they fire, their task is done or part empty, or the day changes. Core `SnoozeRules`, `SnoozeTarget`; `SnoozeTests` and planner tests. 316 `TempoTests`, 51 UI tests, 212 Core tests pass. A snooze from a locked device is part of T-53. |
-| T-44 | Same timer controls everywhere | H · Pre-launch (1.1) | ⬜ | |  |
+| T-44 | Same timer controls everywhere | H · Pre-launch (1.1) | ✅ | 2026-10-12 | Every timer, in the app and the widgets, has Pause or Resume and Done (D-111). The Timer widget shares one running layout for generic and habit timers; a habit timer's Done saves with `FinishHabitTimerIntent` without opening the app, a generic timer's opens the task picker. The Now widget's line reads "Timer ·" with Pause or Resume and Done. `TimerWidgetTests` cover both kinds. Photographed on the iPhone 18 Pro Max (iOS 27.0). 318 `TempoTests`, 51 UI tests, 212 Core tests pass. |
 | T-45 | Timer Live Activity | H · Pre-launch (1.1) | ⬜ | |  |
 | T-46 | Timer control | H · Pre-launch (1.1) | ⬜ | |  |
 | T-47 | Shortcuts actions | H · Pre-launch (1.1) | ⬜ | |  |

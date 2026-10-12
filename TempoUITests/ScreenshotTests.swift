@@ -364,8 +364,8 @@ final class ScreenshotTests: XCTestCase {
         save(springboard, "widget-11-idle-again")
     }
 
-    /// Starts a habit timer in the real app and photographs the Timer widget showing it without controls, then
-    /// deletes the habit again (run `testWidgetOnHomeScreen` first).
+    /// Starts a habit timer in the real app and photographs the Timer widget showing it with Pause and Done (T-44),
+    /// then deletes the habit again (run `testWidgetOnHomeScreen` first).
     @MainActor
     func testTimerWidgetShowsAHabitTimer() {
         let app = XCUIApplication()

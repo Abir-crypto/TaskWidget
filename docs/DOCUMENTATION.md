@@ -279,10 +279,10 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 - None for F-05.
 
 ## F-06 · Timer
-Status: Built (T-19, T-20, T-23, T-24) · Last updated: 2026-10-10 · T-32
+Status: Built (T-19, T-20, T-23, T-24, T-44) · Last updated: 2026-10-12 · T-44
 
 ### What it does
-One timer per device, generic or for a habit, which can be paused, resumed, finished or discarded. Its state is stored on the device, shared by the app and the widgets. In the app it shows as a bar above the tabs and a timer screen, with a task picker and a confirmation after Done. Widget controls come in T-23 and T-24.
+One timer per device, generic or for a habit, which can be paused, resumed, finished or discarded. Its state is stored on the device, shared by the app and the widgets. In the app it shows as a bar above the tabs and a timer screen, with a task picker and a confirmation after Done. Every widget that shows it can pause and resume it (T-44, D-111): the Timer widget for both kinds, and the Now widget's timer mode and generic timer line.
 
 ### Behavior
 - **State** (`TimerState`, in `deviceState.timer`): kind (`generic`/`habit`), habit id, the day it started, seconds counted in earlier segments, and the current segment's start (empty while paused). Because it stores moments, the timer keeps going across app restarts and device restarts. If the clock moves backwards, the time counted never goes below zero.
@@ -760,7 +760,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 - None for F-16.
 
 ## F-17 · Widgets: general rules
-Status: Built (T-22–T-27, T-33, T-34) · Last updated: 2026-10-11 · T-34
+Status: Built (T-22–T-27, T-33, T-34, T-44) · Last updated: 2026-10-12 · T-44
 
 ### What it does
 The foundation every widget shares: one timeline provider that reads the app's store, entries for each moment the widgets must change, a fallback when the data can't be read, and widget buttons (App Intents) that refresh everything after they act.
@@ -794,10 +794,10 @@ Reads everything; buttons write through the same managers as the app.
 - None for F-17.
 
 ## F-18 · Timer widget (small)
-Status: Built (T-23) · Last updated: 2026-10-10 · T-31
+Status: Built (T-23, T-44) · Last updated: 2026-10-12 · T-44
 
 ### What it does
-A small widget that starts a generic timer, pauses, resumes and finishes it without opening the app, except Done, which opens the task picker. A habit timer started elsewhere shows here without controls.
+A small widget that starts a generic timer and pauses, resumes and finishes any timer without opening the app, except a generic timer's Done, which opens the task picker.
 
 ### Behavior
 - **Gallery:** "Timer" — "Start a timer and choose the habit when you're done." Small only.
@@ -805,11 +805,11 @@ A small widget that starts a generic timer, pauses, resumes and finishes it with
 - **Generic timer, running:** "Timer", the clock counting up (it updates itself), "Running", a pause button ("Pause") and "Done".
 - **Generic timer, paused:** the time so far ("5:12" or "1:05:12"), "Paused", a play button ("Resume") and "Done".
 - **Done** (`FinishGenericTimerIntent`, opens the app): the time is frozen at the tap, the timer is cleared, and the app opens on the task picker with that time (pending open action). If the intent runs inside the app, it tells the app at once; otherwise the app reads the action when it opens.
-- **Habit timer** (started in the app or the Now widget): "Timer", the habit's title, and the clock, or "Paused" with an icon; no buttons.
+- **Habit timer** (started anywhere, T-44): the habit's title in place of "Timer", the clock (or the time so far), "Running" or "Paused", Pause or Resume, and "Done", which saves the time without opening the app (`FinishHabitTimerIntent`). Under a minute it saves nothing and the widget goes back to Idle without a message.
 - **Tapping elsewhere** opens the timer screen while a timer exists, otherwise Today.
 - **Load failure:** "Open Tempo to refresh" (F-17).
 - The clock, title and main button are accented in tinted and accented styles (`widgetAccentable`). The background is the extension's `WidgetBackground` color.
-- Checked on a real Home Screen in the iOS 27 simulator: added from the gallery, Start, Pause, Done opening the task picker, and a habit timer from the app shown without controls.
+- Checked on a real Home Screen in the iOS 27 simulator: added from the gallery, Start, Pause, Done opening the task picker (T-23), and a habit timer from the app with Pause and Done (T-44).
 - **Tinted and clear styles (T-31):** Start and Done use a bordered style, so their labels stay visible.
 
 ### Data
@@ -823,7 +823,7 @@ Reads `deviceState.timer` and the timed habit's title; writes the timer and `dev
 - The T-01 placeholder widget is gone; `TempoWidgetsBundle` lists `TimerWidget`.
 
 ### Tests
-- `TempoTests/Widgets/TimerWidgetTests.swift`: idle and its link; Start, Pause and Resume through the intents; Done freezing the time and leaving the picker action; a habit timer shown without controls (and the generic Done leaving it alone); Start while a timer exists; paused clock text.
+- `TempoTests/Widgets/TimerWidgetTests.swift`: idle and its link; Start, Pause and Resume through the intents; Done freezing the time and leaving the picker action; a habit timer paused, resumed and finished here (T-44) (and the generic Done leaving it alone); Start while a timer exists; paused clock text.
 - `TempoUITests/ScreenshotTests.swift` (`testWidgetOnHomeScreen`, `testTimerWidgetButtons`, `testTimerWidgetShowsAHabitTimer`, run only with `TEST_RUNNER_TEMPO_SCREENSHOTS`): adds the widget through SpringBoard and photographs every state.
 
 ### Known gaps
@@ -897,7 +897,7 @@ A medium widget with the one thing to do next, from the next-task rule (SPEC §5
 - None for F-20. The Lock Screen widgets (F-22) use the same rule.
 
 ## F-21 · Now widget (large)
-Status: Built (T-24, T-40) · Last updated: 2026-10-12 · T-40
+Status: Built (T-24, T-40, T-44) · Last updated: 2026-10-12 · T-44
 
 ### What it does
 A large widget with what's on now and next: checkboxes that complete and undo without opening the app, and ▶ that turns the widget into the habit's timer.
@@ -910,7 +910,7 @@ A large widget with what's on now and next: checkboxes that complete and undo wi
   - One-time and progress rows: a round checkbox and the title (struck through when done) and the fixed time if any. Tapping the checkbox marks the task done, or not done, without opening the app (`ToggleCompletionIntent`, a button that carries the state it sets, D-090).
   - Duration rows: a timer icon (a check once the target is reached), the title, "10 of 30 min", and ▶ while no timer exists (`StartHabitTimerIntent`), which starts the habit's timer without opening the app.
   - Footer: "2 missed today ›" (red, with an icon) when today has Missed or Short tasks; it opens the Missed tab. In the Gentle style: "2 not done today ›" in grey, with a dash icon (F-30).
-  - While a generic timer exists, a line "Timer running · 5:12" (updating itself) sits at the top, and every ▶ is hidden.
+  - While a generic timer exists, a line "Timer · 5:12" (updating itself, or the time so far and "Paused") sits at the top with Pause or Resume and "Done", which opens the task picker (T-44), and every ▶ is hidden.
   - "You're free today" when nothing is left today (the missed footer still shows); "No tasks today" when today has no tasks, and tapping opens the editor for today.
   - Tapping elsewhere opens Today.
 - **Timer mode** (while a habit timer exists, started here, in the app or anywhere else): "Timer", the habit's title, the clock (or "Paused"), a progress bar toward today's target that fills by itself while running, "22 of 30 min today", Pause/Resume, Done and Discard. Done (`FinishHabitTimerIntent`) saves the time without opening the app (nothing under a minute) and returns to the list; Discard (`DiscardTimerIntent`) saves nothing and returns to the list. Tapping elsewhere opens the timer screen. The Timer widget shows the same timer, display only.

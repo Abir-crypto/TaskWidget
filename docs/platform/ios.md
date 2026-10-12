@@ -332,9 +332,9 @@ Every intent lives in `Shared/Intents/`, is compiled into both targets, sets `st
 | `ToggleCompletionIntent(taskID, day, done)` | Now widget checkboxes | No | Sets the task done or not done, following F-04 |
 | `StartHabitTimerIntent(taskID)` | Now widget ▶ | No | Starts a habit timer |
 | `StartGenericTimerIntent` | Timer widget Start | No | Starts a generic timer |
-| `PauseTimerIntent`, `ResumeTimerIntent` | Timer widget, Now widget | No | |
-| `FinishHabitTimerIntent` | Now widget Done | No | Freezes the clock and saves the time entry |
-| `FinishGenericTimerIntent` | Timer widget Done | **Yes** | Freezes the clock and writes the pending open action `chooseTaskForTimer` |
+| `PauseTimerIntent`, `ResumeTimerIntent` | Timer widget (both kinds), Now widget (timer mode and the generic timer line) | No | Pause and Resume are separate intents, so a tap always sets the shown state |
+| `FinishHabitTimerIntent` | Now widget Done, Timer widget Done on a habit timer (T-44) | No | Freezes the clock and saves the time entry |
+| `FinishGenericTimerIntent` | Timer widget Done, Now widget's generic timer line (T-44) | **Yes** | Freezes the clock and writes the pending open action `chooseTaskForTimer` |
 | `DiscardTimerIntent` | Now widget Discard | No | |
 
 `openAppWhenRun` is a static property, so it can't change at runtime. That's why there are two finish intents.
@@ -675,3 +675,4 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - Today rebuilds every minute already, so its footnote and actions follow the window; the Missed tab checks each minute whether the window has changed and reloads (`needsReload`).
 - **T-42:** `ReminderPlanner` plans a part's summary only when `SettingsValue.partStartSummaries` contains the part. Settings shows four toggles, "Morning starts" … "Night starts", bound to that set. Planner tests default to every summary on (`everySummary`) so they still see each kind; the defaults have their own tests.
 - **T-43:** `Core/Reminders/SnoozeOption`, `SnoozeTarget`, `SnoozeRules`; `ReminderPlanner.plan(…snoozes:)` and `liveSnoozes`. `ReminderManager.notifications()` prunes `DeviceState.snoozes` to the live ones on every rebuild; `snooze(_:)` records a tap. `NotificationText` reads a negative lead as "Started N min ago".
+- **T-44:** The Timer widget shows both kinds with the same layout: the name ("Timer" or the habit's), the clock, "Running" or "Paused", Pause or Resume, and Done, which is `FinishHabitTimerIntent` for a habit timer and `FinishGenericTimerIntent` otherwise. The Now widget's generic timer line becomes "Timer · 05:12" with the pause/resume intent and `FinishGenericTimerIntent`. Every timer change reloads every widget through `refreshNowAndWait()`, so the last action shows everywhere.

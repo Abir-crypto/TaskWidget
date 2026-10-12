@@ -213,12 +213,12 @@ There's one timer at a time per device. Its state stays on the device and is nev
 
 **States:** Idle, Running, Paused. A timer can be paused and resumed any number of times.
 
-**Who controls the timer.** Only the places marked with controls below can act on it; every other place just displays it.
+**Who controls the timer.** Every place that shows the timer can pause and resume it. Done and Discard are offered where the table says. The last action wins, and every place refreshes after any change (F-17).
 
 | Place | Generic timer | Habit timer |
 |---|---|---|
-| Timer widget (small) | Pause/Resume, Done | Display only: the habit name and the clock, or "Paused". Tapping opens the app's timer screen. |
-| Now widget (large) | Display only: the line "Timer running · 05:12". Tapping opens the app. | Timer mode with Pause/Resume, Done and Discard |
+| Timer widget (small) | Pause/Resume, Done (opens the task picker) | Pause/Resume, Done (saves without opening the app) |
+| Now widget (large) | The line "Timer · 05:12" with Pause/Resume and Done (opens the task picker) | Timer mode with Pause/Resume, Done and Discard |
 | App (timer bar and timer screen) | Full control | Full control |
 
 While a timer exists, whether running or paused, every ▶ button is hidden and the Timer widget shows the timer instead of Start. The current timer has to be finished or discarded before another can start.
@@ -227,6 +227,7 @@ While a timer exists, whether running or paused, every ▶ button is hidden and 
 - The clock stops at the moment Done is tapped. Time spent afterward, for example choosing a habit, isn't counted.
 - If the timer ran for less than 1 minute, nothing is saved, and the app says "Less than a minute, nothing saved."
 - **Habit timer, Done in the Now widget:** the time is saved without opening the app. The widget returns to its list with the habit's progress updated.
+- **Habit timer, Done in the Timer widget:** as in the Now widget, the time is saved without opening the app. Under 1 minute, nothing is saved and the widget returns to Idle without a message.
 - **Habit timer, Done in the app:** the time is saved and the confirmation appears.
 - **Generic timer, Done** (in the Timer widget or the app): the app opens the **task picker**.
   - It lists the duration habits that are live on the timer's day: today, or the previous day if the timer ran past midnight.
@@ -459,7 +460,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 - Status is never shown by color alone; an icon or text always goes with it. Widgets adapt to dark mode and to tinted styles.
 - Widgets use the theme color (F-27) for their accents. In the tinted and clear Home Screen styles and on the Lock Screen, the system's colors apply instead.
 - Widgets follow the system's light or dark mode, whatever the app's appearance (F-28).
-- A widget never shows controls for a timer it doesn't control (F-06).
+- Every widget that shows the timer offers Pause/Resume. Done and Discard follow F-06.
 - If a widget can't load its data, it shows "Open Tempo to refresh" and tries again 15 minutes later.
 
 ### F-18 · Timer widget (small)
@@ -469,9 +470,10 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 | Idle | "Timer" and a Start button | Start begins a generic timer |
 | Generic timer, running | The clock counting up | Pause, Done |
 | Generic timer, paused | The time so far and "Paused" | Resume, Done |
-| Habit timer, running or paused | The habit name and the clock, or "Paused" | None. Tapping opens the app's timer screen. |
+| Habit timer, running | The habit name and the clock | Pause, Done |
+| Habit timer, paused | The habit name, the time so far and "Paused" | Resume, Done |
 
-- Done opens the app (F-06).
+- Done follows F-06: a generic timer opens the task picker, and a habit timer saves without opening the app.
 - Tapping anywhere outside the buttons opens the app: on the timer screen if a timer exists, otherwise on Today.
 
 ### F-19 · Day widget (medium)
@@ -505,7 +507,7 @@ When nothing is left, it shows "You're free today", plus "All N tasks done" only
   - Duration habits show their progress and ▶.
 - **"+N more"** appears when tasks don't fit; tapping it opens Today.
 - **Footer:** "2 missed today ›" (Strict; Gentle in F-30) when today has missed tasks. Tapping it opens the Missed tab.
-- While a generic timer exists, a display-only line appears at the top, "Timer running · 05:12", and the ▶ buttons are hidden.
+- While a generic timer exists, a line appears at the top, "Timer · 05:12", with Pause/Resume and Done. Done opens the task picker. The ▶ buttons are hidden.
 
 **Timer mode** (while a habit timer exists)
 - The whole widget becomes the timer. It shows:
@@ -1201,7 +1203,7 @@ Implements: F-18 · Depends on: T-22, T-20
 Acceptance
 - [ ] Every state in F-18 displays correctly, and its buttons work without opening the app.
 - [ ] Done on a generic timer opens the app's task picker, with the time frozen at the tap.
-- [ ] A habit timer started elsewhere shows here as display only.
+- [ ] A habit timer started elsewhere shows here with Pause/Resume and Done, and Done saves without opening the app (T-44).
 
 #### T-24 · Now widget
 Implements: F-21 · Depends on: T-22, T-23
@@ -1211,7 +1213,7 @@ Acceptance
 - [ ] Checkboxes complete and undo without opening the app.
 - [ ] ▶ turns the widget into timer mode, and the Timer widget then displays the same timer.
 - [ ] In timer mode, Done saves without opening the app and Discard saves nothing. Both return to list mode.
-- [ ] While a generic timer exists, the display-only line shows and every ▶ is hidden.
+- [ ] While a generic timer exists, the timer line shows with Pause/Resume and Done, and every ▶ is hidden (T-44).
 
 #### T-25 · Day widget
 Implements: F-19 · Depends on: T-22

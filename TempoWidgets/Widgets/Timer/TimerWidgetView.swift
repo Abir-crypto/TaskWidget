@@ -32,60 +32,54 @@ struct TimerWidgetView: View {
                 .modifier(ProminentWidgetButton())
             }
         case .generic(let clock):
-            VStack(alignment: .leading, spacing: 6) {
-                Label("Timer", systemImage: "timer")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                WidgetClock(value: clock)
-                    .font(.system(size: 30, weight: .semibold, design: .rounded))
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(1)
-                    .widgetAccentable()
-                Text(clock.isRunning ? "Running" : "Paused")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                HStack(spacing: 6) {
-                    if clock.isRunning {
-                        Button(intent: PauseTimerIntent()) {
-                            Image(systemName: "pause.fill").frame(maxWidth: .infinity)
-                        }
-                        .accessibilityLabel(Text("Pause"))
-                    } else {
-                        Button(intent: ResumeTimerIntent()) {
-                            Image(systemName: "play.fill").frame(maxWidth: .infinity)
-                        }
-                        .accessibilityLabel(Text("Resume"))
+            running(title: String(localized: "Timer"), clock: clock, isHabit: false)
+        case .habit(let title, let clock):
+            running(title: title, clock: clock, isHabit: true)
+        }
+    }
+
+    /// A timer with its controls: Pause or Resume, and Done. Done on a generic timer opens the task picker; on a habit
+    /// timer it saves without opening the app (SPEC F-06, F-18, D-111).
+    private func running(title: String, clock: TimerClockValue, isHabit: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Label(title, systemImage: "timer")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            WidgetClock(value: clock)
+                .font(.system(size: 30, weight: .semibold, design: .rounded))
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+                .widgetAccentable()
+            Text(clock.isRunning ? "Running" : "Paused")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            HStack(spacing: 6) {
+                if clock.isRunning {
+                    Button(intent: PauseTimerIntent()) {
+                        Image(systemName: "pause.fill").frame(maxWidth: .infinity)
                     }
+                    .accessibilityLabel(Text("Pause"))
+                } else {
+                    Button(intent: ResumeTimerIntent()) {
+                        Image(systemName: "play.fill").frame(maxWidth: .infinity)
+                    }
+                    .accessibilityLabel(Text("Resume"))
+                }
+                if isHabit {
+                    Button(intent: FinishHabitTimerIntent()) {
+                        Text("Done").frame(maxWidth: .infinity)
+                    }
+                    .modifier(ProminentWidgetButton())
+                } else {
                     Button(intent: FinishGenericTimerIntent()) {
                         Text("Done").frame(maxWidth: .infinity)
                     }
                     .modifier(ProminentWidgetButton())
                 }
-                .font(.footnote.weight(.semibold))
             }
-        case .habit(let title, let clock):
-            VStack(alignment: .leading, spacing: 6) {
-                Label("Timer", systemImage: "timer")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text(title)
-                    .font(.headline)
-                    .lineLimit(2)
-                Spacer(minLength: 0)
-                if clock.isRunning {
-                    WidgetClock(value: clock)
-                        .font(.system(size: 28, weight: .semibold, design: .rounded))
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(1)
-                        .widgetAccentable()
-                } else {
-                    Label("Paused", systemImage: "pause.circle")
-                        .font(.headline)
-                        .widgetAccentable()
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .font(.footnote.weight(.semibold))
         }
     }
 }
