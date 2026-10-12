@@ -63,6 +63,7 @@ After **every** change, update the affected feature's section in `docs/DOCUMENTA
   - Record it in `docs/DECISIONS.md` with the next `D-` number, marked "Agent".
   - Mention it in your summary.
 - **If it's a real product question with trade-offs,** ask instead of deciding.
+- **If your decision changes or adds behavior that SPEC describes,** update SPEC and CHANGELOG in the same change (D-103). DECISIONS says why; SPEC says what.
 
 ## Architecture and code (full detail in `docs/platform/ios.md`)
 

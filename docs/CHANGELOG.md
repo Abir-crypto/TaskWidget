@@ -14,6 +14,13 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Spec catches up with the build (T-35)
+- Changed: F-06 — the task picker lists duration habits live on the timer's day (the previous day after midnight), can't be swiped away, keeps the time while Add a duration task is open, and leaves out the current habit with Cancel for Change task (D-084, D-103).
+- Changed: F-20 — "All N tasks done" only when every one of today's tasks is done; "Then:" shows only the next title (D-091, D-103).
+- Changed: F-21 — at most 8 rows below the header (D-090, D-103).
+- Changed: F-22 — a duration habit's rows follow its timing, "All N tasks done" follows F-20, the inline widget hides its whole line while locked with Hide task names on, and the gallery name is Next task (D-092, D-103).
+- Process: CLAUDE.md — an Agent decision that changes behavior updates SPEC and CHANGELOG in the same change (D-103).
+
 ## 2026-10-12 · Phase H planned (1.1)
 - Added: T-35–T-53 — Phase H · Pre-launch changes, from `docs/CHANGE-SPEC-1.1.md` (C-01–C-16), in SPEC §8. T-52 (final name) is blocked and listed last. Each task copies its change into SPEC before it's built.
 - No other changes to SPEC.md yet.

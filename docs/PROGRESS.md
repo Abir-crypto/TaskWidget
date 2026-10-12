@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-35 · Spec catches up with the build
+**Current task:** T-36 · Minimum system version
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -44,7 +44,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-32 | Final verification | F · Finish | ✅ | 2026-10-10 | Final build: 262 `TempoTests`, 43 UI tests (30 screenshot tests skipped by design) and 181 Core tests (Mac and iOS 27.0) pass, no warnings. QA on the iOS 27.0 simulator's real Home Screen: the Now widget's checkbox, the Timer widget's Start/Pause/Done (task picker with the frozen time), a habit timer shown in the Now and Timer widgets, a fixed-time reminder that arrived and opened Today when tapped, and a fixed time kept after relaunching in another time zone. Found and fixed: tapping any notification crashed the app (the async delegate callbacks completed off the main thread). Not seen live, covered by unit tests: widget switches at part boundaries and midnight, a timer across midnight, a time-zone change while running, and the other notification kinds. iPad items in T-30. DOCUMENTATION.md brought up to date for every feature. |
 | T-33 | Theme color | G · Additions | ✅ | 2026-10-11 | Settings › Theme with eight presets and Custom (system color picker); the color tints the whole app at once (root `.tint` plus the window tint for alerts) and the Home Screen widgets' accents; stored as `settings.tint_color` with a `SchemaV2` lightweight migration. Settings' menus became `MenuValuePicker`, since a menu `Picker` ignored the tint (D-101). Checked on the iOS 27 simulator: Pink in light mode and Indigo in dark mode on every screen, and the Timer, Day, Focus and Now widgets with Pink on a clean iPhone 18 Pro Max Home Screen. 268 `TempoTests`, 44 UI tests and 186 Core tests pass (clean build). D-100, D-101. |
 | T-34 | Appearance | G · Additions | ✅ | 2026-10-11 | Settings › Theme starts with a segmented System · Dark · Light (owner's order); the choice sets every window's interface style, so screens, sheets, the guide, dialogs, menus and the color picker follow it at once, and System goes back to the device's mode. Widgets, notifications and the launch screen keep the device's mode. Stored as `settings.appearance` with a `SchemaV3` lightweight migration from V2. Checked on the iOS 27 simulator: Dark on a light simulator and Light on a dark one (Today, Settings, editor, dialog, menu, color picker, guide), and System back to dark. 269 `TempoTests`, 45 UI tests (33 screenshot tests skipped by design) and 190 Core tests (Mac and iOS 27.0) pass (clean build). D-102. |
-| T-35 | Spec catches up with the build | H · Pre-launch (1.1) | ⬜ | |  |
+| T-35 | Spec catches up with the build | H · Pre-launch (1.1) | ✅ | 2026-10-12 | Docs only. SPEC F-06 (task picker), F-20, F-21 and F-22 now match D-084, D-090, D-091 and D-092; DOCUMENTATION.md already described that behavior, so it needed no change. CLAUDE.md › Decisions has the D-103 rule. |
 | T-36 | Minimum system version | H · Pre-launch (1.1) | ⬜ | |  |
 | T-37 | Data model changes | H · Pre-launch (1.1) | ⬜ | |  |
 | T-38 | Notes | H · Pre-launch (1.1) | ⬜ | |  |

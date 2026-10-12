@@ -222,11 +222,14 @@ While a timer exists, whether running or paused, every ▶ button is hidden and 
 - **Habit timer, Done in the Now widget:** the time is saved without opening the app. The widget returns to its list with the habit's progress updated.
 - **Habit timer, Done in the app:** the time is saved and the confirmation appears.
 - **Generic timer, Done** (in the Timer widget or the app): the app opens the **task picker**.
-  - It lists the duration habits that exist today, meaning today falls between their start and last day.
+  - It lists the duration habits that are live on the timer's day: today, or the previous day if the timer ran past midnight.
   - First come those scheduled today and still below their target, each with progress ("Read · 10 of 30 min"). After them come the rest, including habits already past their target.
   - Choosing a habit saves the time and shows the confirmation.
   - **Discard** throws the time away.
+  - It can't be dismissed by swiping. Time is thrown away only with **Discard**.
   - If there are no duration habits, it shows "No duration tasks yet" with **Add a duration task** and **Discard**.
+  - **Add a duration task** keeps the finished time, and the picker reopens when the editor closes.
+  - For **Change task**, it leaves out the entry's current habit and offers **Cancel** instead of Discard.
 - **Confirmation:** "Added 18 min to Read · 28 of 30 min today," with **Undo** (deletes the entry) and **Change task** (opens the picker and moves the entry). It disappears after about 5 seconds.
 
 **Discard** stops the timer and saves nothing. It's available in the Now widget's timer mode, on the app's timer screen and in the task picker.
@@ -469,13 +472,13 @@ The Focus widget is information only, with no buttons. It shows the result of th
 - **For duration habits,** progress such as "10 of 30 min".
 - **"Then:"** followed by the item after it.
 
-When nothing is left, it shows "You're free today", plus "All 6 tasks done" if there were tasks. Tapping opens the app at that task, or on Today.
+When nothing is left, it shows "You're free today", plus "All N tasks done" only if every one of today's tasks is done. "Then:" shows only the next item's title. Tapping opens the app at that task, or on Today.
 
 ### F-21 · Now widget (large)
 
 **List mode**
 - **Header:** the current part's name, "ends in 1h 20m", and "N left".
-- **Tasks:** the current part's tasks (fixed-time first, in time order). Then the next part's header and tasks, as many as fit. Then Anytime tasks if there's room.
+- **Tasks:** the current part's tasks (fixed-time first, in time order). Then the next part's header and tasks, as many as fit. Then Anytime tasks if there's room. At most 8 rows appear below the header.
 - If the current part has no tasks, the next part with tasks comes first. When nothing is left in the day, it shows "You're free today".
 - **Rows:**
   - One-time and progress tasks have a checkbox; tap it to complete and tap again to undo.
@@ -501,13 +504,14 @@ There are two sizes: **rectangular**, under the clock, and **inline**, a single 
 |---|---|---|
 | A fixed-time task coming up | "12:30 · in 45 min" / "Interview" | "Next: Interview at 12:30" |
 | A part-of-day task open now | "Noon · until 17:00" / "Call the bank" | "Noon: Call the bank" |
-| A duration habit | "Evening · 10 of 30 min" / "Read" | "Evening: Read" |
+| A duration habit | "Evening · 10 of 30 min" or "12:30 · 10 of 30 min" / "Read" (its time, part or "Anytime", then its progress) | Follows its timing like any other task: "Evening: Read" or "Next: Read at 12:30" |
 | A task in a later part | "Evening · from 17:00" / "Gym" | "Evening: Gym" |
 | An Anytime task | "Anytime" / "Renew passport" | "Anytime: Renew passport" |
-| Nothing left | "You're free today" / "All 6 tasks done", left out if there were no tasks | "You're free today" |
+| Nothing left | "You're free today" / "All N tasks done", shown only when every one of today's tasks is done | "You're free today" |
 
 - The task shown comes from the next-task rule (§5.6).
-- With **Hide task names on the Lock Screen** turned on, titles are hidden while the device is locked and appear once it's unlocked.
+- With **Hide task names on the Lock Screen** turned on, titles are hidden while the device is locked and appear once it's unlocked. With Hide task names on, the inline widget hides its whole line while the device is locked.
+- The widget gallery calls them Next task.
 
 ### F-23 · First-launch guide
 
