@@ -1205,3 +1205,204 @@ Acceptance
 - [ ] Dark and Light change every screen of the app at once, with its sheets, dialogs and menus; System follows the device again. The choice survives a restart.
 - [ ] The widgets and notifications keep following the device's mode.
 - [ ] Existing data, the theme color included, is kept when the store gains the new column, and a stored appearance the app can't read is treated as System.
+
+### Phase H · Pre-launch changes (1.1)
+
+The changes `C-01`–`C-16` are described in `docs/CHANGE-SPEC-1.1.md`. Each task copies its change into this file before it's built, so until then the features it names (F-29–F-34, §5.11) are only in the change spec. T-52 is listed last because it's blocked on the owner choosing a name.
+
+#### T-35 · Spec catches up with the build
+Implements: F-06, F-20, F-21, F-22 (C-01) · Depends on: T-34
+
+Acceptance
+- [ ] F-06, F-20, F-21 and F-22 in SPEC match D-084, D-090, D-091 and D-092, and DOCUMENTATION.md agrees.
+- [ ] CLAUDE.md has the D-103 rule.
+- [ ] CHANGELOG records the edits.
+
+#### T-36 · Minimum system version
+Implements: the minimum system version (C-02, platform file only) · Depends on: T-35
+
+Acceptance
+- [ ] Every target and the `Core` package target iOS 18.0, and the project builds without warnings about it.
+- [ ] CLAUDE.md and ios.md state the new API rule (CHANGE-SPEC-1.1 §5).
+- [ ] The full test suite passes.
+
+#### T-37 · Data model changes
+Implements: §4.1, §4.5, §4.6, F-26 (the data model changes in CHANGE-SPEC-1.1 §3) · Depends on: T-36
+
+Acceptance
+- [ ] An existing store opens with its data intact, and the new columns take the defaults in CHANGE-SPEC-1.1 §3.
+- [ ] `notes` is trimmed, empty notes are stored as no value, and notes over 1,000 characters are rejected.
+- [ ] An unreadable `missed_style` reads as `gentle`.
+- [ ] The new device-only items survive a restart, and Snoozes clear when the day changes.
+- [ ] The widget extension reads the new settings columns.
+
+#### T-38 · Notes
+Implements: notes in F-01, F-04, F-10, F-11, F-13, F-15, §4.1 (C-03) · Depends on: T-37
+
+Acceptance
+- [ ] Notes can be added, changed and cleared in the editor for every task type.
+- [ ] Habit detail shows notes. Rows in Today and Tasks show the notes icon only when there are notes.
+- [ ] No widget, Lock Screen widget or notification shows notes.
+- [ ] Move to tomorrow on a missed task copies its notes.
+- [ ] Editing a habit's notes doesn't create a schedule row.
+
+#### T-39 · "Afternoon" on screen
+Implements: F-02's part names and all user-facing text (C-04) · Depends on: T-35
+
+Acceptance
+- [ ] No user-facing text says "Noon": app, widgets, Lock Screen widgets, notifications, guide or empty states. This is checked in both string catalogs.
+- [ ] Stored values, `noon_start` and notification ids are unchanged, and existing data loads.
+- [ ] Empty parts read "Nothing this afternoon" today and "Nothing in the afternoon" on other days.
+- [ ] The longer name fits: the Day widget's columns, the Focus widget's top line and both Lock Screen widgets, at the default and largest text sizes they allow.
+
+#### T-40 · Missed style
+Implements: F-30 (C-05) · Depends on: T-37, T-39
+
+Acceptance
+- [ ] Settings shows Missed tasks with Gentle and Strict, set to Gentle on a new install.
+- [ ] Every row of the F-30 table shows the right text, color and mark in each style, in the app and in the widgets.
+- [ ] In Gentle, the tab has no badge and the popup never appears. In Strict, both behave as in 1.0 (T-16, T-17).
+- [ ] Statuses, Missed queries and every Stats number are identical in both styles for the same data.
+- [ ] Switching style updates the app and widgets at once, and the next notification rebuild uses the new copy.
+- [ ] Every status still has an icon or text as well as a color (F-17).
+
+#### T-41 · Correction window
+Implements: §5.11 (C-06) · Depends on: T-40
+
+Acceptance
+- [ ] `editable` follows §5.11. Examples:
+  - Wed 7 Oct at 11:59, Tue 6 Oct is CORRECTION.
+  - At 12:00 it's NONE.
+  - Mon 5 Oct is NONE all day Wednesday.
+  - With Afternoon's start at 13:00, Tuesday stays CORRECTION until 12:59.
+- [ ] During the window, yesterday's one-time and progress tasks can be completed and undone, and Log time saves to yesterday from yesterday's rows and from Missed.
+- [ ] During the window, yesterday's time entries can be deleted in Habit detail. After it, they can't.
+- [ ] During the window, Move, Edit, Delete and End habit aren't offered for yesterday.
+- [ ] Missed shows yesterday under "Yesterday" during the window, and Earlier leaves it out. At the end of the window, those rows move to Earlier while the screen is open.
+- [ ] Today shows "You can still change yesterday until 12:00" when yesterday is selected during the window.
+- [ ] History's Mark not done follows §5.11.
+- [ ] Correcting yesterday updates streaks, weekly totals and stats at once.
+
+#### T-42 · Part summaries per part
+Implements: part summaries in F-07, F-16, §5.9 (C-07) · Depends on: T-37, T-39
+
+Acceptance
+- [ ] Settings shows four part-start switches. On a new install, only Morning is on.
+- [ ] With the defaults, only the Morning summary is planned, and it still lists open Anytime tasks.
+- [ ] Turning on any part's switch plans that part's summaries at once.
+- [ ] Ending-soon, fixed-time and recap notifications are unchanged.
+
+#### T-43 · Snooze
+Implements: snoozing in F-07, §5.9 (C-08) · Depends on: T-42
+
+Acceptance
+- [ ] Fixed-time and ending-soon notifications offer only the snooze options that land at least 5 minutes before their part ends. For example, Evening's ending soon at 20:30 offers only 15 min.
+- [ ] Snoozing schedules one reminder at the tap time plus the option, without opening the app. Snoozing again replaces it.
+- [ ] A snoozed fixed-time reminder after its time reads "Started N min ago".
+- [ ] Completing the task, or the part running out of candidates, cancels the snooze at the next rebuild.
+- [ ] Snoozes are cleared at midnight. (That they aren't exported is checked in T-48.)
+- [ ] A late tap fires no later than 5 minutes before the part ends, and a tap after that schedules nothing.
+- [ ] With permission refused, nothing is scheduled and nothing crashes.
+
+#### T-44 · Same timer controls everywhere
+Implements: F-06, F-17, F-18, F-21 (C-09) · Depends on: T-35
+
+Acceptance
+- [ ] The Timer widget shows every state in the new F-18 table, and its buttons work without opening the app.
+- [ ] Done on a habit timer in the Timer widget saves without opening the app. Under 1 minute, it saves nothing and returns to Idle.
+- [ ] Done on a generic timer in the Timer widget or the Now widget opens the task picker, with the time frozen at the tap.
+- [ ] The Now widget's generic timer line has working Pause/Resume and Done.
+- [ ] Pausing in one place shows as paused everywhere: both widgets, the app's timer bar and the timer screen.
+- [ ] T-19, T-20, T-23 and T-24 still pass, with their acceptance items updated to the new table.
+
+#### T-45 · Timer Live Activity
+Implements: F-31 (C-10) · Depends on: T-44, T-36
+
+Acceptance
+- [ ] Starting a timer from the app, the Timer widget or the Now widget shows the Live Activity. Done or Discard anywhere ends it. (The control and Shortcuts are checked in T-46 and T-47.)
+- [ ] Pause/Resume and Done work from the Lock Screen and the Dynamic Island without opening the app. A generic Done opens the task picker.
+- [ ] A habit timer shows progress including time logged earlier that day.
+- [ ] With Hide task names on, the habit name is hidden on the locked Lock Screen.
+- [ ] With Live Activities turned off for the app, timers work as before.
+- [ ] A timer started at 23:40 and finished at 00:20 still saves to the day it started, from the Live Activity too.
+
+#### T-46 · Timer control
+Implements: F-32 (C-11) · Depends on: T-44, T-36
+
+Acceptance
+- [ ] The control appears in the controls gallery and works in Control Center and on the Lock Screen.
+- [ ] Its label follows the timer's state in the F-32 table, including after changes made elsewhere.
+- [ ] Tapping starts, pauses or resumes without opening the app. Every widget and the Live Activity refresh, and starting a timer from the control shows the Live Activity.
+
+#### T-47 · Shortcuts actions
+Implements: F-33 (C-12) · Depends on: T-44, T-45
+
+Acceptance
+- [ ] All five actions appear in Shortcuts with the parameters in F-33, and the suggested phrases work with Siri.
+- [ ] Each refusal in the F-33 table returns its message and changes nothing.
+- [ ] Add task follows the editor's validation (F-15, D-035, D-069).
+- [ ] Each action refreshes the widgets and the Live Activity and rebuilds notifications. Start timer shows the Live Activity.
+
+#### T-48 · Export and import
+Implements: F-29 (C-13) · Depends on: T-38, T-42
+
+Acceptance
+- [ ] Export writes the F-29 format with every non-deleted row of every synced table, and no device-only state (no timer, seen list or snoozes).
+- [ ] Importing an export from the same data gives identical tables: same ids, values and timestamps.
+- [ ] An invalid file, a file with a broken `task_id`, a file with invalid settings values, and a newer version are each refused with their message, and nothing changes.
+- [ ] Import with a running timer warns first, then discards it. After import, the seen list and snoozes are empty, and widgets and notifications match the imported data.
+- [ ] A backup without optional columns imports with the defaults in §4, and unknown columns are ignored.
+- [ ] The format is covered by `Core` tests that don't depend on the platform.
+
+#### T-49 · Start again opens the editor
+Implements: Start again in F-03 and F-12 (C-14) · Depends on: T-38
+
+Acceptance
+- [ ] Start again opens the editor filled in from the ended habit, notes included, with the type read-only.
+- [ ] At 13:00, for an ended Morning habit, Starts defaults to tomorrow. For an Evening or Anytime habit, it defaults to today.
+- [ ] Save creates a new habit, and Cancel creates nothing. The ended habit and its history are unchanged.
+
+#### T-50 · Shorter guide and Add a widget card
+Implements: F-23 and the Add a widget card in F-10 (C-15) · Depends on: T-40
+
+Acceptance
+- [ ] The guide has the six pages in F-23. Skip on pages 1–4 jumps to page 5, and How to use shows pages 1–4 with Done.
+- [ ] Page 3 shows the widget steps in pictures, legible in light mode, in dark mode and at the largest text size.
+- [ ] Today shows the card while no Tempo widget is installed. It disappears once one is added, checked when the app becomes active, and stays gone after it's closed.
+- [ ] Show me how opens guide page 3.
+- [ ] T-28's acceptance items still pass with the new page numbers.
+
+#### T-51 · Tempo Pro
+Implements: F-34 (C-16) · Depends on: T-37
+
+Acceptance
+- [ ] Without Pro, the non-Blue swatches and the Month and Year ranges show the Pro tag, and tapping them opens the Pro sheet without changing anything.
+- [ ] Purchasing unlocks them at once, in the app and in the widgets' accents from their next update.
+- [ ] Restore purchases restores Pro on a fresh install, with the store's test environment.
+- [ ] With Pro revoked, a stored custom color shows as Blue and comes back when Pro returns. Stats falls back to Week.
+- [ ] With no network, a cached Pro stays unlocked.
+- [ ] The sheet never opens on its own, including on first launch and during the guide.
+
+#### T-53 · Device verification
+Implements: every task in Phase H · Depends on: T-35–T-51
+
+Acceptance
+- [ ] Every acceptance item in T-35–T-51 has been re-run on the final build.
+- [ ] A full day on a physical iPhone and a physical iPad:
+  - widgets change at each part start;
+  - every widget button works;
+  - every notification kind fires, including a snooze;
+  - the Live Activity (iPhone only) and the control work;
+  - a timer runs past midnight.
+- [ ] The manual QA checklist in ios.md passes, with the items added in CHANGE-SPEC-1.1 §5.
+- [ ] SPEC's version is 1.1, and DOCUMENTATION.md describes every change as built.
+
+#### T-52 · Final name
+Implements: the SPEC header note · Depends on: the owner choosing a name · **Blocked**
+
+It's listed last, after T-53, so the blocked task doesn't hold up the others (`CLAUDE.md` runs the first task that isn't done).
+
+Acceptance
+- [ ] The find-and-replace in the SPEC header is done across the docs, the strings and the identifiers listed in ios.md §2.
+- [ ] Decide whether the bundle identifier keeps `tempo` before the App Store record is created. The display name can change later; the bundle identifier can't.
+- [ ] The App Store record and the Pro product (T-51) are created only after this decision. The product ID doesn't contain the name, so it doesn't change.

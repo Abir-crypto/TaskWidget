@@ -14,6 +14,7 @@ Read them when a task needs them. Don't load every document every session.
 | `docs/DOCUMENTATION.md` | What the app does **right now**, as built. You keep it up to date. |
 | `docs/DECISIONS.md` | Why things are the way they are. Add an entry for every judgment call. |
 | `docs/CHANGELOG.md` | Every change to the spec, with its date. |
+| `docs/CHANGE-SPEC-1.1.md` | The work order for Phase H (T-35–T-53): changes `C-xx` to copy into SPEC, task by task. Moves to `docs/changes/` when Phase H is done. |
 
 ## Workflow
 

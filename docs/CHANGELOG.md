@@ -14,6 +14,10 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Phase H planned (1.1)
+- Added: T-35–T-53 — Phase H · Pre-launch changes, from `docs/CHANGE-SPEC-1.1.md` (C-01–C-16), in SPEC §8. T-52 (final name) is blocked and listed last. Each task copies its change into SPEC before it's built.
+- No other changes to SPEC.md yet.
+
 ## 2026-10-11 · Appearance
 - Added: F-28 — Appearance: System, Dark or Light for the app, in Settings › Theme.
 - Changed: §2.1 — the appearance choice is in v1.

@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** none — every task is done
+**Current task:** T-35 · Spec catches up with the build
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -44,10 +44,29 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-32 | Final verification | F · Finish | ✅ | 2026-10-10 | Final build: 262 `TempoTests`, 43 UI tests (30 screenshot tests skipped by design) and 181 Core tests (Mac and iOS 27.0) pass, no warnings. QA on the iOS 27.0 simulator's real Home Screen: the Now widget's checkbox, the Timer widget's Start/Pause/Done (task picker with the frozen time), a habit timer shown in the Now and Timer widgets, a fixed-time reminder that arrived and opened Today when tapped, and a fixed time kept after relaunching in another time zone. Found and fixed: tapping any notification crashed the app (the async delegate callbacks completed off the main thread). Not seen live, covered by unit tests: widget switches at part boundaries and midnight, a timer across midnight, a time-zone change while running, and the other notification kinds. iPad items in T-30. DOCUMENTATION.md brought up to date for every feature. |
 | T-33 | Theme color | G · Additions | ✅ | 2026-10-11 | Settings › Theme with eight presets and Custom (system color picker); the color tints the whole app at once (root `.tint` plus the window tint for alerts) and the Home Screen widgets' accents; stored as `settings.tint_color` with a `SchemaV2` lightweight migration. Settings' menus became `MenuValuePicker`, since a menu `Picker` ignored the tint (D-101). Checked on the iOS 27 simulator: Pink in light mode and Indigo in dark mode on every screen, and the Timer, Day, Focus and Now widgets with Pink on a clean iPhone 18 Pro Max Home Screen. 268 `TempoTests`, 44 UI tests and 186 Core tests pass (clean build). D-100, D-101. |
 | T-34 | Appearance | G · Additions | ✅ | 2026-10-11 | Settings › Theme starts with a segmented System · Dark · Light (owner's order); the choice sets every window's interface style, so screens, sheets, the guide, dialogs, menus and the color picker follow it at once, and System goes back to the device's mode. Widgets, notifications and the launch screen keep the device's mode. Stored as `settings.appearance` with a `SchemaV3` lightweight migration from V2. Checked on the iOS 27 simulator: Dark on a light simulator and Light on a dark one (Today, Settings, editor, dialog, menu, color picker, guide), and System back to dark. 269 `TempoTests`, 45 UI tests (33 screenshot tests skipped by design) and 190 Core tests (Mac and iOS 27.0) pass (clean build). D-102. |
+| T-35 | Spec catches up with the build | H · Pre-launch (1.1) | ⬜ | |  |
+| T-36 | Minimum system version | H · Pre-launch (1.1) | ⬜ | |  |
+| T-37 | Data model changes | H · Pre-launch (1.1) | ⬜ | |  |
+| T-38 | Notes | H · Pre-launch (1.1) | ⬜ | |  |
+| T-39 | "Afternoon" on screen | H · Pre-launch (1.1) | ⬜ | |  |
+| T-40 | Missed style | H · Pre-launch (1.1) | ⬜ | |  |
+| T-41 | Correction window | H · Pre-launch (1.1) | ⬜ | |  |
+| T-42 | Part summaries per part | H · Pre-launch (1.1) | ⬜ | |  |
+| T-43 | Snooze | H · Pre-launch (1.1) | ⬜ | |  |
+| T-44 | Same timer controls everywhere | H · Pre-launch (1.1) | ⬜ | |  |
+| T-45 | Timer Live Activity | H · Pre-launch (1.1) | ⬜ | |  |
+| T-46 | Timer control | H · Pre-launch (1.1) | ⬜ | |  |
+| T-47 | Shortcuts actions | H · Pre-launch (1.1) | ⬜ | |  |
+| T-48 | Export and import | H · Pre-launch (1.1) | ⬜ | |  |
+| T-49 | Start again opens the editor | H · Pre-launch (1.1) | ⬜ | |  |
+| T-50 | Shorter guide and Add a widget card | H · Pre-launch (1.1) | ⬜ | |  |
+| T-51 | Tempo Pro | H · Pre-launch (1.1) | ⬜ | |  |
+| T-53 | Device verification | H · Pre-launch (1.1) | ⬜ | |  |
+| T-52 | Final name | H · Pre-launch (1.1) | ⛔ | | Waiting for the owner to choose a name (see Blocked). Listed last so it doesn't hold up T-53. |
 
 ## Blocked
 
-Nothing is blocked.
+- **T-52 · Final name (2026-10-12).** "Tempo" is a working title. The owner hasn't chosen the final name yet, and it's needed before the App Store record and the Pro product are created. Everything else in Phase H can go ahead.
 
 - ~~**T-01 · iOS 17 test run (2026-10-07).**~~ Resolved 2026-10-07: Xcode 27 can't download iOS 17 or 18 runtimes (`xcodebuild -downloadPlatform` reports them unavailable). The owner chose to test on the latest installed simulator and keep the iOS 17.0 deployment target (D-052).
 
@@ -55,6 +74,7 @@ Nothing is blocked.
 
 Add one line per work session, newest first: the date, what was done, and anything the next session needs to know.
 
+- 2026-10-12 — Reviewed `docs/CHANGE-SPEC-1.1.md` and folded the fixes into it (its §8). The owner confirmed D-104 (iOS 18), D-107 (Gentle, "Not done"), D-108 (window until Afternoon's start) and D-118 (Pro as proposed, product ID `pro.lifetime`), and asked for Phase H to be built task by task. Phase H added to SPEC §8 and here.
 - 2026-10-11 — T-34 Appearance (owner's request: System/Dark/Light in Settings › Theme) specified, built, verified and committed. The iPhone 17 simulator was set back to light mode afterwards.
 - 2026-10-11 — T-33 Theme color finished and committed. Themed-widget checks need a simulator without the old `com.applab.tempo` app (both appear as "Tempo" in the widget gallery): the iPhone 17 and iPhone 18 Pro (iOS 27.0) still have it; the iPhone 18 Pro Max is clean and now has the four Home Screen widgets, with Pink as its theme.
 - 2026-10-10 (night) — T-33 Theme color started; stopped at the owner's request. Owner's choices: preset swatches plus Custom (system color picker), applied to the app and the Home Screen widgets. **All work is uncommitted.** Done: SPEC (F-27, §2.1, F-16, F-17, §4.5 `tint_color`, §7, T-33 in Phase G), ios.md, CHANGELOG; Core `ThemeColor`/`ThemePreset` with tests (186 Core tests pass); `SchemaV2` + lightweight migration + migration test; `ThemeColor+Color`, `ThemePreset+Style`; Settings › Theme (`Views/Settings/Components/ThemePicker`); root `.tint` + window tint in `RootView` (theme from `RootViewModel`); Missed highlight uses `.tint`; `.widgetTheme(entry)` on the four Home Screen widgets; `ThemeTests`, Settings UI test `testThemeSwatches`; screenshot test `testThemeOnEveryScreen` (`TEMPO_THEME`). Checked: the theme colors every screen except the Settings menu pickers ("10 min", "2 hours"), which ignore `.tint`. Last edit, **not yet built or tested**: those pickers replaced by `Views/Settings/Components/MenuValuePicker` (a `Menu` with a tinted value), and the ineffective `.accentColor` removed from `RootView`. Next: (1) build, run `SettingsUITests` and `testThemeOnEveryScreen`, check the pickers and the "End habit" dialog option follow the theme (window tint unverified); (2) dark-mode screenshots (`xcrun simctl ui <device> appearance dark`, then back to light); (3) widgets on a clean simulator (iPhone 18 Pro, iOS 27.0; the iPhone 17's Home Screen widgets belong to the old `com.applab.tempo` app); (4) DECISIONS entries (presets map to system colors, custom stored as sRGB `#RRGGBB`, window tint for alerts, `MenuValuePicker`, switches follow the theme); (5) DOCUMENTATION F-27 section and F-16/F-17/F-26/§4.5 updates; (6) clean build + full test run (a stale incremental build once showed a bogus `everyWriteSetsUpdatedAt` failure after `SettingsValue` gained a field), then commit T-33.
