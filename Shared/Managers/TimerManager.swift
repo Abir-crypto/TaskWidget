@@ -31,7 +31,9 @@ final class TimerManager {
     func startHabitTimer(taskID: UUID) throws {
         guard state == nil else { throw TimerError.timerExists }
         guard let task = try tasks.engine().task(id: taskID),
-            Editability.canLogTime(task: task, day: tasks.today, today: tasks.today, calendar: clock.calendar)
+            // A timer counts for today; the correction window is for logging by hand (SPEC F-06, §5.11).
+            Editability.canLogTime(
+                task: task, day: tasks.today, in: EditWindow(today: tasks.today), calendar: clock.calendar)
         else { throw TimerError.cantTimeHabit }
         save(TimerRules.start(kind: .habit, habitID: taskID, now: clock.now, calendar: clock.calendar))
     }

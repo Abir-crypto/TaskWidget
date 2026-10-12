@@ -72,4 +72,22 @@ final class TodayUITests: XCTestCase {
         XCTAssertTrue(pastCheckbox.waitForExistence(timeout: 3))
         XCTAssertFalse(pastCheckbox.isEnabled)
     }
+
+    /// SPEC T-41: in the morning, yesterday says how long it can still be changed, its checkboxes work, and Missed
+    /// lists it under "Yesterday".
+    @MainActor
+    func testYesterdayCanBeCorrectedInTheMorning() {
+        let app = UITestApp.launch(now: "2026-10-07T09:00:00+01:00", sample: true)
+        let yesterday = app.buttons["day-20261006"]
+        XCTAssertTrue(yesterday.waitForExistence(timeout: 5))
+        yesterday.tap()
+        let line = app.staticTexts.matching(
+            NSPredicate(format: "label BEGINSWITH 'You can still change yesterday until'"))
+        XCTAssertTrue(line.firstMatch.waitForExistence(timeout: 3))
+        let checkbox = app.buttons.matching(NSPredicate(format: "label == 'Mark done'")).firstMatch
+        XCTAssertTrue(checkbox.waitForExistence(timeout: 3))
+        XCTAssertTrue(checkbox.isEnabled)
+        app.tabBars.buttons["Not done"].tap()
+        XCTAssertTrue(app.staticTexts["Yesterday"].waitForExistence(timeout: 3))
+    }
 }

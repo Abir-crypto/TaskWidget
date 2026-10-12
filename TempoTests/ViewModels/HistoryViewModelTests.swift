@@ -38,11 +38,11 @@ struct HistoryViewModelTests {
         #expect(model.completedGroups.last?.tasks.map(\.task.id) == [sunday.id])
     }
 
-    @Test func onlyTodaysCompletionsCanBeUndone() throws {
+    @Test func onlyEditableCompletionsCanBeUndone() throws {
         clock.now = TestEnvironment.date(2026, 10, 5, 9)
         let yesterday = try tasks.createOneTime(title: "Yesterday", date: day(5), timing: .anytime)
         try tasks.complete(taskID: yesterday.id, day: day(5))
-        clock.now = TestEnvironment.date(2026, 10, 6, 9)
+        clock.now = TestEnvironment.date(2026, 10, 6, 13)  // after the correction window (SPEC §5.11)
         let today = try tasks.createOneTime(title: "Today", date: day(6), timing: .anytime)
         try tasks.complete(taskID: today.id, day: day(6))
         model.load()

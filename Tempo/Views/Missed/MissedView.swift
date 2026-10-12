@@ -18,8 +18,10 @@ struct MissedView: View {
 
     var body: some View {
         NavigationStack {
-            TimelineView(.everyMinute) { _ in
+            TimelineView(.everyMinute) { context in
                 list
+                    // Yesterday's rows move to Earlier when the correction window closes (SPEC §5.11).
+                    .task(id: context.date) { if model.needsReload { model.load() } }
             }
             .navigationTitle(missedStyle.statusTitle)
             .toolbar {
@@ -84,26 +86,40 @@ struct MissedView: View {
 
     // MARK: Today
 
+    /// Today's missed tasks and, while it can still be corrected, yesterday's under their own subheading
+    /// (SPEC F-08, §5.11).
     private var todaySection: some View {
         Section {
             if model.isLoaded, model.todayItems.isEmpty {
                 Text(missedStyle.todayEmpty).foregroundStyle(.secondary)
             }
             ForEach(model.todayItems) { item in
-                VStack(alignment: .leading, spacing: 8) {
-                    MissedRow(item: item, dueText: model.dueText(item))
-                    actions(for: item)
+                changeableRow(item)
+            }
+            if !model.yesterdayItems.isEmpty {
+                Text("Yesterday")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.isHeader)
+                ForEach(model.yesterdayItems) { item in
+                    changeableRow(item)
                 }
-                .listRowBackground(
-                    model.highlighted.contains(item.id) ? Rectangle().fill(.tint.opacity(0.15)) : nil)
             }
         } header: {
             Text("Today")
         } footer: {
-            if !model.todayItems.isEmpty {
+            if !model.todayItems.isEmpty || !model.yesterdayItems.isEmpty {
                 Text("You can still change these")
             }
         }
+    }
+
+    private func changeableRow(_ item: MissedItem) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            MissedRow(item: item, dueText: model.dueText(item))
+            actions(for: item)
+        }
+        .listRowBackground(model.highlighted.contains(item.id) ? Rectangle().fill(.tint.opacity(0.15)) : nil)
     }
 
     /// Side by side, or one under another at accessibility text sizes (SPEC T-31).
@@ -116,7 +132,7 @@ struct MissedView: View {
                 Button("Mark done") { model.markDone(item) }
             }
             if model.canLogTime(item) {
-                Button("Log time") { router.logTime = LogTimeRequest(taskID: item.occurrence.task.id) }
+                Button("Log time") { router.logTime = LogTimeRequest(taskID: item.occurrence.task.id, day: item.day) }
             }
             if model.canMove(item) {
                 Button("Move to tomorrow") { model.moveToTomorrow(item) }

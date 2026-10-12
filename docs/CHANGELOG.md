@@ -14,6 +14,17 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Correction window for yesterday (T-41)
+- Added: §5.11 — Editable days: yesterday can be corrected (complete, undo, log time, delete time entries) until today's Afternoon start (D-108, D-121).
+- Changed: §1.2 — honest records: today until midnight, yesterday until the afternoon starts, earlier days final.
+- Changed: §1.3 — glossary entries for the correction window, and for the missed style (left out of T-40).
+- Changed: §2.1 — the correction window is in v1.
+- Changed: F-04 — a "Yesterday, before today's Afternoon starts" row; Past days becomes "Earlier days, and yesterday after the window".
+- Changed: F-05, F-06, F-08, F-10, F-12, F-13, §5.4 — Log time, deleting entries, the Missed tab's Yesterday group, Today's line and actions for yesterday, Mark not done and Habit detail's entries follow §5.11.
+- Changed: §6, §7 — the window's edge cases and limit.
+- Changed: T-05, T-06 acceptance — past-day items allow yesterday during the window.
+- Platform: ios.md §15 — `EditWindow`, `TaskManager.editWindow()`, `logTime(day:)`, `LogTimeRequest.day`.
+
 ## 2026-10-12 · Missed style (T-40)
 - Added: F-30 — Missed style: Gentle (default, "Not done", grey, no badge or popup) or Strict (the 1.0 look) (D-107, D-120).
 - Changed: §2.1 — missed tracking is shown Gentle or Strict.

@@ -9,13 +9,23 @@ public enum MissedQueries {
         return ordered(items, parts: snapshot.parts)
     }
 
+    /// Yesterday's occurrences that are Missed or Short while the correction window is open, in day order; empty
+    /// once it has closed (SPEC F-08, §5.11).
+    public static func missedCorrectable(in snapshot: Snapshot, now: Date, window: EditWindow) -> [MissedItem] {
+        guard let day = window.correctableDay else { return [] }
+        let items = snapshot.occurrences(on: day).compactMap { item(for: $0, in: snapshot, now: now) }
+        return ordered(items, parts: snapshot.parts)
+    }
+
     /// Occurrences before today that are Missed or Short, filtered and sorted. Ended habits are included;
-    /// deleted tasks never appear.
-    public static func missedEarlier(in snapshot: Snapshot, now: Date, filter: MissedFilter = .default) -> [MissedItem]
-    {
+    /// deleted tasks never appear. With a window that's open, yesterday is left out: it's still correctable and
+    /// shows with today's (SPEC F-08, §5.11).
+    public static func missedEarlier(
+        in snapshot: Snapshot, now: Date, filter: MissedFilter = .default, window: EditWindow? = nil
+    ) -> [MissedItem] {
         let calendar = snapshot.calendar
         let today = DayKey(now, calendar: calendar)
-        let yesterday = today.adding(days: -1, in: calendar)
+        let yesterday = (window?.correctableDay ?? today).adding(days: -1, in: calendar)
         let range = dateBounds(filter.dateRange, today: today, calendar: calendar)
         let last = min(range.last ?? yesterday, yesterday)
 

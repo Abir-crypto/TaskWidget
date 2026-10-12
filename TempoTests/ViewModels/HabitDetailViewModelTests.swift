@@ -116,7 +116,7 @@ struct HabitDetailViewModelTests {
             type: .duration, title: "Read", timing: .anytime, weekdays: .all, startDay: day(5), lengthDays: nil,
             targetMinutes: 30)
         let past = try tasks.logTime(taskID: read.id, minutes: 40)
-        clock.now = TestEnvironment.date(2026, 10, 6, 9)
+        clock.now = TestEnvironment.date(2026, 10, 6, 13)  // after the correction window (SPEC §5.11)
         try tasks.logTime(taskID: read.id, minutes: 15)
         let model = model(read)
         #expect(model.todaysEntries.count == 1)

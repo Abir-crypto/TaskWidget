@@ -7,9 +7,9 @@ struct LogTimeView: View {
     @State private var model: LogTimeViewModel
     @Environment(\.dismiss) private var dismiss
 
-    init(dependencies: AppDependencies, taskID: UUID) {
+    init(dependencies: AppDependencies, taskID: UUID, day: DayKey? = nil) {
         self.dependencies = dependencies
-        _model = State(initialValue: LogTimeViewModel(tasks: dependencies.tasks, taskID: taskID))
+        _model = State(initialValue: LogTimeViewModel(tasks: dependencies.tasks, taskID: taskID, day: day))
     }
 
     var body: some View {
@@ -18,9 +18,12 @@ struct LogTimeView: View {
                 Section {
                     if let target = model.targetMinutes {
                         LabeledContent(
-                            "Today", value: DurationFormatter.progress(minutes: model.minutesToday, target: target))
+                            model.isForYesterday ? "Yesterday" : "Today",
+                            value: DurationFormatter.progress(minutes: model.minutesToday, target: target))
                     } else {
-                        LabeledContent("Today", value: String(localized: "\(model.minutesToday) min"))
+                        LabeledContent(
+                            model.isForYesterday ? "Yesterday" : "Today",
+                            value: String(localized: "\(model.minutesToday) min"))
                     }
                 } header: {
                     Text(model.title)
@@ -32,11 +35,13 @@ struct LogTimeView: View {
                     .pickerStyle(.wheel)
                 } footer: {
                     if !model.canLog {
-                        Text("Time can only be logged today, between the habit's start and last day.")
+                        Text(
+                            "Time can be logged today, and yesterday until the afternoon starts, between the habit's start and last day."
+                        )
                     }
                 }
             }
-            .navigationTitle("Log time")
+            .navigationTitle(model.isForYesterday ? "Log time for yesterday" : "Log time")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

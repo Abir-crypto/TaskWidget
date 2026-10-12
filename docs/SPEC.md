@@ -41,7 +41,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 
 1. **Widget-first.** The most common actions work from widgets.
 2. **Organized by time of day.** No lists, tags, projects or priorities.
-3. **Honest records.** A task not done within its part of the day is missed. Today can be corrected until midnight. Past days are final.
+3. **Honest records.** A task not done within its part of the day is missed. Today can be corrected until midnight, and yesterday until the afternoon starts. Earlier days are final.
 4. **On the device, no account.** v1 has no sign-up and no sync.
 5. **Platform-neutral data and rules,** so an Android app and future sync can reuse them.
 
@@ -66,6 +66,8 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 | Status | Upcoming, Open, Done, Short or Missed (§5.4). Computed, never stored. |
 | Day key | A calendar day written as an integer `yyyymmdd`, e.g. `20261006`. |
 | Minute of day | Minutes after local midnight, 0–1439. |
+| Missed style | How missed tasks are shown: Gentle or Strict (F-30). It never changes statuses or stats. |
+| Correction window | From midnight until today's Afternoon start, during which yesterday can still be corrected (§5.11). |
 
 ---
 
@@ -79,6 +81,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 - Habit schedules on chosen weekdays, with an optional set length.
 - Time tracking with a timer and with manual logging; daily targets and weekly goals.
 - Missed tracking: a Missed tab and a missed-tasks popup, shown Gentle or Strict (F-30).
+- A correction window for yesterday, until today's Afternoon starts (§5.11).
 - Notifications: part-of-day summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap, and a running-timer alert.
 - Screens: Today, Tasks (with History), Missed, Stats, Habit detail, Task editor, Settings, Timer screen, Task picker.
 - Widgets: Timer (small), Day (medium), Focus (medium), Now (large), Lock Screen (rectangular and inline).
@@ -181,7 +184,8 @@ The part that starts at `noon_start` is called **Afternoon** everywhere the user
 | Day | Allowed |
 |---|---|
 | Today | Everything, until midnight: complete, undo, log time and move, including tasks already Missed or Short |
-| Past days | Nothing; they're read-only. The one exception: a timer started on that day still saves to it (F-06). |
+| Yesterday, before today's Afternoon starts | Complete and undo (one-time and progress), Log time, and deleting time entries. Nothing else (§5.11). |
+| Earlier days, and yesterday after the window | Nothing; they're read-only. The one exception: a timer started on that day still saves to it (F-06). |
 | Future days | One-time tasks can be completed early, moved, edited or deleted. Habits can't be completed, and time can't be logged. |
 
 **Move to tomorrow** (one-time tasks only)
@@ -195,8 +199,8 @@ The part that starts at `noon_start` is called **Afternoon** everywhere the user
 - Time is recorded as **time entries**. Each one has a habit, a day, a number of seconds and a source (timer or manual).
 - A habit's minutes for a day are the sum of that day's entries. There's no upper limit; going past the target is normal.
 - Time can be logged on any day between the habit's start and last day, whether or not that day is scheduled. Minutes on an unscheduled day count toward weekly totals and time stats, but they don't make that day scheduled.
-- **Log time** adds time by hand: choose 5–480 minutes in 5-minute steps. It works for today only.
-- Today's entries are listed in Habit detail, where each can be deleted. Entries on past days are read-only.
+- **Log time** adds time by hand: choose 5–480 minutes in 5-minute steps. Log time works for today, and for yesterday during the correction window (§5.11).
+- Today's entries, and yesterday's during the window, can be deleted in Habit detail. Other entries on past days are read-only.
 - Minutes are always shown as whole minutes, rounded down from the total seconds.
 
 ### F-06 · Timer
@@ -237,7 +241,7 @@ While a timer exists, whether running or paused, every ▶ button is hidden and 
 
 **Discard** stops the timer and saves nothing. It's available in the Now widget's timer mode, on the app's timer screen and in the task picker.
 
-**Which day the time counts for:** the entry is saved to the day the timer was started, even if Done is tapped after midnight. This is the only way to add anything to a past day.
+**Which day the time counts for:** the entry is saved to the day the timer was started, even if Done is tapped after midnight. Apart from the correction window (§5.11), this is the only way to add anything to a past day.
 
 **Running alert:** when a timer has run continuously for the alert time (2 hours by default) since it was last started or resumed, a notification appears (F-07). It has two actions:
 - **Stop** pauses the timer and opens the app's timer screen.
@@ -274,8 +278,8 @@ Pausing, Done or Discard cancels the alert.
 **Missed tab**
 
 The tab has two sections:
-- **Today**, labelled "You can still change these": today's Missed and Short occurrences. Each row offers **Mark done** (one-time and progress), **Log time** (duration) and **Move to tomorrow** (one-time). A task leaves the section as soon as it's no longer missed.
-- **Earlier:** every Missed and Short occurrence before today, read-only and grouped by date.
+- **Today**, labelled "You can still change these": today's Missed and Short occurrences and, during the correction window (§5.11), yesterday's under a "Yesterday" subheading. Each of today's rows offers **Mark done** (one-time and progress), **Log time** (duration) and **Move to tomorrow** (one-time). Yesterday's rows offer **Mark done** and **Log time**, never Move. A task leaves the section as soon as it's no longer missed, and when the window closes yesterday's rows move to Earlier.
+- **Earlier:** every Missed and Short occurrence before today, read-only and grouped by date. During the window, it leaves out yesterday.
 
 The Earlier section has **Sort** and **Filter**:
 - Sort: newest first (the default) or oldest first.
@@ -337,10 +341,10 @@ Other details:
 - A running timer can't be orphaned: ending or deleting a habit whose timer is running asks first, then discards the timer.
 
 **Other days**
-- Past days are read-only.
+- Past days are read-only, except yesterday during the correction window (§5.11): a line under the header reads "You can still change yesterday until 12:00", using Afternoon's start, and rows accept complete, undo and Log time. Swipe actions show only those.
 - Future days show one-time tasks and scheduled habits. One-time tasks there can be completed early or moved.
 
-**Log time sheet:** opened from a duration row, from the Missed tab or from Habit detail. It has a minutes picker (5–480, in 5-minute steps) and saves to today.
+**Log time sheet:** opened from a duration row, from the Missed tab or from Habit detail. It has a minutes picker (5–480, in 5-minute steps) and saves to today. Opened from one of yesterday's rows during the window, it saves to yesterday, and its title says "Yesterday".
 
 The missed popup (F-08) appears on this screen.
 
@@ -359,7 +363,7 @@ The missed popup (F-08) appears on this screen.
 ### F-12 · History
 
 - A segmented control switches between **One-time** and **Habits**.
-- **One-time:** completed one-time tasks, grouped by the day they were completed, newest first. Tasks completed today can be marked not done; older ones are read-only.
+- **One-time:** completed one-time tasks, grouped by the day they were completed, newest first. Mark not done is offered when the task's date is editable (§5.11): today, a future date, or yesterday during the window. Others are read-only.
 - **Habits:** ended habits, whether their set length finished or they were ended by hand. Each shows its result and a **Start again** button (F-03). Tapping a habit opens Habit detail.
   - Progress habits: "Done 27 of 30 days".
   - Duration habits: "On target 18 of 20 days · 14h 20m total".
@@ -372,7 +376,7 @@ The missed popup (F-08) appears on this screen.
 - **Month calendar:** each scheduled day is colored by its result. Arrows move between months.
 - **Stats for this week, this month and this year:** the completion rate. For duration habits it adds the total time and, for this week, the time against the weekly goal.
 - **Streak:** current and best (§5.7).
-- **Today's time entries** (duration habits): the source and minutes of each, and each can be deleted.
+- **Today's time entries, and yesterday's during the window** (duration habits): the source and minutes of each, and each can be deleted.
 - **Recent missed days** (Strict; Gentle in F-30): up to 10, newest first. "See all" opens the Missed tab filtered to this habit.
 - **Buttons:**
   - Edit.
@@ -797,7 +801,7 @@ status(o, now):
   return MISSED
 ```
 
-Whether an occurrence can be changed follows the table in F-04.
+Whether an occurrence can be changed follows the table in F-04 and §5.11.
 
 ### 5.5 Duration math
 
@@ -861,6 +865,22 @@ For a range R (a week, month or year), counting up to and including today:
 - **Coverage:** today and tomorrow, so the widgets stay correct across midnight even if a refresh arrives late.
 - **Between moments:** counting text such as timers and "in 45 min" updates itself.
 
+### 5.11 Editable days
+
+```
+editable(d, now):
+  today = dayKey(now)
+  if d > today: return FUTURE           // F-04's Future days row
+  if d == today: return TODAY           // F-04's Today row
+  if d == today - 1 and minuteOfDay(now) < noon_start:
+      return CORRECTION                 // complete, undo, log time, delete time entries
+  return NONE
+```
+
+- `today - 1` uses calendar arithmetic (§5.1).
+- The window ends at today's `noon_start`, read when the check runs. Changing the start time moves the end of the window at once.
+- CORRECTION doesn't allow moving, editing, deleting, or ending a habit. The timer exception in F-06 is unchanged.
+
 ---
 
 ## 6. Edge cases
@@ -868,6 +888,11 @@ For a range R (a week, month or year), counting up to and including today:
 | Case | Behavior |
 |---|---|
 | An Afternoon task created at 16:50 | Open, then Missed at 17:00 |
+| At 00:00 Tuesday | Monday enters the correction window. Sunday becomes final (§5.11). |
+| At Afternoon's start | Yesterday becomes final. Open screens update at that moment, as they do at part boundaries. |
+| A habit whose last day was yesterday | Yesterday is still correctable during the window. |
+| Correcting yesterday changes a streak or a weekly total | Stats are computed, so they update at once (§5.7). |
+| A yesterday row is open in Missed when the window closes | It moves to Earlier and becomes read-only. |
 | A part's start time changed while today's tasks are open | Statuses are recalculated immediately, so a task can become Missed or Open again for today |
 | Time zone change | Tasks keep their wall-clock times in the new zone. Notifications and widgets are rebuilt. |
 | Daylight-saving gap or overlap | Handled by §5.1 |
@@ -910,6 +935,7 @@ For a range R (a week, month or year), counting up to and including today:
 | Theme color | Blue (8 presets, or a custom color) |
 | Appearance | System (or Dark, or Light) |
 | Missed style | Gentle (or Strict) |
+| Correction window | Until today's Afternoon start |
 
 ---
 
@@ -977,7 +1003,7 @@ Acceptance
 - [ ] An Afternoon task: 11:59 Upcoming, 12:00 Open, 16:59 Open, 17:00 Missed. Completed at 18:00 the same day, it's Done.
 - [ ] A fixed-time task at 12:30 is Missed at 17:00. An Anytime task is Missed at midnight.
 - [ ] A duration habit with target 30 at its part's end: 20 min → Short, 0 min → Missed, 30 min → Done (and Done as soon as it reaches 30).
-- [ ] Editing: today allows everything; past days allow nothing; a future one-time task can be completed early; a future habit occurrence can't be completed.
+- [ ] Editing: today allows everything; yesterday during the window allows only what §5.11 allows; earlier days allow nothing; a future one-time task can be completed early; a future habit occurrence can't be completed.
 - [ ] Move to tomorrow: a task that isn't missed moves its date; a missed one stays missed and gets a copy for tomorrow.
 
 #### T-06 · Duration math
@@ -987,7 +1013,7 @@ Acceptance
 - [ ] Minutes are the floor of the summed seconds (3,599 s → 59 min).
 - [ ] The §5.5 example gives a goal of 90, a total of 115, and the goal met.
 - [ ] A target that changes from 30 to 45 on Wed makes the week's goal 30 + 45 + 45.
-- [ ] Entries can't be added to future days, or to past days (the timer exception is tested in T-19).
+- [ ] Entries can't be added to future days, or to past days other than yesterday during the window (the timer exception is tested in T-19).
 
 #### T-07 · Next-task rule and missed queries
 Implements: §5.6, §5.8 · Depends on: T-05

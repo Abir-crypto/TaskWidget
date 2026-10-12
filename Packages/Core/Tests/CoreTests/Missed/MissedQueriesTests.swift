@@ -153,4 +153,22 @@ struct MissedQueriesTests {
         #expect(week.first == TestCalendar.oct(5))
         #expect(week.last == TestCalendar.oct(11))
     }
+
+    // MARK: Correction window (SPEC F-08, §5.11, T-41)
+
+    /// During the window, yesterday's misses move from Earlier to the correctable list; after it, they're back.
+    @Test func yesterdayMovesOutOfEarlierDuringTheWindow() {
+        let (fixtures, tasks) = earlierFixtures()
+        let snapshot = fixtures.snapshot()
+        let morning = TestCalendar.today(9)
+        let open = EditWindow(now: morning, parts: snapshot.parts, calendar: snapshot.calendar)
+        let correctable = MissedQueries.missedCorrectable(in: snapshot, now: morning, window: open)
+        #expect(correctable.map(\.occurrence.task.id) == [tasks["progress"]?.id, tasks["anytime"]?.id])
+        let earlier = MissedQueries.missedEarlier(in: snapshot, now: morning, window: open)
+        #expect(earlier.map(\.day.rawValue) == [20_261_003, 20_260_929, 20_260_928])
+
+        let closed = EditWindow(now: now, parts: snapshot.parts, calendar: snapshot.calendar)
+        #expect(MissedQueries.missedCorrectable(in: snapshot, now: now, window: closed).isEmpty)
+        #expect(MissedQueries.missedEarlier(in: snapshot, now: now, window: closed).count == 5)
+    }
 }

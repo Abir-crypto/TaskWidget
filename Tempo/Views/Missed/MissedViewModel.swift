@@ -11,6 +11,8 @@ final class MissedViewModel {
         didSet { if filter != oldValue { applyFilter() } }
     }
     private(set) var todayItems: [MissedItem] = []
+    /// Yesterday's Missed and Short tasks while it can still be corrected (SPEC F-08, §5.11); empty after the window.
+    private(set) var yesterdayItems: [MissedItem] = []
     private(set) var earlierGroups: [MissedGroup] = []
     /// How many earlier items match the filters ("14 missed").
     private(set) var earlierCount = 0
@@ -26,6 +28,8 @@ final class MissedViewModel {
     private(set) var isLoaded = false
 
     private var snapshot: Snapshot?
+    /// The correction window as of the last load; Earlier leaves out yesterday while it's open.
+    private var window: EditWindow?
     private let tasks: TaskManager
     private let clock: any Clock
 
@@ -41,8 +45,13 @@ final class MissedViewModel {
         do {
             let snapshot = try tasks.snapshot()
             self.snapshot = snapshot
+            let window = EditWindow(now: clock.now, parts: snapshot.parts, calendar: calendar)
+            self.window = window
             todayItems = MissedQueries.missedToday(in: snapshot, now: clock.now)
-            hasEarlier = !MissedQueries.missedEarlier(in: snapshot, now: clock.now, filter: .default).isEmpty
+            yesterdayItems = MissedQueries.missedCorrectable(in: snapshot, now: clock.now, window: window)
+            hasEarlier = !MissedQueries.missedEarlier(
+                in: snapshot, now: clock.now, filter: .default, window: window
+            ).isEmpty
             filterableTasks = snapshot.engine.tasks.sorted {
                 $0.title.localizedStandardCompare($1.title) == .orderedAscending
             }
@@ -55,7 +64,7 @@ final class MissedViewModel {
 
     private func applyFilter() {
         guard let snapshot else { return }
-        let items = MissedQueries.missedEarlier(in: snapshot, now: clock.now, filter: filter)
+        let items = MissedQueries.missedEarlier(in: snapshot, now: clock.now, filter: filter, window: window)
         earlierCount = items.count
         var groups: [MissedGroup] = []
         for item in items {
@@ -87,12 +96,19 @@ final class MissedViewModel {
         "\(DayTitleFormatter.shortDate(item.day, calendar: calendar)) · \(ScheduleFormatter.timing(item.occurrence.timing))"
     }
 
+    private var currentWindow: EditWindow {
+        EditWindow(now: clock.now, parts: snapshot?.parts ?? .defaults, calendar: calendar)
+    }
+
+    /// Whether the correction window's state differs from the last load, so the screen reloads when it closes.
+    var needsReload: Bool { currentWindow.correctableDay != window?.correctableDay }
+
     func canMarkDone(_ item: MissedItem) -> Bool {
-        Editability.canComplete(item.occurrence, today: today)
+        Editability.canComplete(item.occurrence, in: currentWindow)
     }
 
     func canLogTime(_ item: MissedItem) -> Bool {
-        Editability.canLogTime(task: item.occurrence.task, day: item.day, today: today, calendar: calendar)
+        Editability.canLogTime(task: item.occurrence.task, day: item.day, in: currentWindow, calendar: calendar)
     }
 
     func canMove(_ item: MissedItem) -> Bool {

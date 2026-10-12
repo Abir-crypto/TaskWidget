@@ -120,14 +120,32 @@ final class TodayViewModel {
 
     private var parts: PartSettings { snapshot?.parts ?? .defaults }
 
-    // MARK: What F-04 allows
+    // MARK: What F-04 and §5.11 allow
+
+    /// Which days can still change at a moment: today, and yesterday until Afternoon starts (SPEC §5.11).
+    func editWindow(at now: Date) -> EditWindow {
+        EditWindow(now: now, parts: parts, calendar: calendar)
+    }
+
+    /// When yesterday is shown while it can still be corrected, the minute the window closes, for "You can still
+    /// change yesterday until 12:00" (SPEC F-10).
+    func correctionClosingMinute(at now: Date) -> Int? {
+        let window = editWindow(at: now)
+        return selectedDay == window.correctableDay ? window.closingMinute : nil
+    }
 
     func canComplete(_ item: DayItem) -> Bool {
-        Editability.canComplete(item.occurrence, today: today)
+        Editability.canComplete(item.occurrence, in: editWindow(at: clock.now))
     }
 
     func canLogTime(_ item: DayItem) -> Bool {
-        Editability.canLogTime(task: item.task, day: item.occurrence.day, today: today, calendar: calendar)
+        Editability.canLogTime(
+            task: item.task, day: item.occurrence.day, in: editWindow(at: clock.now), calendar: calendar)
+    }
+
+    /// ▶ times today; yesterday takes only hand-logged time (SPEC F-06, §5.11).
+    func canStartTimer(_ item: DayItem) -> Bool {
+        item.occurrence.day == today && canLogTime(item)
     }
 
     func canMove(_ item: DayItem) -> Bool {

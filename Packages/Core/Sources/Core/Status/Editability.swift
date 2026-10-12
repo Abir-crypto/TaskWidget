@@ -1,31 +1,37 @@
 import Foundation
 
-/// What can change, and when (SPEC F-04).
+/// What can change, and when (SPEC F-04, §5.11).
 ///
-/// Today allows everything until midnight. Past days are read-only. On future days, one-time tasks can be
+/// Today allows everything until midnight. Yesterday can still be corrected until today's Afternoon starts:
+/// completed, undone, and given or relieved of time. Earlier days are read-only. On future days, one-time tasks can be
 /// completed early, moved, edited or deleted, but habits can't be completed and time can't be logged.
 public enum Editability {
-    /// Whether a one-time task or progress habit can be marked done (or undone) on its day.
-    public static func canComplete(_ occurrence: Occurrence, today: DayKey) -> Bool {
+    /// Whether a one-time task or progress habit can be marked done (or undone) on its day: one-time tasks today,
+    /// on future days and in the correction window; progress habits today and in the window.
+    public static func canComplete(_ occurrence: Occurrence, in window: EditWindow) -> Bool {
+        let access = window.access(to: occurrence.day)
         switch occurrence.type {
-        case .oneTime: occurrence.day >= today
-        case .progress: occurrence.day == today
-        case .duration: false
+        case .oneTime: return access != .none
+        case .progress: return access.allowsCorrections
+        case .duration: return false
         }
     }
 
-    /// Whether time can be logged to a duration habit on `day`: only today, and only between its start and
-    /// last day (SPEC F-05). A timer started on an earlier day is the one exception, handled by the timer.
-    public static func canLogTime(task: TaskValue, day: DayKey, today: DayKey, calendar: Calendar) -> Bool {
-        guard task.type == .duration, task.deletedAt == nil, day == today else { return false }
+    /// Whether time can be logged to a duration habit on `day`: today, or yesterday in the correction window, and
+    /// only between its start and last day (SPEC F-05). A timer started on an earlier day is the other exception,
+    /// handled by the timer.
+    public static func canLogTime(task: TaskValue, day: DayKey, in window: EditWindow, calendar: Calendar) -> Bool {
+        guard task.type == .duration, task.deletedAt == nil, window.access(to: day).allowsCorrections else {
+            return false
+        }
         guard let start = task.startDay, start <= day else { return false }
         if let last = task.lastDay(in: calendar), day > last { return false }
         return true
     }
 
-    /// Whether a time entry can be deleted: only entries from today are editable (SPEC F-05).
-    public static func canDeleteTimeEntry(_ entry: TimeEntryValue, today: DayKey) -> Bool {
-        entry.day == today
+    /// Whether a time entry can be deleted: today's, and yesterday's in the correction window (SPEC F-05).
+    public static func canDeleteTimeEntry(_ entry: TimeEntryValue, in window: EditWindow) -> Bool {
+        window.access(to: entry.day).allowsCorrections
     }
 
     /// Whether a one-time task can be moved: today or a future day, and not already done (D-060).

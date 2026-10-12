@@ -202,7 +202,7 @@ Habits occur on chosen weekdays between their start and last day, and keep a his
 - Start again starts today even when the habit's part of the day is already over (D-070). That's an open question for the owner.
 
 ## F-04 · Daily cycle and status
-Status: Built (T-05, T-12, T-16, T-19, T-38) · Last updated: 2026-10-12 · T-38
+Status: Built (T-05, T-12, T-16, T-19, T-38, T-41) · Last updated: 2026-10-12 · T-41
 
 ### What it does
 Every occurrence's status is computed from the clock (SPEC §5.4), never stored. `TaskManager` checks what each day allows before every write. There's no UI yet.
@@ -217,10 +217,11 @@ Every occurrence's status is computed from the clock (SPEC §5.4), never stored.
 - **Windows:** a part's `[start, end)`; a fixed time uses the window of the part that contains it (so a 12:30 task is Open 12:00–17:00 and Missed at 17:00, and a 05:00 task waits for Morning at 06:00); Anytime is the whole day, so it's Missed at midnight.
 - **Minutes** are whole minutes rounded down from the summed seconds, so 59 seconds alone don't make a task Short.
 - Statuses use the current part times, so changing a start time moves today's statuses at once.
-- **What each day allows** (`Editability`):
-  - Complete or undo: one-time tasks today or later; progress habits only today, and only on scheduled days. Duration habits are never checked off.
-  - Log time: duration habits only today, and only between their start and last day (scheduled or not).
-  - Delete a time entry: only today's.
+- **Which days can change** (`EditWindow`, SPEC §5.11, T-41): from the clock and the part times, each day is `future`, `today`, `correction` (yesterday, until today's Afternoon start, read when checked) or `none`. Changing Afternoon's start moves the end of the window at once.
+- **What each day allows** (`Editability`, given an `EditWindow`):
+  - Complete or undo: one-time tasks today, later or yesterday in the window; progress habits today or yesterday in the window, only on scheduled days. Duration habits are never checked off.
+  - Log time: duration habits today or yesterday in the window, only between their start and last day (scheduled or not). The timer only ever starts for today (D-121).
+  - Delete a time entry: today's, and yesterday's in the window.
   - Move: one-time tasks today or later that aren't done (D-060).
   - Edit or delete a one-time task: only while its date is today or later.
   - Edit a habit's schedule or length: only until it ends. Titles can always change.
@@ -232,19 +233,20 @@ Every occurrence's status is computed from the clock (SPEC §5.4), never stored.
 Reads `completions` and `time_entries`; writes `completions` and `tasks.date`. Uses the part times from `settings` (defaults if the row is missing).
 
 ### Implementation (iOS)
-- Rules: `Packages/Core/Sources/Core/Status/` — `StatusRules`, `Editability`, `MovePlan`; `Core/Models/Status`, `ActivityLog` (completions and seconds by task and day), `Snapshot` (data + settings + rules in one value).
-- Manager: `Shared/Managers/TaskManager.swift` — `snapshot()`, `complete`, `undoCompletion`, `toggleCompletion`, `moveToNextDay`, and Editability checks in every edit.
+- Rules: `Packages/Core/Sources/Core/Status/` — `StatusRules`, `Editability`, `EditWindow` (with `DayAccess`), `MovePlan`; `Core/Models/Status`, `ActivityLog` (completions and seconds by task and day), `Snapshot` (data + settings + rules in one value).
+- Manager: `Shared/Managers/TaskManager.swift` — `snapshot()`, `editWindow()`, `complete`, `undoCompletion`, `toggleCompletion`, `moveToNextDay`, and Editability checks in every edit.
 
 ### Tests
 - `Packages/Core/Tests/CoreTests/Status/StatusRulesTests.swift`: the Noon task through the day, the 12:30 task, Anytime and Night at midnight, early fixed times, Short/Missed/Done for duration habits, rounding, past and future days, changed part times, undone completions.
-- `Packages/Core/Tests/CoreTests/Status/EditabilityTests.swift`: today, past and future days, logging on unscheduled days, move plans, frozen ended habits.
+- `Packages/Core/Tests/CoreTests/Status/EditabilityTests.swift`: today, past and future days, logging on unscheduled days, move plans, frozen ended habits, and the correction window (the §5.11 examples, a later Afternoon start, a habit that ended yesterday).
+- `TempoTests/Managers/CorrectionWindowTests.swift` (T-41): completing, undoing, logging and deleting yesterday's time during the window and not after; nothing else changes yesterday; streaks and totals update; Today, Missed, Log time, History and Habit detail during and after the window. `TempoUITests/TodayUITests.testYesterdayCanBeCorrectedInTheMorning`.
 - `TempoTests/Managers/TaskCompletionTests.swift`: the same rules through `TaskManager` and the store, including both kinds of Move to tomorrow.
 
 ### Known gaps
 - None for F-04.
 
 ## F-05 · Time tracking
-Status: Built (T-06, T-12, T-15, T-19) · Last updated: 2026-10-10 · T-32
+Status: Built (T-06, T-12, T-15, T-19, T-41) · Last updated: 2026-10-12 · T-41
 
 ### What it does
 Duration habits collect time entries. The math for minutes, weekly goals and totals is in `Core`, and `TaskManager` can log time by hand and delete today's entries. There's no UI yet.
@@ -255,7 +257,7 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 - **Goal** over a range (`DurationMath.goal`): the sum of each scheduled day's own target, so a target changed mid-week adds up day by day (30 + 45 + 45).
 - **Total** over a range (`total`): the minutes of every live day in the range, scheduled or not. Minutes on an unscheduled day count toward totals but don't make the day scheduled.
 - **Weekly progress** (`weeklyProgress`): goal and total for the week containing a day, starting on the region's first weekday, counting only days between the start and last day. The goal is met when the total reaches it. The SPEC §5.5 example gives a goal of 90 and a total of 115.
-- **Log time** (`TaskManager.logTime`): a manual entry on today, 5–480 minutes in 5-minute steps (`invalidLogTime`). Only duration habits (`wrongType`), and only when today is between the habit's start and last day (`notAllowed`), whether or not today is scheduled. Entries can't be added to future or past days.
+- **Log time** (`TaskManager.logTime`): a manual entry on today, or on yesterday during the correction window (`day:`, T-41), 5–480 minutes in 5-minute steps (`invalidLogTime`). Only duration habits (`wrongType`), and only when the day is between the habit's start and last day (`notAllowed`), whether or not it's scheduled. Entries can't be added to future days, or to past days other than yesterday before Afternoon starts (§5.11).
 - **Deleting an entry** (`deleteTimeEntry`): only entries from today; past entries are read-only (`notAllowed`).
 
 ### Data
@@ -271,7 +273,7 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 - `TempoTests/Managers/TimeLoggingTests.swift`: Log time on today and unscheduled days, refused on future and ended habits, steps, type, deleting today's but not past entries.
 - `TempoTests/ViewModels/LogTimeViewModelTests.swift`: the starting value, adding to today, the choices, refusing outside the habit's days.
 
-- **Log time sheet** (T-12): opened from a duration row's "Log time" swipe (later also from Missed and Habit detail). It shows the habit's title, "Today" with "12 of 30 min", and a wheel of 5–480 minutes in 5-minute steps, starting at the minutes left to reach today's target rounded up to 5 (30 once the target is reached) (D-073). "Add" saves to today and closes; "Cancel" closes. If time can't be logged today, Add is disabled with "Time can only be logged today, between the habit's start and last day."
+- **Log time sheet** (T-12): opened from a duration row's "Log time" swipe (later also from Missed and Habit detail). It shows the habit's title, "Today" with "12 of 30 min", and a wheel of 5–480 minutes in 5-minute steps, starting at the minutes left to reach today's target rounded up to 5 (30 once the target is reached) (D-073). "Add" saves to today and closes; "Cancel" closes. If time can't be logged, Add is disabled with "Time can be logged today, and yesterday until the afternoon starts, between the habit's start and last day." Opened from one of yesterday's rows during the window (T-41), it's titled "Log time for yesterday", shows "Yesterday" with that day's progress, and saves to yesterday (D-121).
 
 ### Known gaps
 - None for F-05.
@@ -381,13 +383,13 @@ Reads everything plus `deviceState.timer`; reads the notification permission fro
 - Only the fixed-time reminder was seen arriving for real. The other kinds go through the same scheduler and tap handling; their times and text are covered by the planner and text tests.
 
 ## F-08 · Missed tasks
-Status: Built (T-03, T-07, T-16, T-17, T-39, T-40) · Last updated: 2026-10-12 · T-40
+Status: Built (T-03, T-07, T-16, T-17, T-39, T-40, T-41) · Last updated: 2026-10-12 · T-41
 
 ### What it does
 The Missed tab lists today's Missed and Short tasks, which can still be fixed, and every earlier one, read-only, with sort and filters. A popup points out new missed tasks when the app is opened normally.
 
 ### Behavior
-- **Today** section: today's Missed and Short occurrences in day order, with the footer "You can still change these". Each row has small buttons where F-04 allows: "Mark done" (one-time and progress), "Log time" (duration; opens the Log time sheet) and "Move to tomorrow" (one-time). A task leaves the section as soon as it's no longer missed. Once a missed task has been copied to tomorrow, "Move to tomorrow" is no longer offered for it, here or on Today (D-081). Empty: "You haven't missed a task today".
+- **Today** section: today's Missed and Short occurrences in day order, with the footer "You can still change these". Each row has small buttons where F-04 allows: "Mark done" (one-time and progress), "Log time" (duration; opens the Log time sheet) and "Move to tomorrow" (one-time). A task leaves the section as soon as it's no longer missed. During the correction window (T-41), yesterday's Missed and Short tasks follow under a "Yesterday" subheading with "Mark done" and "Log time" (saving to yesterday), never Move; Earlier leaves yesterday out, and when the window closes the screen reloads (each minute it checks) and they move to Earlier. Once a missed task has been copied to tomorrow, "Move to tomorrow" is no longer offered for it, here or on Today (D-081). Empty: "You haven't missed a task today".
 - **Earlier** section: every Missed or Short occurrence before today, read-only, grouped under a date line ("Mon, 5 Oct"). The header shows the count after filters ("10 missed"). Ended habits stay; deleted tasks disappear. Empty: "Nothing missed before today"; with filters that match nothing: "No missed tasks match these filters" with "Clear filters".
 - **Rows:** the type icon, the title, when it was due ("Tue 29 Sep · Afternoon", "Tue 29 Sep · 12:30", "… · Anytime"), and on the right a red "Missed" with an icon, or the minutes for a Short duration habit ("20 of 30 min", orange).
 - **Sort & filter** (the toolbar button, filled while a filter is on; accessibility "Sort and filter" with "Filters on"/"No filters"): a sheet with Sort (Newest first, Oldest first), Date (All, This week, This month, Custom with From and To up to yesterday), Type toggles, Part of the day toggles (Morning, Noon, Evening, Night, Anytime; fixed-time tasks count under their part), and Task (Any task or one task). "Clear filters" appears in the sheet and under Earlier while a filter is on; it keeps the sort order. Changes apply at once. Filters live only while the app runs and reset on restart.
@@ -470,7 +472,7 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 - None for F-09.
 
 ## F-10 · Today screen
-Status: Built (T-12, T-20, T-31, T-38, T-39, T-40) · Last updated: 2026-10-12 · T-40
+Status: Built (T-12, T-20, T-31, T-38, T-39, T-40, T-41) · Last updated: 2026-10-12 · T-41
 
 ### What it does
 The Today tab shows one day at a time: a day strip, then Morning, Afternoon, Evening, Night and Anytime, with the actions F-04 allows. It updates every minute while open.
@@ -488,11 +490,12 @@ The Today tab shows one day at a time: a day strip, then Morning, Afternoon, Eve
   - A task with notes has a small notes icon (`note.text`, spoken "Has notes") after its title, on every row type (T-38).
   - Duration habits: a progress ring, the title, "10 of 30 min", the fixed time if any, "Done", "Short" or "Missed" with an icon once final, and ▶ ("Start timer") while no timer exists and time can be logged today (F-06). Time can still be added after Done.
   - Statuses always come with text and an icon.
+- **Correction window** (T-41, §5.11): when yesterday is selected before today's Afternoon start, a footnote under the day strip reads "You can still change yesterday until 12:00 PM" (Afternoon's start), and its rows' checkboxes, Done/Undo and Log time work. ▶ never shows for yesterday: timers count for today (D-121). At Afternoon's start the screen's minute refresh makes yesterday read-only again.
 - **Tapping a row:** a one-time task opens the editor (read-only for past days); a habit opens Habit detail.
 - **Swipe actions**, only where F-04 allows (D-077):
   - From the left: "Done"/"Undo" (one-time and progress, today; one-time on future days), "Log time" (duration habits, today).
   - From the right: "Delete", "Edit" (today and later), "Move to tomorrow" on today or "Move to next day" on a future day (one-time tasks that aren't done; not offered again once a missed task has been copied, D-081).
-  - Past days have no swipe actions.
+  - Past days have no swipe actions, except yesterday during the correction window: Done/Undo and Log time (T-41).
 - **Delete:** a one-time task asks "Delete this task?" ("This can't be undone."). A habit asks "End or delete this habit?" with "End habit" and "Delete with history" ("End habit keeps its history and stats. Delete with history removes them for good.", plus "Its running timer will be discarded." when it's being timed).
 - **Floating +:** opens the editor preset to the selected day (today when a past day is selected).
 - **Links:** `tempo://today?day=…&part=…&task=…` selects the day, unfolds the part (or the task's part) and scrolls to the part or task.
@@ -559,14 +562,14 @@ Reads everything through a `Snapshot`.
 - None for F-11.
 
 ## F-12 · History
-Status: Built (T-14) · Last updated: 2026-10-07 · T-14
+Status: Built (T-14, T-41) · Last updated: 2026-10-12 · T-41
 
 ### What it does
 History, pushed from the clock on Tasks, lists completed one-time tasks and ended habits, with a search field.
 
 ### Behavior
 - **Segment:** "One-time" (default) or "Habits".
-- **One-time:** every one-time task with a completion, grouped by the day it was actually completed (the completion's time), newest day first and newest first within a day, under "Today", "Yesterday" or a short date (D-079). A task completed early for a later date shows under the day it was done. Rows show a filled checkmark and the title struck through. The checkmark ("Mark not done") works only for tasks completed today whose date is today or later; older ones are read-only.
+- **One-time:** every one-time task with a completion, grouped by the day it was actually completed (the completion's time), newest day first and newest first within a day, under "Today", "Yesterday" or a short date (D-079). A task completed early for a later date shows under the day it was done. Rows show a filled checkmark and the title struck through. The checkmark ("Mark not done") works when the task's date is editable (§5.11): today, later, or yesterday during the correction window (T-41); others are read-only.
 - **Habits:** every habit whose last day is before today (its set length finished, or it was ended by hand), most recently ended first. Each row shows its type icon, title, result, "Ended Sat 26 Sep", and a "Start again" button:
   - progress habits: "Done 27 of 30 days" (done days out of counted scheduled days over the habit's life);
   - duration habits: "On target 18 of 20 days · 14h 20m total".
@@ -590,7 +593,7 @@ Reads completions, tasks and time entries; writes completions (undo) and new hab
 - None for F-12.
 
 ## F-13 · Habit detail
-Status: Built (T-15, T-20, T-31, T-38, T-40) · Last updated: 2026-10-12 · T-40
+Status: Built (T-15, T-20, T-31, T-38, T-40, T-41) · Last updated: 2026-10-12 · T-41
 
 ### What it does
 Pushed from a habit row in Today, Tasks or History, it shows one habit's schedule, this week, a month calendar, stats, streak, today's time entries and recent missed days.
@@ -603,7 +606,7 @@ Pushed from a habit row in Today, Tasks or History, it shows one habit's schedul
 - **Month calendar:** the month's grid starting on the region's first weekday. Done days are green, missed red, short pale orange, upcoming outlined; today has an accent ring. Arrows move between months, from the habit's start month up to the current month. A legend (Done, Short, Missed, Upcoming) with icons sits under it. Each day reads its date and result to VoiceOver.
 - **Stats:** "This week", "This month" and "This year", each with the completion rate ("—" with no counted days, SPEC §5.7). Duration habits add the time: this week "1h 5m of 3h 30m" (against the weekly goal), the month and year "2h 20m total".
 - **Streak:** "Current" and "Best", in days (§5.7).
-- **Today's time** (duration habits): each of today's entries with its source ("Timer" or "Logged by hand") and minutes; swipe to delete. "No time logged today" when empty. Past entries never appear here, so they can't be deleted.
+- **Today's time** (duration habits): each of today's entries with its source ("Timer" or "Logged by hand") and minutes; swipe to delete. "No time logged today" when empty. During the correction window, yesterday's entries follow in a "Yesterday's time" section, also deletable, when there are any (T-41, D-121). Other past entries never appear here, so they can't be deleted.
 - **Recent missed days:** up to 10 Missed or Short days, newest first, including today's (D-080). Short days show "20 of 30 min"; missed days show a red "Missed" with an icon. "See all" switches to the Missed tab with Earlier filtered to this habit (the filter is applied by the Missed tab, T-16).
 - **No data yet** (F-24): until the habit has a counted day or any time logged, the week, calendar, stats, streak and missed sections are replaced by "No data yet. Check back after its first day."
 - If the habit was deleted, the screen says "This habit no longer exists".

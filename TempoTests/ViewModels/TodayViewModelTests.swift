@@ -100,7 +100,7 @@ struct TodayViewModelTests {
         let habit = try tasks.createHabit(
             type: .duration, title: "Read", timing: .anytime, weekdays: .all, startDay: day(5), lengthDays: nil,
             targetMinutes: 30)
-        clock.now = TestEnvironment.date(2026, 10, 6, 9)
+        clock.now = TestEnvironment.date(2026, 10, 6, 13)  // after the correction window (SPEC §5.11)
         model.select(day(5))
         model.load()
         let oneTime = try #require(item(task))

@@ -7,7 +7,8 @@ struct CompletedTask: Identifiable, Hashable {
     /// The day the task was completed, from the completion's time (D-079).
     let completedOn: DayKey
     let completedAt: Date
-    /// Only tasks completed today can be marked not done.
+    /// Whether it can be marked not done: its date is today, later, or yesterday during the correction window
+    /// (SPEC F-12, §5.11).
     let canUndo: Bool
 
     var id: UUID { task.id }

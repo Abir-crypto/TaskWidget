@@ -15,6 +15,8 @@ final class HabitDetailViewModel {
     private(set) var stats: [RangeStat] = []
     private(set) var streak: Streak = .zero
     private(set) var todaysEntries: [TimeEntryValue] = []
+    /// Yesterday's entries during the correction window; empty after it.
+    private(set) var yesterdaysEntries: [TimeEntryValue] = []
     private(set) var recentMissed: [MissedItem] = []
     private(set) var hasData = false
     private(set) var isLoaded = false
@@ -56,6 +58,11 @@ final class HabitDetailViewModel {
             self.stats = StatsRangeKind.allCases.map { rangeStat($0, task: task, stats: stats, snapshot: snapshot) }
             streak = stats.streak(of: task)
             todaysEntries = snapshot.activity.timeEntries.filter { $0.taskID == taskID && $0.day == today }
+            // Yesterday's entries, while they can still be deleted (SPEC F-13, §5.11).
+            let window = EditWindow(now: clock.now, parts: snapshot.parts, calendar: calendar)
+            yesterdaysEntries = snapshot.activity.timeEntries.filter {
+                $0.taskID == taskID && $0.day == window.correctableDay
+            }
             recentMissed = missedDays(snapshot: snapshot)
             hasData =
                 stats.rate(of: task, from: task.startDay ?? today, through: today).counted > 0
@@ -122,7 +129,8 @@ final class HabitDetailViewModel {
 
     var canLogTime: Bool {
         guard let task else { return false }
-        return Editability.canLogTime(task: task, day: today, today: today, calendar: calendar)
+        // Habit detail logs to today; yesterday's rows on Today and in Missed log to yesterday (SPEC §5.11).
+        return Editability.canLogTime(task: task, day: today, in: EditWindow(today: today), calendar: calendar)
     }
 
     // MARK: Month calendar
@@ -168,7 +176,8 @@ final class HabitDetailViewModel {
     }
 
     func canDelete(_ entry: TimeEntryValue) -> Bool {
-        Editability.canDeleteTimeEntry(entry, today: today)
+        let parts = (try? tasks.parts()) ?? .defaults
+        return Editability.canDeleteTimeEntry(entry, in: EditWindow(now: clock.now, parts: parts, calendar: calendar))
     }
 
     func endHabit() {

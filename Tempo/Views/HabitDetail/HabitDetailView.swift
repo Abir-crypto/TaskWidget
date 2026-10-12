@@ -231,24 +231,37 @@ struct HabitDetailView: View {
 
     // MARK: Entries and missed days
 
+    @ViewBuilder
     private var entriesSection: some View {
         Section("Today's time") {
             if model.todaysEntries.isEmpty {
                 Text("No time logged today").foregroundStyle(.secondary)
             }
             ForEach(model.todaysEntries) { entry in
-                LabeledContent {
-                    Text("\(entry.seconds / 60) min").monospacedDigit()
-                } label: {
-                    Label(
-                        entry.source == .timer ? "Timer" : "Logged by hand",
-                        systemImage: entry.source == .timer ? "timer" : "hand.tap")
+                entryRow(entry)
+            }
+        }
+        // Yesterday's entries can still be deleted until Afternoon starts (SPEC F-13, §5.11).
+        if !model.yesterdaysEntries.isEmpty {
+            Section("Yesterday's time") {
+                ForEach(model.yesterdaysEntries) { entry in
+                    entryRow(entry)
                 }
-                .swipeActions {
-                    if model.canDelete(entry) {
-                        Button("Delete", role: .destructive) { model.deleteEntry(entry) }
-                    }
-                }
+            }
+        }
+    }
+
+    private func entryRow(_ entry: TimeEntryValue) -> some View {
+        LabeledContent {
+            Text("\(entry.seconds / 60) min").monospacedDigit()
+        } label: {
+            Label(
+                entry.source == .timer ? "Timer" : "Logged by hand",
+                systemImage: entry.source == .timer ? "timer" : "hand.tap")
+        }
+        .swipeActions {
+            if model.canDelete(entry) {
+                Button("Delete", role: .destructive) { model.deleteEntry(entry) }
             }
         }
     }

@@ -98,6 +98,15 @@ struct TodayView: View {
                 onSelect: { model.select($0) }, onSwipe: { model.moveWeek(by: $0) }
             )
             .readableWidth()
+            // Yesterday can still be corrected until Afternoon starts (SPEC F-10, §5.11).
+            if let minute = model.correctionClosingMinute(at: now) {
+                Text("You can still change yesterday until \(TimeOfDayFormatter.string(minute: minute))")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+                    .readableWidth()
+            }
             Divider()
             if let plan = model.plan(at: now) {
                 if plan.isEmpty {
@@ -188,7 +197,7 @@ struct TodayView: View {
         if item.task.type == .duration {
             DurationRow(
                 item: item,
-                onStart: timer.active == nil && model.canLogTime(item) ? { timer.startHabit(item.task.id) } : nil)
+                onStart: timer.active == nil && model.canStartTimer(item) ? { timer.startHabit(item.task.id) } : nil)
         } else {
             TaskRow(item: item, canComplete: model.canComplete(item)) { model.toggleCompletion(item) }
         }
@@ -201,7 +210,7 @@ struct TodayView: View {
                 .tint(item.status == .done ? .gray : .green)
         }
         if model.canLogTime(item) {
-            Button("Log time") { router.logTime = LogTimeRequest(taskID: item.task.id) }
+            Button("Log time") { router.logTime = LogTimeRequest(taskID: item.task.id, day: item.occurrence.day) }
                 .tint(.blue)
         }
     }

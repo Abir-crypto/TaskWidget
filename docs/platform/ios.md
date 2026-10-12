@@ -668,3 +668,7 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - Widgets get the style from the settings in their snapshot (D-089): `DayWidgetContent.missedStyle`, `NowList.missedStyle`.
   - `MissedManager.popupItems` returns nothing in Gentle; `markMissedTodaySeen()` runs when Settings switches to Strict.
   - UI tests run in Gentle unless launched with `-ui-testing-strict` (`UITestApp.launch(strict:)`; popup tests always are).
+- **T-41:**
+  - `Core/Status/EditWindow` reads §5.11's `editable(d, now)` once from the clock and the part times; `Editability.canComplete`, `canLogTime` and `canDeleteTimeEntry` take it instead of `today`. `MissedQueries.missedCorrectable` and `missedEarlier(window:)` split yesterday out of Earlier while the window is open.
+  - `TaskManager.editWindow()`; `logTime(taskID:minutes:day:)` takes a day; `LogTimeRequest.day` carries it from yesterday's rows to the sheet.
+  - Today rebuilds every minute already, so its footnote and actions follow the window; the Missed tab checks each minute whether the window has changed and reloads (`needsReload`).

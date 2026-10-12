@@ -557,6 +557,9 @@
     "Log time" : {
 
     },
+    "Log time for yesterday" : {
+
+    },
     "Logged by hand" : {
 
     },
@@ -1024,7 +1027,7 @@
     "Time" : {
 
     },
-    "Time can only be logged today, between the habit's start and last day." : {
+    "Time can be logged today, and yesterday until the afternoon starts, between the habit's start and last day." : {
 
     },
     "Time logged" : {
@@ -1119,7 +1122,13 @@
     "Yesterday" : {
 
     },
+    "Yesterday's time" : {
+
+    },
     "You can still change these" : {
+
+    },
+    "You can still change yesterday until %@" : {
 
     },
     "You haven't missed a task today" : {

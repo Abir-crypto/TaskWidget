@@ -41,6 +41,11 @@ final class TaskManager {
         TaskRules.isOver(timing, on: day, now: LocalTime(clock.now, calendar: calendar), parts: try parts())
     }
 
+    /// Which days can still change right now: today, and yesterday until Afternoon starts (SPEC §5.11).
+    func editWindow() throws -> EditWindow {
+        EditWindow(now: clock.now, parts: try parts(), calendar: calendar)
+    }
+
     /// The data, the settings and the rules, read fresh.
     func snapshot() throws -> Snapshot {
         Snapshot(data: try store.loadAll(), settings: try store.settings() ?? .defaults, calendar: calendar)
@@ -86,26 +91,28 @@ final class TaskManager {
     private func completableOccurrence(taskID: UUID, day: DayKey, in snapshot: Snapshot) throws -> Occurrence {
         guard let task = snapshot.engine.task(id: taskID) else { throw TaskError.notFound }
         guard task.type != .duration else { throw TaskError.wrongType }
+        let window = EditWindow(now: clock.now, parts: snapshot.parts, calendar: calendar)
         guard let occurrence = snapshot.engine.occurrence(of: task, on: day),
-            Editability.canComplete(occurrence, today: today)
+            Editability.canComplete(occurrence, in: window)
         else { throw TaskError.notAllowed }
         return occurrence
     }
 
     // MARK: Time
 
-    /// Log time: adds a manual entry to today (SPEC F-05). 5–480 minutes in 5-minute steps, and only on a day
-    /// between the habit's start and last day.
+    /// Log time: adds a manual entry to today, or to yesterday while it can still be corrected (SPEC F-05, §5.11).
+    /// 5–480 minutes in 5-minute steps, and only on a day between the habit's start and last day.
     @discardableResult
-    func logTime(taskID: UUID, minutes: Int) throws -> TimeEntryValue {
+    func logTime(taskID: UUID, minutes: Int, day: DayKey? = nil) throws -> TimeEntryValue {
         if let error = TaskRules.logTimeError(minutes) { throw TaskError.invalid(error) }
         let task = try existingTask(taskID)
         guard task.type == .duration else { throw TaskError.wrongType }
-        guard Editability.canLogTime(task: task, day: today, today: today, calendar: calendar) else {
+        let day = day ?? today
+        guard Editability.canLogTime(task: task, day: day, in: try editWindow(), calendar: calendar) else {
             throw TaskError.notAllowed
         }
         let entry = TimeEntryValue(
-            taskID: taskID, day: today, seconds: minutes * 60, source: .manual, createdAt: clock.now)
+            taskID: taskID, day: day, seconds: minutes * 60, source: .manual, createdAt: clock.now)
         try store.write([.timeEntry(entry)])
         refresh.afterChange()
         return entry
@@ -154,12 +161,13 @@ final class TaskManager {
         refresh.afterChange()
     }
 
-    /// Deletes one of today's time entries. Entries on past days are read-only (SPEC F-05).
+    /// Deletes one of today's time entries, or yesterday's while it can still be corrected. Other past entries are
+    /// read-only (SPEC F-05, §5.11).
     func deleteTimeEntry(id: UUID) throws {
         guard var entry = try store.timeEntries(taskID: nil).first(where: { $0.id == id }) else {
             throw TaskError.notFound
         }
-        guard Editability.canDeleteTimeEntry(entry, today: today) else { throw TaskError.notAllowed }
+        guard Editability.canDeleteTimeEntry(entry, in: try editWindow()) else { throw TaskError.notAllowed }
         entry.deletedAt = clock.now
         try store.write([.timeEntry(entry)])
         refresh.afterChange()

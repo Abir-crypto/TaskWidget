@@ -67,6 +67,7 @@ final class HistoryViewModel {
     /// Completed one-time tasks, grouped by the day they were completed, newest first.
     private func completedGroups(snapshot: Snapshot, today: DayKey) -> [CompletedGroup] {
         let calendar = snapshot.calendar
+        let window = EditWindow(now: clock.now, parts: snapshot.parts, calendar: calendar)
         let completions = Dictionary(grouping: snapshot.activity.completions, by: \.taskID)
         let completed: [CompletedTask] = snapshot.engine.tasks.compactMap { task in
             guard task.type == .oneTime, let date = task.date,
@@ -75,9 +76,10 @@ final class HistoryViewModel {
                 })
             else { return nil }
             let completedOn = DayKey(completion.createdAt, calendar: calendar)
+            // Mark not done follows §5.11: today, a future date, or yesterday during the correction window.
             return CompletedTask(
                 task: task, completedOn: completedOn, completedAt: completion.createdAt,
-                canUndo: completedOn == today && date >= today)
+                canUndo: window.access(to: date) != .none)
         }
         let byDay = Dictionary(grouping: completed, by: \.completedOn)
         return byDay.keys.sorted(by: >).map { day in

@@ -68,7 +68,7 @@ struct TaskCompletionTests {
         let habit = try manager.createHabit(
             type: .progress, title: "Medicine", timing: .anytime, weekdays: .all, startDay: day(5), lengthDays: nil,
             targetMinutes: nil)
-        clock.now = TestEnvironment.date(2026, 10, 6, 9)
+        clock.now = TestEnvironment.date(2026, 10, 6, 13)  // after the correction window (SPEC §5.11)
         #expect(throws: TaskError.notAllowed) { try manager.complete(taskID: task.id, day: day(5)) }
         #expect(throws: TaskError.notAllowed) { try manager.complete(taskID: habit.id, day: day(5)) }
         #expect(throws: TaskError.notAllowed) { try manager.moveToNextDay(taskID: task.id) }

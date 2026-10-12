@@ -71,7 +71,7 @@ struct TimeLoggingTests {
         clock.now = TestEnvironment.date(2026, 10, 5, 9)
         let task = try read()
         let yesterday = try manager.logTime(taskID: task.id, minutes: 30)
-        clock.now = TestEnvironment.date(2026, 10, 6, 9)
+        clock.now = TestEnvironment.date(2026, 10, 6, 13)  // after the correction window (SPEC §5.11)
         let today = try manager.logTime(taskID: task.id, minutes: 10)
         try manager.deleteTimeEntry(id: today.id)
         #expect(throws: TaskError.notAllowed) { try manager.deleteTimeEntry(id: yesterday.id) }

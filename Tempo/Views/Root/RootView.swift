@@ -56,7 +56,7 @@ struct RootView: View {
             TaskPickerView(dependencies: dependencies, request: request)
         }
         .sheet(item: $router.logTime) { request in
-            LogTimeView(dependencies: dependencies, taskID: request.taskID)
+            LogTimeView(dependencies: dependencies, taskID: request.taskID, day: request.day)
         }
         .environment(timerController)
         .environment(\.missedStyle, model.missedStyle)
