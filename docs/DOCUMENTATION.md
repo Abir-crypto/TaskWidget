@@ -101,7 +101,7 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 ---
 
 ## F-01 · Task types
-Status: Built (T-03, T-04, T-11–T-14) · Last updated: 2026-10-10 · T-32
+Status: Built (T-03, T-04, T-11–T-14, T-37, T-38) · Last updated: 2026-10-12 · T-38
 
 ### What it does
 Tasks are one-time tasks, progress habits or duration habits. The type is set when the task is created; nothing can change it afterward. There's no UI yet.
@@ -111,9 +111,10 @@ Tasks are one-time tasks, progress habits or duration habits. The type is set wh
 - Titles are trimmed of leading and trailing spaces and newlines, and must then be 1–100 characters (`TaskRules.titleError`: `emptyTitle`, `titleTooLong`).
 - One-time tasks have a date; habits have a start day, an optional set length and an optional `ended_on`.
 - `TaskManager` has no operation that changes a task's type.
+- **Notes** (T-38): every task can have notes. They're trimmed of spaces and line breaks at both ends; empty notes are stored as no value; more than 1,000 characters is refused (`TaskRuleError.notesTooLong`). They're set when the task is created (`createOneTime`/`createHabit` take `notes`) and changed with `setNotes`, wherever the title can change: any habit, ended ones too, and one-time tasks dated today or later (D-119). Notes aren't part of the schedule history, so editing them writes no schedule row. Widgets, Lock Screen widgets and notifications never show them: their content carries titles only.
 
 ### Data
-`tasks.type`, `tasks.title`.
+`tasks.type`, `tasks.title`, `tasks.notes`.
 
 ### Implementation (iOS)
 - Rules: `Packages/Core/Sources/Core/Models/TaskType.swift`, `Core/Schedule/TaskRules.swift`.
@@ -121,6 +122,7 @@ Tasks are one-time tasks, progress habits or duration habits. The type is set wh
 
 ### Tests
 - `Packages/Core/Tests/CoreTests/Schedule/TaskRulesTests.swift`, `TempoTests/Managers/TaskManagerTests.swift`.
+- Notes: `TaskRulesTests.notesAreTrimmedEmptyMeansNoneAndLimited`, `TaskManagerTests.notesAreTrimmedClearedAndLimited`, `notesFollowTheTitlesEditingRules`, `moveToTomorrowCopiesTheNotes`, `TaskEditorViewModelTests` (notes for every type, the limit, no schedule row, ended habits), and `TempoTests/Widgets/NotesPrivacyTests.swift` (the Focus and Lock Screen widgets and every planned notification show no notes).
 
 ### Known gaps
 - None for F-01.
@@ -199,7 +201,7 @@ Habits occur on chosen weekdays between their start and last day, and keep a his
 - Start again starts today even when the habit's part of the day is already over (D-070). That's an open question for the owner.
 
 ## F-04 · Daily cycle and status
-Status: Built (T-05, T-12, T-16, T-19) · Last updated: 2026-10-10 · T-32
+Status: Built (T-05, T-12, T-16, T-19, T-38) · Last updated: 2026-10-12 · T-38
 
 ### What it does
 Every occurrence's status is computed from the clock (SPEC §5.4), never stored. `TaskManager` checks what each day allows before every write. There's no UI yet.
@@ -222,7 +224,7 @@ Every occurrence's status is computed from the clock (SPEC §5.4), never stored.
   - Edit or delete a one-time task: only while its date is today or later.
   - Edit a habit's schedule or length: only until it ends. Titles can always change.
 - **Complete** (`TaskManager.complete`) writes one completion row; doing it again changes nothing. **Undo** (`undoCompletion`) soft-deletes every row for the (task, day) pair, so duplicates are harmless. **Toggle** (`toggleCompletion`) does whichever applies (for the widget checkbox, T-24).
-- **Move to tomorrow / Move to next day** (`moveToNextDay`, rule in `Editability.movePlan`): a task that isn't missed changes its date by one day. A task Missed today stays on today as missed, and a copy with the same title and timing is created for tomorrow.
+- **Move to tomorrow / Move to next day** (`moveToNextDay`, rule in `Editability.movePlan`): a task that isn't missed changes its date by one day. A task Missed today stays on today as missed, and a copy with the same title, notes and timing is created for tomorrow.
 - A refused change throws `TaskError.notAllowed` and writes nothing.
 
 ### Data
@@ -466,7 +468,7 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 - None for F-09.
 
 ## F-10 · Today screen
-Status: Built (T-12, T-20, T-31) · Last updated: 2026-10-10 · T-32
+Status: Built (T-12, T-20, T-31, T-38) · Last updated: 2026-10-12 · T-38
 
 ### What it does
 The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening, Night and Anytime, with the actions F-04 allows. It updates every minute while open.
@@ -481,6 +483,7 @@ The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening,
   - A part with no tasks shows small grey text: "Nothing this morning", "Nothing at noon", "Nothing this evening", "Nothing tonight" on today; "Nothing in the morning", "Nothing at noon", "Nothing in the evening", "Nothing at night" on other days; "No anytime tasks" for Anytime (D-074).
 - **Rows:**
   - One-time tasks and progress habits: a checkbox (accessibility "Mark done"/"Mark not done" with the title), the title (struck through and grey when done), "Habit" with a repeat icon for progress habits, the fixed time on the right if there is one, and a red "Missed" label when missed. The checkbox is disabled where F-04 doesn't allow completing.
+  - A task with notes has a small notes icon (`note.text`, spoken "Has notes") after its title, on every row type (T-38).
   - Duration habits: a progress ring, the title, "10 of 30 min", the fixed time if any, "Done", "Short" or "Missed" with an icon once final, and ▶ ("Start timer") while no timer exists and time can be logged today (F-06). Time can still be added after Done.
   - Statuses always come with text and an icon.
 - **Tapping a row:** a one-time task opens the editor (read-only for past days); a habit opens Habit detail.
@@ -518,7 +521,7 @@ Reads everything through a `Snapshot`; writes completions, dates (move), copies,
 - None for F-10.
 
 ## F-11 · Tasks tab
-Status: Built (T-13) · Last updated: 2026-10-10 · T-32
+Status: Built (T-13, T-38) · Last updated: 2026-10-12 · T-38
 
 ### What it does
 Two lists behind a segmented control: active habits with their progress, and upcoming one-time tasks.
@@ -532,6 +535,7 @@ Two lists behind a segmented control: active habits with their progress, and upc
   - a habit that hasn't started: "Starts Thu 8 Oct" (D-078).
   - Tapping a row opens Habit detail.
 - **One-time:** every one-time task dated today or later that isn't done and isn't missed, grouped under "Today", "Tomorrow" or a short date, in day order within a date. Each row shows the title and its timing. Tapping opens the editor. Today's missed tasks are in the Missed tab instead.
+- **Notes icon:** in both lists, a task with notes has the small notes icon after its title (`NotesIndicator`, T-38).
 - **Floating +:** opens the editor with a progress habit preset on Habits (it can still be changed), or a one-time task on One-time.
 - **Clock button:** opens History.
 - **Empty states** (F-24): "No habits yet" with "Add a habit"; "No upcoming tasks" with "Add a task".
@@ -584,14 +588,14 @@ Reads completions, tasks and time entries; writes completions (undo) and new hab
 - None for F-12.
 
 ## F-13 · Habit detail
-Status: Built (T-15, T-20, T-31) · Last updated: 2026-10-10 · T-32
+Status: Built (T-15, T-20, T-31, T-38) · Last updated: 2026-10-12 · T-38
 
 ### What it does
 Pushed from a habit row in Today, Tasks or History, it shows one habit's schedule, this week, a month calendar, stats, streak, today's time entries and recent missed days.
 
 ### Behavior
 - **Title bar:** the habit's title, and "Edit" (opens the editor) on the right.
-- **Header:** the type with its icon, the title, the schedule summary ("Every day · Evening"), and for duration habits the target ("30 min a day"), then the length: "Day 12 of 30", "Ongoing", "Starts Thu 8 Oct" or "Ended Sat 26 Sep".
+- **Header:** the type with its icon, the title, the schedule summary ("Every day · Evening"), and for duration habits the target ("30 min a day"), then the length: "Day 12 of 30", "Ongoing", "Starts Thu 8 Oct" or "Ended Sat 26 Sep". The notes follow, in full, when there are any (T-38).
 - **Buttons:** "Start timer" (▶; duration habits, when time can be logged today and no timer exists), "Log time" (duration habits, when time can be logged today; opens the Log time sheet), and "End habit" (with the confirmation "End this habit?" / "It moves to History with its stats, and you can start it again later.") for an active habit, or "Start again" for an ended one (confirmed with "Started again").
 - **This week:** seven days in the region's order, each with an icon and color: done (filled check), short (half circle), missed (filled x), upcoming (empty circle, including today while open), not scheduled (dash). VoiceOver reads the weekday and the result.
 - **Month calendar:** the month's grid starting on the region's first weekday. Done days are green, missed red, short pale orange, upcoming outlined; today has an accent ring. Arrows move between months, from the habit's start month up to the current month. A legend (Done, Short, Missed, Upcoming) with icons sits under it. Each day reads its date and result to VoiceOver.
@@ -656,7 +660,7 @@ The Stats tab shows a week, month or year: an overview, a completion chart, time
 - None for F-14.
 
 ## F-15 · Task editor
-Status: Built (T-11, T-31) · Last updated: 2026-10-10 · T-32
+Status: Built (T-11, T-31, T-38) · Last updated: 2026-10-12 · T-38
 
 ### What it does
 A sheet for creating a task or editing one. Presets for the day and type come from where it was opened.
@@ -665,6 +669,7 @@ A sheet for creating a task or editing one. Presets for the day and type come fr
 - **Title bar:** "New task", "Edit task", or "Task" when read-only. Cancel (Close when read-only) on the left; Save on the right, disabled until the task is valid.
 - **Type:** a segmented One-time / Progress / Duration picker for new tasks, with a one-line explanation under it ("Done once, on one day.", "A habit you check off on the days it repeats.", "A habit measured in minutes against a daily target."). When editing it's shown read-only with "The type can't be changed after a task is created."
 - **Title:** a text field. "Add a title" appears in red under it once it has been edited and is empty (D-068).
+- **Notes** (T-38): a text field of 3 to 8 lines under the title, placeholder "Notes", for every type. Over 1,000 characters, "Notes can be up to 1,000 characters." appears in red under it and Save is disabled. Saving trims them; clearing them removes them. On an ended habit they stay editable like the title; on a read-only past one-time task they're shown read-only, and the field is left out when there are none.
 - **When:** Fixed time / Part of the day / Anytime.
   - Fixed time: a time picker in 5-minute steps.
   - Part of the day: Morning, Noon, Evening and Night as rows with a checkmark on the chosen one.

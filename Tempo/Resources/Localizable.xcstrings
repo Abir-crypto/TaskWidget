@@ -459,6 +459,9 @@
     "Has missed tasks" : {
 
     },
+    "Has notes" : {
+
+    },
     "Has tasks" : {
 
     },
@@ -638,6 +641,12 @@
 
     },
     "Not scheduled" : {
+
+    },
+    "Notes" : {
+
+    },
+    "Notes can be up to 1,000 characters." : {
 
     },
     "Nothing at night" : {

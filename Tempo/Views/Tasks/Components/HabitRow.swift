@@ -13,7 +13,10 @@ struct HabitRow: View {
                 .frame(width: 28)
                 .accessibilityLabel(habit.task.type.title)
             VStack(alignment: .leading, spacing: 3) {
-                Text(habit.task.title)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(habit.task.title)
+                    if habit.task.notes != nil { NotesIndicator() }
+                }
                 Text(habit.schedule)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)

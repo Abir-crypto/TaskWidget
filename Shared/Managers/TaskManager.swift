@@ -168,8 +168,8 @@ final class TaskManager {
     // MARK: Move
 
     /// Move to tomorrow, or Move to next day on a future day (SPEC F-04). A task that isn't missed changes its
-    /// date. A task Missed today stays on today as missed, and a copy with the same title and timing is created
-    /// for tomorrow. Returns the task that is now on the next day.
+    /// date. A task Missed today stays on today as missed, and a copy with the same title, notes and timing is
+    /// created for tomorrow. Returns the task that is now on the next day.
     /// Whether a task missed today has already been copied to tomorrow: a later one-time task there with the
     /// same title and timing (D-081). Moving it again would only make a duplicate.
     func hasCopyTomorrow(_ occurrence: Occurrence, in snapshot: Snapshot) -> Bool {
@@ -199,7 +199,7 @@ final class TaskManager {
             return moved
         case .copy(let day):
             let now = clock.now
-            let copy = TaskValue(title: task.title, type: .oneTime, date: day, createdAt: now)
+            let copy = TaskValue(title: task.title, type: .oneTime, date: day, notes: task.notes, createdAt: now)
             let schedule = ScheduleValue(
                 taskID: copy.id, effectiveFrom: .distantPast, timing: occurrence.timing, weekdays: .none,
                 createdAt: now)
@@ -213,12 +213,16 @@ final class TaskManager {
 
     /// Adds a one-time task (SPEC F-01, F-15). Its date can't be in the past.
     @discardableResult
-    func createOneTime(title: String, date: DayKey, timing: Timing) throws -> TaskValue {
-        if let error = TaskRules.titleError(title) ?? TaskRules.timingError(timing) { throw TaskError.invalid(error) }
+    func createOneTime(title: String, notes: String? = nil, date: DayKey, timing: Timing) throws -> TaskValue {
+        if let error = TaskRules.titleError(title) ?? TaskRules.notesError(notes) ?? TaskRules.timingError(timing) {
+            throw TaskError.invalid(error)
+        }
         guard date >= today else { throw TaskError.invalid(.dayInPast) }
         guard try !isOver(timing, on: date) else { throw TaskError.invalid(.partAlreadyOver) }
         let now = clock.now
-        let task = TaskValue(title: TaskRules.normalizedTitle(title), type: .oneTime, date: date, createdAt: now)
+        let task = TaskValue(
+            title: TaskRules.normalizedTitle(title), type: .oneTime, date: date,
+            notes: TaskRules.normalizedNotes(notes), createdAt: now)
         let schedule = ScheduleValue(
             taskID: task.id, effectiveFrom: .distantPast, timing: timing, weekdays: .none, createdAt: now)
         try store.write([.task(task), .schedule(schedule)])
@@ -231,6 +235,7 @@ final class TaskManager {
     func createHabit(
         type: TaskType,
         title: String,
+        notes: String? = nil,
         timing: Timing,
         weekdays: Weekdays,
         startDay: DayKey,
@@ -241,6 +246,7 @@ final class TaskManager {
         guard type.isHabit else { throw TaskError.wrongType }
         let error =
             TaskRules.titleError(title)
+            ?? TaskRules.notesError(notes)
             ?? TaskRules.scheduleError(type: type, timing: timing, weekdays: weekdays, targetMinutes: targetMinutes)
             ?? TaskRules.lengthError(lengthDays)
         if let error { throw TaskError.invalid(error) }
@@ -249,7 +255,7 @@ final class TaskManager {
         let now = clock.now
         let task = TaskValue(
             title: TaskRules.normalizedTitle(title), type: type, startDay: startDay, lengthDays: lengthDays,
-            createdAt: now)
+            notes: TaskRules.normalizedNotes(notes), createdAt: now)
         let schedule = ScheduleValue(
             taskID: task.id, effectiveFrom: startDay, timing: timing, weekdays: weekdays,
             targetMinutes: targetMinutes, createdAt: now)

@@ -657,3 +657,7 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - `Core`: `TaskValue.notes` with `TaskRules.normalizedNotes`/`notesError`; `SettingsValue.partStartSummaries` (a `Set<DayPart>` stored as the four columns) and `missedStyle` (`MissedStyle`, unreadable values are Gentle); `Snooze`, `SnoozeKind`, `SnoozeList` and `ProEntitlement` for `DeviceState`.
   - `TaskManager.setNotes(taskID:notes:)`, allowed wherever `rename` is.
   - Until T-42, the planner and Settings' single "Part starts" switch treat any part's switch as the old single switch, so behavior doesn't change before its SPEC edit.
+- **T-38:**
+  - The editor's notes field is a `TextField(axis: .vertical)` with `.lineLimit(3...8)`; saving an edit calls `TaskManager.setNotes` after `rename` or `updateOneTime`, and creating passes `notes` to `createOneTime`/`createHabit`.
+  - `Tempo/Components/NotesIndicator` (used by Today and Tasks) is a `note.text` image labelled "Has notes".
+  - Widget content types and `ReminderItem` carry titles, never notes, so nothing on the Lock Screen or in a notification can show them.

@@ -168,6 +168,19 @@ struct TaskManagerTests {
         #expect(throws: TaskError.notAllowed) { try manager.setNotes(taskID: past.id, notes: "Too late") }
     }
 
+    /// SPEC F-04 (T-38): Move to tomorrow on a missed task copies its notes too.
+    @Test func moveToTomorrowCopiesTheNotes() throws {
+        clock.now = TestEnvironment.date(2026, 10, 6, 7)
+        let task = try manager.createOneTime(
+            title: "Call the bank", notes: "Ask about the card", date: day(6), timing: .part(.morning))
+        clock.now = TestEnvironment.date(2026, 10, 6, 13)
+        let copy = try manager.moveToNextDay(taskID: task.id)
+        #expect(copy.id != task.id)
+        #expect(copy.date == day(7))
+        #expect(try store.task(id: copy.id)?.notes == "Ask about the card")
+        #expect(try store.task(id: task.id)?.notes == "Ask about the card")
+    }
+
     @Test func lengthMovesTheLastDay() throws {
         clock.now = TestEnvironment.date(2026, 10, 1, 9)
         let task = try habit(length: 30)

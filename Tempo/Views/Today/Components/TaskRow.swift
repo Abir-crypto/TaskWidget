@@ -23,9 +23,12 @@ struct TaskRow: View {
 
             RowDetailsLayout {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.task.title)
-                        .strikethrough(isDone)
-                        .foregroundStyle(isDone ? .secondary : .primary)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(item.task.title)
+                            .strikethrough(isDone)
+                            .foregroundStyle(isDone ? .secondary : .primary)
+                        if item.task.notes != nil { NotesIndicator() }
+                    }
                     if item.task.type == .progress {
                         Label("Habit", systemImage: "arrow.triangle.2.circlepath")
                             .font(.caption)

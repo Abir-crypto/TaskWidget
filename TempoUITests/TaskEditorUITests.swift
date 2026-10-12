@@ -38,6 +38,34 @@ final class TaskEditorUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Daily target"].waitForExistence(timeout: 2))
     }
 
+    /// SPEC T-38: notes typed in the editor show in Habit detail, and rows in Today and Tasks get the notes icon.
+    @MainActor
+    func testNotesShowInHabitDetailAndAsAnIconOnRows() {
+        let app = UITestApp.launch(now: "2026-10-06T10:30:00+01:00")
+        app.buttons["Add task"].tap()
+        let title = app.textFields["Title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        app.buttons["Progress"].tap()
+        title.tap()
+        title.typeText("Gym")
+        let notes = app.textFields["Notes"]
+        notes.tap()
+        notes.typeText("Leg day on Mondays")
+        app.buttons["Save"].tap()
+
+        let hasNotes = NSPredicate(format: "label CONTAINS 'Has notes'")
+        let gym = app.staticTexts["Gym"]
+        XCTAssertTrue(gym.waitForExistence(timeout: 3))
+        XCTAssertTrue(app.descendants(matching: .any).matching(hasNotes).firstMatch.exists)
+        gym.tap()
+        let header = app.descendants(matching: .any).matching(
+            NSPredicate(format: "label CONTAINS 'Leg day on Mondays'"))
+        XCTAssertTrue(header.firstMatch.waitForExistence(timeout: 3))
+
+        app.tabBars.buttons["Tasks"].tap()
+        XCTAssertTrue(app.descendants(matching: .any).matching(hasNotes).firstMatch.waitForExistence(timeout: 3))
+    }
+
     @MainActor
     func testEndedPartsAreGreyedOut() {
         let app = UITestApp.launch(now: "2026-10-06T13:00:00+01:00")

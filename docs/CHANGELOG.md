@@ -14,6 +14,16 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Notes on tasks (T-38)
+- Changed: §2.1, §2.2 — notes on tasks are in v1.
+- Changed: F-01 — every task can have notes (up to 1,000 characters), edited wherever the title can, never shown in widgets, on the Lock Screen or in notifications (D-105, D-119).
+- Changed: F-04 — Move to tomorrow's copy keeps the notes.
+- Changed: F-10, F-11 — rows show a small notes icon when a task has notes.
+- Changed: F-13 — the header shows the notes.
+- Changed: F-15 — a Notes field after the title, with its message.
+- Changed: §7 — the notes limit.
+- Platform: ios.md §15 — `NotesIndicator`, the editor's notes field and `TaskManager.setNotes`.
+
 ## 2026-10-12 · Data model changes (T-37)
 - Changed: §4.1 — `tasks` gains `notes` (optional, up to 1,000 characters after trimming; empty is stored as no value).
 - Changed: §4.5 — `notify_part_start` is replaced by `notify_part_start_morning` (true), `_noon`, `_evening` and `_night` (false); `missed_style` (`"gentle"`) is added.

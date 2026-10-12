@@ -209,6 +209,72 @@ struct TaskEditorViewModelTests {
         #expect(rows.first?.timing == .part(.noon))
     }
 
+    // MARK: Notes (T-38)
+
+    /// SPEC F-15: notes can be added, changed and cleared for every type.
+    @Test(arguments: TaskType.allCases)
+    func notesCanBeAddedChangedAndCleared(type: TaskType) throws {
+        let model = editor(.new(type: type))
+        model.title = "Task"
+        model.part = .evening
+        model.notes = "  Bring the blue folder\n"
+        #expect(model.save())
+        let task = try #require(try store.tasks().first)
+        #expect(task.notes == "Bring the blue folder")
+
+        let edit = editor(.edit(task.id))
+        #expect(edit.notes == "Bring the blue folder")
+        edit.notes = "Bring both folders"
+        #expect(edit.save())
+        #expect(try store.task(id: task.id)?.notes == "Bring both folders")
+
+        let clear = editor(.edit(task.id))
+        clear.notes = "   "
+        #expect(clear.save())
+        #expect(try store.task(id: task.id)?.notes == nil)
+    }
+
+    @Test func notesOverTheLimitBlockSaveWithAMessage() {
+        let model = editor()
+        model.title = "Call"
+        model.notes = String(repeating: "a", count: 1000)
+        #expect(model.notesMessage == nil)
+        #expect(model.canSave)
+        model.notes += "a"
+        #expect(model.notesMessage == "Notes can be up to 1,000 characters.")
+        #expect(model.validationError == .notesTooLong)
+        #expect(!model.canSave)
+    }
+
+    /// Notes aren't part of the schedule history: editing them writes no schedule row (SPEC F-01).
+    @Test func editingAHabitsNotesWritesNoScheduleRow() throws {
+        clock.now = TestEnvironment.date(2026, 10, 1, 9)
+        let habit = try tasks.createHabit(
+            type: .progress, title: "Gym", timing: .part(.evening), weekdays: .all, startDay: day(1), lengthDays: nil,
+            targetMinutes: nil)
+        clock.now = TestEnvironment.date(2026, 10, 6, 10)
+        let model = editor(.edit(habit.id))
+        model.notes = "Leg day on Mondays"
+        #expect(model.save())
+        #expect(try store.task(id: habit.id)?.notes == "Leg day on Mondays")
+        #expect(try store.schedules(taskID: habit.id).map(\.effectiveFrom) == [day(1)])
+    }
+
+    /// Like the title, an ended habit's notes can still change (review detail of C-03).
+    @Test func anEndedHabitsNotesCanChange() throws {
+        clock.now = TestEnvironment.date(2026, 10, 1, 9)
+        let habit = try tasks.createHabit(
+            type: .progress, title: "Gym", timing: .part(.evening), weekdays: .all, startDay: day(1), lengthDays: nil,
+            targetMinutes: nil)
+        clock.now = TestEnvironment.date(2026, 10, 6, 10)
+        try tasks.endHabit(taskID: habit.id)
+        let model = editor(.edit(habit.id))
+        #expect(!model.canEditSchedule)
+        model.notes = "Paused for the holidays"
+        #expect(model.save())
+        #expect(try store.task(id: habit.id)?.notes == "Paused for the holidays")
+    }
+
     @Test func pastOneTimeTasksAreReadOnly() throws {
         clock.now = TestEnvironment.date(2026, 10, 5, 9)
         let task = try tasks.createOneTime(title: "Yesterday", date: day(5), timing: .anytime)

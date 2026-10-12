@@ -74,6 +74,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 ### 2.1 In v1
 
 - One-time tasks, progress habits and duration habits.
+- Notes on tasks (F-01).
 - Timing by fixed time, part of the day or anytime, with part-of-day start times set by the user.
 - Habit schedules on chosen weekdays, with an optional set length.
 - Time tracking with a timer and with manual logging; daily targets and weekly goals.
@@ -90,7 +91,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 
 - Accounts, sync, server backup, and the Android app. The data model is ready for them (F-26).
 - Live Activities, Control Center controls, Siri or Shortcuts actions, Apple Watch, Mac.
-- Notes, subtasks, tags, lists, priorities, attachments, sharing.
+- Subtasks, tags, lists, priorities, attachments, sharing.
 - Manual reordering of tasks.
 - Snoozing notifications.
 - Different part-of-day times on different weekdays.
@@ -110,6 +111,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 | Duration habit | Read 30 min a day | On chosen weekdays | Reach the daily target and the weekly goal | Minutes per day, days on target, weekly totals |
 
 - Every task has a title (1–100 characters after trimming spaces) and a timing (F-02).
+- Every task can have notes (0–1,000 characters after trimming spaces and line breaks; empty means none). Notes aren't part of a habit's schedule history: like the title, an edit applies everywhere, and notes can be changed wherever the title can. Notes never appear in widgets, on the Lock Screen or in notifications.
 - The type is chosen when the task is created and can't be changed afterward, because changing it would make a habit's history meaningless.
 - In stats, one-time tasks only appear as a count of completed tasks.
 
@@ -183,7 +185,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 
 **Move to tomorrow** (one-time tasks only)
 - If the task isn't missed, its date changes to the next day.
-- If it's Missed today, it stays on today as missed, and a copy with the same title and timing is created for tomorrow.
+- If it's Missed today, it stays on today as missed, and a copy with the same title, notes and timing is created for tomorrow.
 - On a future day, the action is called **Move to next day** and moves the date forward by one day.
 
 ### F-05 · Time tracking
@@ -326,6 +328,7 @@ Other details:
 **Rows**
 - **One-time and progress:** a checkbox, the title, and the time if it has a fixed time. Missed tasks are marked "Missed" in red, and done tasks have their title struck through.
 - **Duration:** the title, progress ("10 of 30 min") and ▶. The ▶ is hidden while a timer exists. Once the target is reached the row shows Done, and time can still be added.
+- A small notes icon shows when a task has notes.
 - **Tapping a row:** a one-time task opens the editor, and a habit opens Habit detail.
 - **Swipe actions,** offered only where F-04 allows them: Done/Undo, Log time (duration), Move to tomorrow (one-time), Edit and Delete.
 - **Delete:** a one-time task is deleted after confirmation. A habit offers End habit or Delete with history (F-03).
@@ -347,6 +350,7 @@ The missed popup (F-08) appears on this screen.
   - goal progress: for progress habits "4 of 5 this week", or "Day 12 of 30" with a set length; for duration habits "2h 10m of 3h 30m this week".
   - Tapping a row opens Habit detail.
 - **One-time:** every one-time task from today onward that isn't done, grouped by date (Today, Tomorrow, Thu 8 Oct, …), with its timing. Missed ones live in the Missed tab, not here. Tapping a row opens the editor.
+- In both lists, a small notes icon shows when a task has notes.
 - The floating + opens the editor with the type preset from the segment. Habits presets a progress habit, which can still be changed in the editor; One-time presets a one-time task.
 - A clock button opens History.
 
@@ -361,7 +365,7 @@ The missed popup (F-08) appears on this screen.
 
 ### F-13 · Habit detail
 
-- **Header:** the title, type, schedule summary, target (for duration habits), and length ("Day 12 of 30" or "Ongoing").
+- **Header:** the title, type, schedule summary, target (for duration habits), and length ("Day 12 of 30" or "Ongoing"), then the notes, when there are any.
 - **This week:** seven dots for the days, each showing done, short, missed, upcoming or not scheduled.
 - **Month calendar:** each scheduled day is colored by its result. Arrows move between months.
 - **Stats for this week, this month and this year:** the completion rate. For duration habits it adds the total time and, for this week, the time against the weekly goal.
@@ -399,17 +403,18 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 **Fields**
 1. **Type:** One-time, Progress or Duration. It can't be changed after the task is created; when editing, it's shown read-only.
 2. **Title.**
-3. **When:** Fixed time, Part of the day, or Anytime. Fixed time shows a time picker in 5-minute steps. Part of the day shows Morning, Noon, Evening and Night.
-4. **One-time only:** the date. It defaults to the day selected in Today, or otherwise today. Past dates aren't allowed.
-5. **Habits only:**
+3. **Notes:** optional, several lines.
+4. **When:** Fixed time, Part of the day, or Anytime. Fixed time shows a time picker in 5-minute steps. Part of the day shows Morning, Noon, Evening and Night.
+5. **One-time only:** the date. It defaults to the day selected in Today, or otherwise today. Past dates aren't allowed.
+6. **Habits only:**
    - Repeat on: seven weekday toggles, all on by default.
    - Starts: a date, today by default, never in the past.
    - Length: Ongoing, or a number of days (1–365, 30 by default when switched on).
-6. **Duration only:** the daily target (5–480 min in 5-minute steps, 30 by default).
+7. **Duration only:** the daily target (5–480 min in 5-minute steps, 30 by default).
 
 **Rules**
 - **Save** is disabled until the task is valid. It needs a non-empty title, at least one weekday for habits, a time for fixed timing, and a part for part timing.
-- Messages appear under the field that needs fixing: "Add a title", "Pick at least one day".
+- Messages appear under the field that needs fixing: "Add a title", "Notes can be up to 1,000 characters.", "Pick at least one day".
 - When the task is for today, parts that have already ended can't be chosen, and neither can fixed times inside them. They're shown greyed out with "Already over".
 - Editing a habit shows a note under its schedule: "Changes apply from today. Earlier days keep their old schedule."
 - **Edit mode** adds **Delete** for one-time tasks, or **End habit** and **Delete with history** for habits. Each asks for confirmation.
@@ -864,6 +869,7 @@ For a range R (a week, month or year), counting up to and including today:
 | Log time | 5–480 min in 5-minute steps |
 | Set length | 1–365 days, 30 when switched on |
 | Title | 1–100 characters |
+| Notes | 0–1,000 characters |
 | Minimum timer time saved | 1 minute |
 | Day widget marks per column | 6, then "+N" |
 | Notification horizon | At least 48 hours |

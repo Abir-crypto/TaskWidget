@@ -1,6 +1,6 @@
 # Progress
 
-**Current task:** T-38 · Notes
+**Current task:** T-39 · "Afternoon" on screen
 
 Legend: ⬜ To do · 🔄 In progress · ✅ Done · ⛔ Blocked
 
@@ -47,7 +47,7 @@ Update this file when you start a task (🔄), when you finish one (✅, with th
 | T-35 | Spec catches up with the build | H · Pre-launch (1.1) | ✅ | 2026-10-12 | Docs only. SPEC F-06 (task picker), F-20, F-21 and F-22 now match D-084, D-090, D-091 and D-092; DOCUMENTATION.md already described that behavior, so it needed no change. CLAUDE.md › Decisions has the D-103 rule. |
 | T-36 | Minimum system version | H · Pre-launch (1.1) | ✅ | 2026-10-12 | `IPHONEOS_DEPLOYMENT_TARGET = 18.0` (project level, inherited by every target) and `.iOS(.v18)`/`.macOS(.v15)` in `Core` (D-104). CLAUDE.md and ios.md §5 state the iOS 18 rule (APIs from iOS 26 need `#available` with a fallback). New `ProjectConfigurationTests.deploymentTargetIsiOS18`. Full run on iOS 27.0: 274 `TempoTests`, 45 UI tests (33 screenshot tests skipped by design), 190 Core tests on the Mac and the simulator; no compiler warnings. |
 | T-37 | Data model changes | H · Pre-launch (1.1) | ✅ | 2026-10-12 | `SchemaV4` with a lightweight stage from V3: `tasks.notes`, four `notify_part_start_*` columns (Morning on) in place of `notify_part_start`, and `missed_style` (`gentle`). Core: `TaskValue.notes` and the notes rules, `SettingsValue.partStartSummaries` and `missedStyle` (`MissedStyle`, unreadable → Gentle), `Snooze`/`SnoozeList`, `ProEntitlement`. `DeviceState` gains snoozes (cleared with the day), the Add a widget card flag and the Pro entitlement. `TaskManager.setNotes`. Until T-42 the single Part starts switch and the planner treat the four switches as one, so behavior is unchanged. Tests: a version-3 store migrates, new columns round-trip, the widget extension reads them. 281 `TempoTests`, 45 UI tests, 198 Core tests pass. |
-| T-38 | Notes | H · Pre-launch (1.1) | ⬜ | |  |
+| T-38 | Notes | H · Pre-launch (1.1) | ✅ | 2026-10-12 | Editor Notes field (3–8 lines, every type, "Notes can be up to 1,000 characters."); saves through `createOneTime`/`createHabit(notes:)` and `setNotes`. Notes icon (`NotesIndicator`) on Today and Tasks rows; Habit detail shows the notes under the header. Move to tomorrow's copy keeps them. Editing notes writes no schedule row; ended habits' notes stay editable, a past one-time task's are read-only and hidden when empty (D-119). `NotesPrivacyTests`: no notes in the Focus or Lock Screen widgets or any notification. 290 `TempoTests`, 46 UI tests (new `testNotesShowInHabitDetailAndAsAnIconOnRows`), 198 Core tests pass. |
 | T-39 | "Afternoon" on screen | H · Pre-launch (1.1) | ⬜ | |  |
 | T-40 | Missed style | H · Pre-launch (1.1) | ⬜ | |  |
 | T-41 | Correction window | H · Pre-launch (1.1) | ⬜ | |  |

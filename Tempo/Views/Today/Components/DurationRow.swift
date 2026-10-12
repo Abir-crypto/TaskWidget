@@ -28,7 +28,10 @@ struct DurationRow: View {
 
             RowDetailsLayout {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.task.title)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(item.task.title)
+                        if item.task.notes != nil { NotesIndicator() }
+                    }
                     Text(DurationFormatter.progress(minutes: item.minutes, target: target))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)

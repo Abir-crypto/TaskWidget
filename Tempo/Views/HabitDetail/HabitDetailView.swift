@@ -109,6 +109,10 @@ struct HabitDetailView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .accessibilityLabel([model.targetText, model.lengthText].compactMap { $0 }.joined(separator: ", "))
+                if let notes = task.notes {
+                    Text(notes)
+                        .padding(.top, 2)
+                }
             }
             .padding(.vertical, 4)
             .accessibilityElement(children: .combine)

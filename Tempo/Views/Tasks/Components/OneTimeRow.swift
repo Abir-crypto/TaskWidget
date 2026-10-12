@@ -7,7 +7,10 @@ struct OneTimeRow: View {
 
     var body: some View {
         HStack {
-            Text(item.task.title)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(item.task.title)
+                if item.task.notes != nil { NotesIndicator() }
+            }
             Spacer(minLength: 8)
             Text(ScheduleFormatter.timing(item.occurrence.timing))
                 .font(.subheadline)

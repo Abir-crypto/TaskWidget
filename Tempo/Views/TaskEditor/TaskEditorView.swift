@@ -20,6 +20,9 @@ struct TaskEditorView: View {
             Form {
                 typeSection
                 titleSection
+                if !(model.isReadOnly && model.notes.isEmpty) {
+                    notesSection
+                }
                 timingSection
                 if model.type == .oneTime {
                     dateSection
@@ -104,6 +107,20 @@ struct TaskEditorView: View {
                 .accessibilityLabel("Title")
         } footer: {
             if let message = model.titleMessage {
+                Text(message).foregroundStyle(.red)
+            }
+        }
+    }
+
+    /// Optional notes, several lines. They show in the editor and Habit detail, never in widgets or notifications
+    /// (SPEC F-15, F-01).
+    private var notesSection: some View {
+        Section {
+            TextField("Notes", text: $model.notes, axis: .vertical)
+                .lineLimit(3...8)
+                .accessibilityLabel("Notes")
+        } footer: {
+            if let message = model.notesMessage {
                 Text(message).foregroundStyle(.red)
             }
         }

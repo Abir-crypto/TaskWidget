@@ -12,6 +12,8 @@ final class TaskEditorViewModel {
     var title = "" {
         didSet { titleEdited = true }
     }
+    /// Optional notes, several lines (SPEC F-15).
+    var notes = ""
     var timingKind: TimingKind = .part
     var fixedMinute = 540
     var part: DayPart = .morning
@@ -82,6 +84,7 @@ final class TaskEditorViewModel {
         type = task.type
         title = task.title
         titleEdited = false
+        notes = task.notes ?? ""
         apply(schedule.timing)
         originalTiming = schedule.timing
         date = task.date ?? date
@@ -171,6 +174,12 @@ final class TaskEditorViewModel {
         return String(localized: "Add a title")
     }
 
+    /// Shown once the notes are longer than 1,000 characters (SPEC §7).
+    var notesMessage: String? {
+        guard TaskRules.notesError(notes) == .notesTooLong else { return nil }
+        return String(localized: "Notes can be up to 1,000 characters.")
+    }
+
     var weekdaysMessage: String? {
         guard type.isHabit, weekdays.isEmpty else { return nil }
         return String(localized: "Pick at least one day")
@@ -178,7 +187,7 @@ final class TaskEditorViewModel {
 
     /// The first thing keeping Save disabled, if any.
     var validationError: TaskRuleError? {
-        if let error = TaskRules.titleError(title) { return error }
+        if let error = TaskRules.titleError(title) ?? TaskRules.notesError(notes) { return error }
         if type.isHabit, weekdays.isEmpty { return .noWeekdays }
         guard !isReadOnly else { return nil }
         if type == .oneTime, date < today { return .dayInPast }
@@ -207,8 +216,10 @@ final class TaskEditorViewModel {
                 switch editing.type {
                 case .oneTime:
                     try tasks.updateOneTime(taskID: editing.id, title: title, date: date, timing: timing)
+                    try tasks.setNotes(taskID: editing.id, notes: notes)
                 case .progress, .duration:
                     try tasks.rename(taskID: editing.id, to: title)
+                    try tasks.setNotes(taskID: editing.id, notes: notes)
                     if canEditStartDay, startDay != editing.startDay {
                         try tasks.setStartDay(taskID: editing.id, to: startDay)
                     }
@@ -221,10 +232,10 @@ final class TaskEditorViewModel {
                     }
                 }
             } else if type == .oneTime {
-                try tasks.createOneTime(title: title, date: date, timing: timing)
+                try tasks.createOneTime(title: title, notes: notes, date: date, timing: timing)
             } else {
                 try tasks.createHabit(
-                    type: type, title: title, timing: timing, weekdays: weekdays, startDay: startDay,
+                    type: type, title: title, notes: notes, timing: timing, weekdays: weekdays, startDay: startDay,
                     lengthDays: length, targetMinutes: target)
             }
             return true
