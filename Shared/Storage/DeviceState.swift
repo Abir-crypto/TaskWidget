@@ -1,8 +1,9 @@
 import Core
 import Foundation
 
-/// State that stays on this device and is never synced (SPEC §4.6): the timer, the missed popup's seen
-/// list, the pending open action and whether the first-launch guide was finished. Stored as JSON in the App Group's `UserDefaults`, so the app and the
+/// State that stays on this device and is never synced (SPEC §4.6): the timer, the missed popup's seen list, the
+/// pending open action, whether the first-launch guide was finished, snoozed reminders, whether the Add a widget card
+/// was closed, and the cached Pro entitlement. Stored as JSON in the App Group's `UserDefaults`, so the app and the
 /// widget extension share it (ios.md §6).
 final class DeviceState: @unchecked Sendable {
     // `UserDefaults` is thread-safe; it's the only stored property.
@@ -26,6 +27,9 @@ final class DeviceState: @unchecked Sendable {
         case missedSeen = "deviceState.missedSeen"
         case pendingOpenAction = "deviceState.pendingOpenAction"
         case guideCompleted = "deviceState.guideCompleted"
+        case snoozes = "deviceState.snoozes"
+        case addWidgetCardClosed = "deviceState.addWidgetCardClosed"
+        case proEntitlement = "deviceState.proEntitlement"
     }
 
     /// The one timer, or `nil` when idle.
@@ -50,6 +54,24 @@ final class DeviceState: @unchecked Sendable {
     var guideCompleted: Bool {
         get { defaults.bool(forKey: Key.guideCompleted.rawValue) }
         set { defaults.set(newValue, forKey: Key.guideCompleted.rawValue) }
+    }
+
+    /// Snoozed reminders. Only the list's own day counts, so snoozes clear when the day changes (SPEC F-07).
+    var snoozes: SnoozeList? {
+        get { read(SnoozeList.self, for: .snoozes) }
+        set { write(newValue, for: .snoozes) }
+    }
+
+    /// The Add a widget card on Today was closed; it doesn't come back (SPEC F-10).
+    var addWidgetCardClosed: Bool {
+        get { defaults.bool(forKey: Key.addWidgetCardClosed.rawValue) }
+        set { defaults.set(newValue, forKey: Key.addWidgetCardClosed.rawValue) }
+    }
+
+    /// Tempo Pro as the store last confirmed it, so it works offline and the widgets can read it (SPEC F-34).
+    var proEntitlement: ProEntitlement? {
+        get { read(ProEntitlement.self, for: .proEntitlement) }
+        set { write(newValue, for: .proEntitlement) }
     }
 
     /// Removes every device-only value.

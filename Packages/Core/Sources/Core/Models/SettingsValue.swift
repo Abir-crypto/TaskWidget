@@ -3,7 +3,9 @@ import Foundation
 /// The single `settings` row (SPEC §4.5).
 public struct SettingsValue: Hashable, Codable, Sendable {
     public var parts: PartSettings
-    public var notifyPartStart: Bool
+    /// The parts whose start sends a summary: Morning only by default (SPEC §4.5). Until T-42 the planner treats any
+    /// of them as the old single switch, so either every part's summary is sent or none is.
+    public var partStartSummaries: Set<DayPart>
     public var notifyEndingSoon: Bool
     /// Minutes before a part ends: 15, 30, 45 or 60.
     public var endingSoonLead: Int
@@ -21,12 +23,14 @@ public struct SettingsValue: Hashable, Codable, Sendable {
     public var tintColor: ThemeColor
     /// Whether the app follows the system's light or dark mode (SPEC F-28).
     public var appearance: Appearance
+    /// How missed tasks are shown (SPEC F-30).
+    public var missedStyle: MissedStyle
     /// `nil` until the row is first saved.
     public var updatedAt: Date?
 
     public init(
         parts: PartSettings = .defaults,
-        notifyPartStart: Bool = true,
+        partStartSummaries: Set<DayPart> = [.morning],
         notifyEndingSoon: Bool = true,
         endingSoonLead: Int = 30,
         notifyFixed: Bool = true,
@@ -38,10 +42,11 @@ public struct SettingsValue: Hashable, Codable, Sendable {
         hideLockScreenTitles: Bool = false,
         tintColor: ThemeColor = .default,
         appearance: Appearance = .default,
+        missedStyle: MissedStyle = .default,
         updatedAt: Date? = nil
     ) {
         self.parts = parts
-        self.notifyPartStart = notifyPartStart
+        self.partStartSummaries = partStartSummaries
         self.notifyEndingSoon = notifyEndingSoon
         self.endingSoonLead = endingSoonLead
         self.notifyFixed = notifyFixed
@@ -53,11 +58,13 @@ public struct SettingsValue: Hashable, Codable, Sendable {
         self.hideLockScreenTitles = hideLockScreenTitles
         self.tintColor = tintColor
         self.appearance = appearance
+        self.missedStyle = missedStyle
         self.updatedAt = updatedAt
     }
 
-    /// Every default from SPEC §4.5: the default part times, every reminder on, names shown on the Lock Screen, Blue
-    /// as the theme color, and the system's appearance.
+    /// Every default from SPEC §4.5: the default part times, every reminder on except the Afternoon, Evening and Night
+    /// summaries, names shown on the Lock Screen, Blue as the theme color, the system's appearance, and the Gentle
+    /// missed style.
     public static let defaults = SettingsValue()
 
     public static let endingSoonLeadChoices = [15, 30, 45, 60]

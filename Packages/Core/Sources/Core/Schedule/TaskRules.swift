@@ -25,6 +25,19 @@ public enum TaskRules {
         return nil
     }
 
+    /// Notes with spaces and line breaks removed from both ends, or `nil` when nothing is left (SPEC §4.1).
+    public static func normalizedNotes(_ notes: String?) -> String? {
+        guard let trimmed = notes?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
+            return nil
+        }
+        return trimmed
+    }
+
+    public static func notesError(_ notes: String?) -> TaskRuleError? {
+        guard let normalized = normalizedNotes(notes) else { return nil }
+        return normalized.count > TaskValue.maximumNotesLength ? .notesTooLong : nil
+    }
+
     public static func timingError(_ timing: Timing) -> TaskRuleError? {
         guard case .fixed(let minute) = timing else { return nil }
         let inDay = (0..<DayKey.minutesPerDay).contains(minute)
@@ -84,6 +97,8 @@ public enum TaskRuleError: Error, Hashable, Sendable {
     case emptyTitle
     /// The title is longer than 100 characters.
     case titleTooLong
+    /// The notes are longer than 1,000 characters.
+    case notesTooLong
     /// A fixed time isn't a minute of the day on a 5-minute step.
     case invalidFixedTime
     /// A habit has no weekdays ("Pick at least one day").

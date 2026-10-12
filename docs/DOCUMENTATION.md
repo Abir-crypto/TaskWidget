@@ -712,7 +712,7 @@ Settings is pushed from the gear on Today. Every change is saved as soon as it's
 ### Behavior
 - **Parts of the day:** Morning, Noon, Evening and Night, each with a compact time picker in 15-minute steps (`MinuteIntervalPicker`). Each picker only offers start times that keep the parts in order and at least 30 minutes long (`PartSettings.allowedStarts`), so invalid times can't be chosen. Footer: "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." If Night moves past the recap time, the recap moves to the first allowed time (D-066).
 - **Reminders**, all on by default:
-  - "Part starts" (on/off).
+  - "Part starts" (on/off). Since T-37 the settings row has one switch per part; until T-42 this one switch sets them together (on means Morning's, the default) and any of them on sends every part's summary, as before.
   - "Ending soon" (on/off), and when on, "Before the part ends": 15, 30 (default), 45 or 60 min.
   - "Fixed-time tasks" (on/off), and when on, "Before the task": 5, 10 (default), 15 or 30 min.
   - "End-of-day recap" (on/off), and when on, "Recap time": 15-minute steps from Night's start to 23:45, 23:30 by default.
@@ -1071,7 +1071,7 @@ The same app on iPad, with content kept to a readable width, every orientation, 
 - Split View and Stage Manager were checked only by resizing the app's window from a UI test, not by placing a second app beside it.
 
 ## F-26 · Data and future sync
-Status: Built (T-03, T-04, T-22, T-28, T-33, T-34) · Last updated: 2026-10-11 · T-34
+Status: Built (T-03, T-04, T-22, T-28, T-33, T-34, T-37) · Last updated: 2026-10-12 · T-37
 
 ### What it does
 Everything is stored on the device in one SwiftData store inside the App Group, shared by the app and the widget extension. Device-only state lives in the App Group's `UserDefaults`. There's no account and no server.
@@ -1089,18 +1089,23 @@ Everything is stored on the device in one SwiftData store inside the App Group, 
   - `deviceState.missedSeen` — the popup's seen list: a day and occurrence ids.
   - `deviceState.pendingOpenAction` — for now only "choose a task for a finished timer", with the frozen time.
   - `deviceState.guideCompleted` — a plain bool: the first-launch guide was finished (D-094).
+  - `deviceState.snoozes` — the day's snoozed reminders: a day, and for each snooze the original reminder's id, its kind (`fixed` or `ending_soon`), its fire time and its day. A list for another day reads as empty, so snoozes clear when the day changes (T-37; used from T-43).
+  - `deviceState.addWidgetCardClosed` — a plain bool: the Add a widget card was closed (T-37; used from T-50).
+  - `deviceState.proEntitlement` — whether Tempo Pro is unlocked and when the store last confirmed it (T-37; used from T-51).
   - Setting a value to empty removes the key. A value that can't be decoded reads as empty and is logged.
 - **Sharing with the widgets:** the store file is `Tempo.store` in the App Group container. Every read and write makes a fresh `ModelContext`, so each process sees the other's writes (CLAUDE.md, ios.md §6).
 - **If the store can't be opened,** the app shows "Can't open your tasks" / "Something went wrong while opening Tempo's data. Close the app and open it again." (D-057).
 - **After every write** through a manager, `RefreshManager.afterChange()` reloads every widget and rebuilds the notifications, 0.5 s after the last of a burst of writes. `refreshNow()` skips the wait; `refreshNowAndWait()` also waits for the notifications, for App Intents (T-21).
-- **Schema versions:** version 2 (T-33) adds `settings.tint_color`, and version 3 (T-34) adds `settings.appearance`. Older stores migrate through lightweight stages, V1 → V2 → V3, and keep their data.
+- **Schema versions:** version 2 (T-33) adds `settings.tint_color`, and version 3 (T-34) adds `settings.appearance`. Version 4 (T-37) adds `tasks.notes`, replaces `settings.notify_part_start` with one switch per part (`notify_part_start_morning` on; `_noon`, `_evening` and `_night` off), and adds `settings.missed_style` (`gentle`). Older stores migrate through lightweight stages, V1 → V2 → V3 → V4, and keep their data; the old single part-start switch isn't carried over, so every store gets the new defaults.
+- **Notes** (`tasks.notes`): trimmed of spaces and line breaks at both ends; empty notes are stored as no value; more than 1,000 characters is rejected (`TaskRuleError.notesTooLong`). `TaskManager.setNotes(taskID:notes:)` changes them wherever the title can change (T-37; the editor uses it from T-38).
+- **Missed style** (`settings.missed_style`): `gentle` or `strict`; anything else reads as `gentle` (`MissedStyle`). Stored from T-37; shown from T-40.
 
 ### Data
 All tables in SPEC §4 and the device-only state in §4.6.
 
 ### Implementation (iOS)
-- Values: `Packages/Core/Sources/Core/Models/` — `TaskValue`, `TaskType`, `ScheduleValue`, `Timing`, `TimingKind`, `CompletionValue`, `TimeEntryValue`, `TimeEntrySource`, `SettingsValue`, `ThemeColor`, `ThemePreset`, `Appearance`, `TaskData`, `PendingOpenAction`; `Core/Timer/` — `TimerState`, `TimerKind`, `FinishedTimer`; `Core/Missed/MissedSeenList`.
-- Storage: `Shared/Storage/` — `SchemaV1`, `SchemaV2`, `SchemaV3` (records), `MigrationPlan`, `StoreFactory`, `TaskStore` (protocol), `SwiftDataTaskStore`, `StoreWrite` (atomic batches, T-04), `DeviceState`, `StorageError`.
+- Values: `Packages/Core/Sources/Core/Models/` — `TaskValue`, `TaskType`, `ScheduleValue`, `Timing`, `TimingKind`, `CompletionValue`, `TimeEntryValue`, `TimeEntrySource`, `SettingsValue`, `ThemeColor`, `ThemePreset`, `Appearance`, `MissedStyle`, `Snooze` (with `SnoozeKind` and `SnoozeList`), `ProEntitlement`, `TaskData`, `PendingOpenAction`; `Core/Timer/` — `TimerState`, `TimerKind`, `FinishedTimer`; `Core/Missed/MissedSeenList`.
+- Storage: `Shared/Storage/` — `SchemaV1`, `SchemaV2`, `SchemaV3`, `SchemaV4` (records), `MigrationPlan`, `StoreFactory`, `TaskStore` (protocol), `SwiftDataTaskStore`, `StoreWrite` (atomic batches, T-04), `DeviceState`, `StorageError`.
 - Managers: `Shared/Managers/SettingsManager` (+ `SettingsError`), `RefreshManager`, `WidgetManager` (+ `WidgetReloading`).
 - Clock and logging: `Shared/Utilities/Clock/` (`Clock`, `SystemClock`, `FixedClock`; D-054), `Shared/Utilities/Logging/Log`.
 - App: `Tempo/App/AppDependencies` creates the managers and makes sure the settings row exists at launch; `Tempo/Views/Root/Components/StoreErrorView`.

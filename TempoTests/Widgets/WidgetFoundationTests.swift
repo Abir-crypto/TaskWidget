@@ -38,6 +38,27 @@ struct WidgetFoundationTests {
         #expect(widgetPlan.items.first?.status == .done)
     }
 
+    /// SPEC T-37: the extension reads the settings columns added in version 4 of the store.
+    @Test func widgetsReadTheNewSettingsColumns() throws {
+        let url = try StoreFactory.storeURL(fileName: "Tempo-widgets-\(UUID().uuidString).store")
+        defer {
+            for suffix in ["", "-shm", "-wal"] {
+                try? FileManager.default.removeItem(at: URL(filePath: url.path() + suffix))
+            }
+        }
+        let appStore = SwiftDataTaskStore(container: try StoreFactory.make(url: url), clock: clock)
+        var settings = SettingsValue.defaults
+        settings.missedStyle = .strict
+        settings.partStartSummaries = [.morning, .evening]
+        try appStore.save(settings)
+
+        let widgetStore = SwiftDataTaskStore(container: try StoreFactory.make(url: url), clock: clock)
+        let snapshot = try SnapshotLoader.load(
+            store: widgetStore, deviceState: TestEnvironment.deviceState(), clock: clock)
+        #expect(snapshot.core.settings.missedStyle == .strict)
+        #expect(snapshot.core.settings.partStartSummaries == [.morning, .evening])
+    }
+
     @Test func timelineChangesAtPartBoundariesFixedTimesAndMidnight() throws {
         let store = try TestEnvironment.store(clock: clock)
         let tasks = TaskManager(store: store, clock: clock, refresh: RefreshManager(widgets: WidgetReloadCounter()))

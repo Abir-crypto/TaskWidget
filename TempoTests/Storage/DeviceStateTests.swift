@@ -41,6 +41,28 @@ struct DeviceStateTests {
         #expect(state().pendingOpenAction == action)
     }
 
+    /// SPEC §4.6 (T-37): the new device-only items survive a restart, and snoozes clear when the day changes.
+    @Test func snoozesSurviveARestartAndClearWithTheDay() {
+        let snooze = Snooze(
+            originalID: "fixed.\(UUID().uuidString).20261006", kind: .fixed,
+            fireDate: TestEnvironment.date(2026, 10, 6, 12, 35), day: TestEnvironment.today)
+        state().snoozes = SnoozeList(day: TestEnvironment.today, snoozes: [snooze])
+        #expect(state().snoozes?.snoozes(on: TestEnvironment.today) == [snooze])
+        #expect(state().snoozes?.snoozes(on: DayKey(year: 2026, month: 10, day: 7)) == [])
+    }
+
+    @Test func addWidgetCardClosedSurvivesARestart() {
+        #expect(!state().addWidgetCardClosed)
+        state().addWidgetCardClosed = true
+        #expect(state().addWidgetCardClosed)
+    }
+
+    @Test func proEntitlementSurvivesARestart() {
+        let entitlement = ProEntitlement(isUnlocked: true, confirmedAt: TestEnvironment.date(2026, 10, 6, 9))
+        state().proEntitlement = entitlement
+        #expect(state().proEntitlement == entitlement)
+    }
+
     @Test func settingNilClears() {
         let state = state()
         state.timer = TimerState(kind: .generic, habitID: nil, startDay: TestEnvironment.today, segmentStart: nil)

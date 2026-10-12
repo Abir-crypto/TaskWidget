@@ -19,7 +19,7 @@ enum StoreFactory {
 
     static func make(inMemory: Bool) throws -> ModelContainer {
         if inMemory {
-            let schema = Schema(versionedSchema: SchemaV3.self)
+            let schema = Schema(versionedSchema: SchemaV4.self)
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
             return try ModelContainer(for: schema, migrationPlan: MigrationPlan.self, configurations: config)
         }
@@ -28,7 +28,7 @@ enum StoreFactory {
 
     /// Opens a store file at `url`. Two containers on the same file behave like the app and the extension.
     static func make(url: URL) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: SchemaV3.self)
+        let schema = Schema(versionedSchema: SchemaV4.self)
         let config = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
         return try ModelContainer(for: schema, migrationPlan: MigrationPlan.self, configurations: config)
     }

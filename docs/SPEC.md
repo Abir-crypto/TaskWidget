@@ -568,7 +568,7 @@ Every place that can be empty shows a message. Buttons labelled with "Add" open 
   - Every row has `updated_at`. Deleting a row sets `deleted_at` instead of removing it.
   - Days and times are stored as platform-neutral numbers (§5.1).
   - Enum values are fixed strings, and they never change once shipped.
-- Some data stays on the device and will never sync: the timer, the missed popup's list of seen tasks, whether the guide was completed, the pending open action, and scheduled notifications.
+- Some data stays on the device and will never sync: the timer, the missed popup's list of seen tasks, whether the guide was completed, the pending open action, scheduled notifications, snoozes, whether the Add a widget card was closed, and the Pro entitlement.
 
 ### F-27 · Theme color
 
@@ -609,6 +609,7 @@ Types: `uuid`, `text`, `int`, `bool`, `timestamp` (UTC). A `?` marks a column th
 | start_day | int? | Habits: day key |
 | length_days | int? | Habits: empty means ongoing |
 | ended_on | int? | Habits: last day, when ended by hand |
+| notes | text? | 1–1,000 characters after trimming spaces and line breaks; empty notes are stored as no value |
 | created_at, updated_at, deleted_at? | timestamp | |
 
 A habit's **last day** is the earlier of `start_day + length_days − 1` and `ended_on`. Either one may be empty; if both are, the habit has no last day.
@@ -664,7 +665,11 @@ A single row with a fixed id.
 | Column | Type | Default |
 |---|---|---|
 | morning_start · noon_start · evening_start · night_start | int | 360 · 720 · 1020 · 1260 |
-| notify_part_start | bool | true |
+| notify_part_start | bool | Removed (2026-10-12): replaced by the four columns below, one per part |
+| notify_part_start_morning | bool | true |
+| notify_part_start_noon | bool | false |
+| notify_part_start_evening | bool | false |
+| notify_part_start_night | bool | false |
 | notify_ending_soon | bool | true |
 | ending_soon_lead | int | 30 |
 | notify_fixed | bool | true |
@@ -676,11 +681,14 @@ A single row with a fixed id.
 | hide_lock_screen_titles | bool | false |
 | tint_color | text | "blue" |
 | appearance | text | "system" |
+| missed_style | text | "gentle" |
 | updated_at | timestamp | |
 
 `tint_color` is a preset (`blue`, `indigo`, `purple`, `pink`, `red`, `orange`, `green` or `teal`) or a custom color written `#RRGGBB` (F-27).
 
 `appearance` is `system`, `dark` or `light` (F-28).
+
+`missed_style` is `gentle` or `strict` (F-30). A value the app can't read is treated as `gentle`.
 
 ### 4.6 State kept on the device only (never synced)
 
@@ -691,6 +699,9 @@ A single row with a fixed id.
 | Guide completed | bool |
 | Pending open action | Written by widget buttons that open the app, for example "choose a habit for the finished timer" |
 | Scheduled notifications | Managed entirely by §5.9 |
+| Snoozes | A list of {original id, kind, fire time, day}. Cleared when the day changes (F-07). |
+| Add a widget card closed | bool (F-10) |
+| Pro entitlement | Whether Pro is unlocked, and when the store last confirmed it (F-34) |
 
 ---
 

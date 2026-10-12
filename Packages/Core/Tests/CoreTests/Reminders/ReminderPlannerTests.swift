@@ -143,7 +143,7 @@ struct ReminderPlannerTests {
         var fixtures = Fixtures()
         fixtures.oneTime("Interview", timing: .fixed(minute: 750))
         var settings = SettingsValue.defaults
-        settings.notifyPartStart = false
+        settings.partStartSummaries = []
         settings.notifyEndingSoon = false
         settings.notifyFixed = false
         settings.notifyRecap = false

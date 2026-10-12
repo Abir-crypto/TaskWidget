@@ -229,14 +229,14 @@ final class TodayViewModel {
   - Enums are stored as raw `String`s, using the exact values from SPEC §4.
   - Day keys are stored as `Int`.
 - **Versioning:** use a `VersionedSchema` (`SchemaV1`) and a `SchemaMigrationPlan` from the start.
-  - `SchemaV2` (T-33) repeats every record and adds `SettingsRecord.tintColor` (default `"blue"`). `SchemaV3` (T-34) repeats V2 and adds `SettingsRecord.appearance` (default `"system"`). `MigrationPlan` lists every version with a lightweight stage between each pair, V1 → V2 → V3, so existing stores keep their data.
+  - `SchemaV2` (T-33) repeats every record and adds `SettingsRecord.tintColor` (default `"blue"`). `SchemaV3` (T-34) repeats V2 and adds `SettingsRecord.appearance` (default `"system"`). `SchemaV4` (T-37) repeats V3, adds `TaskRecord.notes` (optional), replaces `SettingsRecord.notifyPartStart` with `notifyPartStartMorning` (true), `…Noon`, `…Evening` and `…Night` (false), and adds `SettingsRecord.missedStyle` (default `"gentle"`). `MigrationPlan` lists every version with a lightweight stage between each pair, V1 → V2 → V3 → V4, so existing stores keep their data.
   - Each new version is a full copy of the previous one plus the change; a shipped version is never edited.
-  - Code uses the current version through the typealiases in `SwiftDataTaskStore` (`SettingsRecord = SchemaV3.SettingsRecord`, …), and `StoreFactory` opens `Schema(versionedSchema: SchemaV3.self)`.
+  - Code uses the current version through the typealiases in `SwiftDataTaskStore` (`SettingsRecord = SchemaV4.SettingsRecord`, …), and `StoreFactory` opens `Schema(versionedSchema: SchemaV4.self)`.
 - **Location:** the store file lives in the App Group container, opened with `cloudKitDatabase: .none`.
 - **One `ModelContainer` per process,** held in a static. **Each read or write uses a fresh `ModelContext`.** No `@Query` anywhere.
   - A long-lived context doesn't reliably show writes made by another process (the widget extension), and fresh contexts avoid that problem. This was found on iOS 17 and the approach stays on iOS 18 (D-044, D-104).
 - **Mapping:** records are converted to `Core` value types in `SwiftDataTaskStore`. Views never receive records.
-- **Device-only state** (SPEC §4.6) lives in `UserDefaults(suiteName: "group.akumatech.tempo")` as Codable JSON: the timer, the missed seen list, and the pending open action, plus the "guide completed" flag as a plain bool. The flag lives here rather than in `@AppStorage` so UI tests control it with the rest of the device-only state (D-094).
+- **Device-only state** (SPEC §4.6) lives in `UserDefaults(suiteName: "group.akumatech.tempo")` as Codable JSON: the timer, the missed seen list, the pending open action, the snoozes (`SnoozeList`) and the Pro entitlement, plus the "guide completed" and "Add a widget card closed" flags as plain bools. The flag lives here rather than in `@AppStorage` so UI tests control it with the rest of the device-only state (D-094).
 
 ```swift
 enum SchemaV1: VersionedSchema {
@@ -652,3 +652,8 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - `IPHONEOS_DEPLOYMENT_TARGET = 18.0` at the project level, which every target inherits, and `.iOS(.v18)` (with `.macOS(.v15)`, its Mac counterpart) in `Packages/Core/Package.swift`.
   - The rules in §5 change: APIs up to iOS 18 are allowed; anything from iOS 26 on needs `if #available` with a fallback. D-044's storage approach stays.
   - `ProjectConfigurationTests` checks that the app and the widget extension are built for iOS 18.0.
+- **T-37:**
+  - `SchemaV4` and the lightweight stage from V3 (§6), with a test that opens a version-3 store.
+  - `Core`: `TaskValue.notes` with `TaskRules.normalizedNotes`/`notesError`; `SettingsValue.partStartSummaries` (a `Set<DayPart>` stored as the four columns) and `missedStyle` (`MissedStyle`, unreadable values are Gentle); `Snooze`, `SnoozeKind`, `SnoozeList` and `ProEntitlement` for `DeviceState`.
+  - `TaskManager.setNotes(taskID:notes:)`, allowed wherever `rename` is.
+  - Until T-42, the planner and Settings' single "Part starts" switch treat any part's switch as the old single switch, so behavior doesn't change before its SPEC edit.

@@ -12,6 +12,19 @@ struct TaskRulesTests {
         #expect(TaskRules.titleError(String(repeating: "a", count: 101)) == .titleTooLong)
     }
 
+    /// SPEC §4.1: notes are trimmed, empty means none, and they're limited to 1,000 characters.
+    @Test func notesAreTrimmedEmptyMeansNoneAndLimited() {
+        #expect(TaskRules.normalizedNotes("  Bring the form\n ") == "Bring the form")
+        #expect(TaskRules.normalizedNotes("Line one\nLine two") == "Line one\nLine two")
+        #expect(TaskRules.normalizedNotes(" \n\t ") == nil)
+        #expect(TaskRules.normalizedNotes(nil) == nil)
+        #expect(TaskRules.notesError(nil) == nil)
+        #expect(TaskRules.notesError("   ") == nil)
+        #expect(TaskRules.notesError(String(repeating: "a", count: 1000)) == nil)
+        #expect(TaskRules.notesError("\n" + String(repeating: "a", count: 1000) + "  ") == nil)
+        #expect(TaskRules.notesError(String(repeating: "a", count: 1001)) == .notesTooLong)
+    }
+
     @Test func fixedTimesUseFiveMinuteSteps() {
         #expect(TaskRules.timingError(.fixed(minute: 750)) == nil)
         #expect(TaskRules.timingError(.fixed(minute: 0)) == nil)
@@ -59,8 +72,10 @@ struct TaskRulesTimingTests {
         #expect(TaskRules.isOver(.part(.morning), on: TestCalendar.today, now: now, parts: parts))
         #expect(!TaskRules.isOver(.part(.noon), on: TestCalendar.today, now: now, parts: parts))
         #expect(!TaskRules.isOver(.part(.evening), on: TestCalendar.today, now: now, parts: parts))
-        #expect(TaskRules.isOver(.fixed(minute: 600), on: TestCalendar.today, now: now, parts: parts))  // 10:00, Morning
-        #expect(!TaskRules.isOver(.fixed(minute: 750), on: TestCalendar.today, now: now, parts: parts))  // 12:30, passed but Noon is open
+        // 10:00, in Morning, is over.
+        #expect(TaskRules.isOver(.fixed(minute: 600), on: TestCalendar.today, now: now, parts: parts))
+        // 12:30 has passed, but Noon is still open.
+        #expect(!TaskRules.isOver(.fixed(minute: 750), on: TestCalendar.today, now: now, parts: parts))
         #expect(!TaskRules.isOver(.anytime, on: TestCalendar.today, now: now, parts: parts))
     }
 

@@ -14,6 +14,12 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Data model changes (T-37)
+- Changed: §4.1 — `tasks` gains `notes` (optional, up to 1,000 characters after trimming; empty is stored as no value).
+- Changed: §4.5 — `notify_part_start` is replaced by `notify_part_start_morning` (true), `_noon`, `_evening` and `_night` (false); `missed_style` (`"gentle"`) is added.
+- Changed: §4.6, F-26 — device-only state gains Snoozes, Add a widget card closed and the Pro entitlement, none of which sync.
+- Platform: ios.md §6, §15 — `SchemaV4` with a lightweight stage from V3; the new `DeviceState` keys.
+
 ## 2026-10-12 · Minimum system version iOS 18 (T-36)
 - Platform: ios.md §1, §3, §5, §6, §7, §15 — the deployment target is iOS 18.0 for every target and the `Core` package; APIs from iOS 26 on need `#available` with a fallback; D-044's storage approach stays (D-104, superseding D-052).
 - Process: CLAUDE.md — the definition of done and the API rule name iOS 18.

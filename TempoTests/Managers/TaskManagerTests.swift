@@ -143,6 +143,31 @@ struct TaskManagerTests {
         #expect(throws: TaskError.invalid(.emptyTitle)) { try manager.rename(taskID: task.id, to: "") }
     }
 
+    /// SPEC §4.1 (T-37): notes are trimmed, empty notes are stored as no value, and over 1,000 characters is refused.
+    @Test func notesAreTrimmedClearedAndLimited() throws {
+        let task = try habit()
+        try manager.setNotes(taskID: task.id, notes: "  Before breakfast\n")
+        #expect(try store.task(id: task.id)?.notes == "Before breakfast")
+        try manager.setNotes(taskID: task.id, notes: " \n ")
+        #expect(try store.task(id: task.id)?.notes == nil)
+        #expect(throws: TaskError.invalid(.notesTooLong)) {
+            try manager.setNotes(taskID: task.id, notes: String(repeating: "a", count: 1001))
+        }
+        #expect(try store.task(id: task.id)?.notes == nil)
+    }
+
+    /// Notes change wherever the title can: an ended habit's notes can, a past one-time task's can't.
+    @Test func notesFollowTheTitlesEditingRules() throws {
+        clock.now = TestEnvironment.date(2026, 10, 1, 9)
+        let ended = try habit()
+        let past = try manager.createOneTime(title: "Call the bank", date: day(1), timing: .anytime)
+        clock.now = TestEnvironment.date(2026, 10, 6, 9)
+        try manager.endHabit(taskID: ended.id)
+        try manager.setNotes(taskID: ended.id, notes: "Paused for the holidays")
+        #expect(try store.task(id: ended.id)?.notes == "Paused for the holidays")
+        #expect(throws: TaskError.notAllowed) { try manager.setNotes(taskID: past.id, notes: "Too late") }
+    }
+
     @Test func lengthMovesTheLastDay() throws {
         clock.now = TestEnvironment.date(2026, 10, 1, 9)
         let task = try habit(length: 30)

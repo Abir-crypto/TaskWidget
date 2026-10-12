@@ -7,11 +7,11 @@ import SwiftData
 /// Every call makes a fresh `ModelContext`, so it always sees writes made by the other process (app or
 /// widget extension). Records are converted to `Core` values here and never leave this file.
 final class SwiftDataTaskStore: TaskStore {
-    typealias TaskRecord = SchemaV3.TaskRecord
-    typealias ScheduleRecord = SchemaV3.ScheduleRecord
-    typealias CompletionRecord = SchemaV3.CompletionRecord
-    typealias TimeEntryRecord = SchemaV3.TimeEntryRecord
-    typealias SettingsRecord = SchemaV3.SettingsRecord
+    typealias TaskRecord = SchemaV4.TaskRecord
+    typealias ScheduleRecord = SchemaV4.ScheduleRecord
+    typealias CompletionRecord = SchemaV4.CompletionRecord
+    typealias TimeEntryRecord = SchemaV4.TimeEntryRecord
+    typealias SettingsRecord = SchemaV4.SettingsRecord
 
     /// The settings table's one fixed id (SPEC §4.5).
     static let settingsID = UUID(uuid: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1))
@@ -104,6 +104,7 @@ final class SwiftDataTaskStore: TaskStore {
         record.startDay = task.startDay?.rawValue
         record.lengthDays = task.lengthDays
         record.endedOn = task.endedOn?.rawValue
+        record.notes = task.notes
         record.createdAt = task.createdAt
         record.updatedAt = task.updatedAt
         record.deletedAt = task.deletedAt
@@ -140,6 +141,7 @@ final class SwiftDataTaskStore: TaskStore {
             startDay: record.startDay.map(DayKey.init(rawValue:)),
             lengthDays: record.lengthDays,
             endedOn: record.endedOn.map(DayKey.init(rawValue:)),
+            notes: record.notes,
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
             deletedAt: record.deletedAt
@@ -362,7 +364,7 @@ final class SwiftDataTaskStore: TaskStore {
                 eveningStart: record.eveningStart,
                 nightStart: record.nightStart
             ),
-            notifyPartStart: record.notifyPartStart,
+            partStartSummaries: Self.partStartSummaries(of: record),
             notifyEndingSoon: record.notifyEndingSoon,
             endingSoonLead: record.endingSoonLead,
             notifyFixed: record.notifyFixed,
@@ -374,6 +376,7 @@ final class SwiftDataTaskStore: TaskStore {
             hideLockScreenTitles: record.hideLockScreenTitles,
             tintColor: ThemeColor(storedValue: record.tintColor),
             appearance: Appearance(storedValue: record.appearance),
+            missedStyle: MissedStyle(storedValue: record.missedStyle),
             updatedAt: record.updatedAt
         )
     }
@@ -392,7 +395,10 @@ final class SwiftDataTaskStore: TaskStore {
         record.noonStart = stored.parts.noonStart
         record.eveningStart = stored.parts.eveningStart
         record.nightStart = stored.parts.nightStart
-        record.notifyPartStart = stored.notifyPartStart
+        record.notifyPartStartMorning = stored.partStartSummaries.contains(.morning)
+        record.notifyPartStartNoon = stored.partStartSummaries.contains(.noon)
+        record.notifyPartStartEvening = stored.partStartSummaries.contains(.evening)
+        record.notifyPartStartNight = stored.partStartSummaries.contains(.night)
         record.notifyEndingSoon = stored.notifyEndingSoon
         record.endingSoonLead = stored.endingSoonLead
         record.notifyFixed = stored.notifyFixed
@@ -404,8 +410,19 @@ final class SwiftDataTaskStore: TaskStore {
         record.hideLockScreenTitles = stored.hideLockScreenTitles
         record.tintColor = stored.tintColor.storedValue
         record.appearance = stored.appearance.rawValue
+        record.missedStyle = stored.missedStyle.rawValue
         record.updatedAt = clock.now
         try context.save()
         return stored
+    }
+
+    /// The four `notify_part_start_*` columns as a set of parts (SPEC §4.5).
+    private static func partStartSummaries(of record: SettingsRecord) -> Set<DayPart> {
+        var parts: Set<DayPart> = []
+        if record.notifyPartStartMorning { parts.insert(.morning) }
+        if record.notifyPartStartNoon { parts.insert(.noon) }
+        if record.notifyPartStartEvening { parts.insert(.evening) }
+        if record.notifyPartStartNight { parts.insert(.night) }
+        return parts
     }
 }

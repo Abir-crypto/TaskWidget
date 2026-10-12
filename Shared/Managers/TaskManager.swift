@@ -272,6 +272,20 @@ final class TaskManager {
         refresh.afterChange()
     }
 
+    /// Changes a task's notes. Like the title, they aren't part of the schedule history and can change wherever the
+    /// title can: on any habit, ended ones too, and on one-time tasks dated today or later (SPEC F-01, §4.1).
+    /// Empty notes are stored as no value; more than 1,000 characters is rejected.
+    func setNotes(taskID: UUID, notes: String?) throws {
+        if let error = TaskRules.notesError(notes) { throw TaskError.invalid(error) }
+        var task = try existingTask(taskID)
+        if task.type == .oneTime, !Editability.canEditOneTime(task, today: today) { throw TaskError.notAllowed }
+        let normalized = TaskRules.normalizedNotes(notes)
+        guard task.notes != normalized else { return }
+        task.notes = normalized
+        try store.write([.task(task)])
+        refresh.afterChange()
+    }
+
     /// Changes a task's timing, weekdays or target, keeping the schedule history (SPEC §4.2, F-03).
     /// For a habit the change applies from today; days before today keep their schedule.
     func updateSchedule(taskID: UUID, timing: Timing, weekdays: Weekdays, targetMinutes: Int?) throws {

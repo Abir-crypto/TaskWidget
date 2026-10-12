@@ -14,6 +14,8 @@ public struct TaskValue: Identifiable, Hashable, Codable, Sendable {
     public var lengthDays: Int?
     /// Habits: the last day, when ended by hand.
     public var endedOn: DayKey?
+    /// Optional notes, 1–1,000 characters after trimming, or `nil` (SPEC F-01, §4.1).
+    public var notes: String?
     public var createdAt: Date
     public var updatedAt: Date
     public var deletedAt: Date?
@@ -26,6 +28,7 @@ public struct TaskValue: Identifiable, Hashable, Codable, Sendable {
         startDay: DayKey? = nil,
         lengthDays: Int? = nil,
         endedOn: DayKey? = nil,
+        notes: String? = nil,
         createdAt: Date,
         updatedAt: Date? = nil,
         deletedAt: Date? = nil
@@ -37,6 +40,7 @@ public struct TaskValue: Identifiable, Hashable, Codable, Sendable {
         self.startDay = startDay
         self.lengthDays = lengthDays
         self.endedOn = endedOn
+        self.notes = notes
         self.createdAt = createdAt
         self.updatedAt = updatedAt ?? createdAt
         self.deletedAt = deletedAt
@@ -44,6 +48,8 @@ public struct TaskValue: Identifiable, Hashable, Codable, Sendable {
 
     /// Titles are 1–100 characters (SPEC §7).
     public static let maximumTitleLength = 100
+    /// Notes are up to 1,000 characters (SPEC §7).
+    public static let maximumNotesLength = 1000
 
     /// A habit's last day: the earlier of `start_day + length_days − 1` and `ended_on` (SPEC §4.1).
     /// `nil` when the habit has no last day. A one-time task's last day is its date.

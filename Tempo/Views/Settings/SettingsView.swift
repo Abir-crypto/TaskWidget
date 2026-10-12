@@ -48,7 +48,14 @@ struct SettingsView: View {
 
     private var remindersSection: some View {
         Section {
-            Toggle("Part starts", isOn: binding(\.notifyPartStart))
+            // One switch for every part's summary until T-42 gives each part its own (D-109).
+            Toggle(
+                "Part starts",
+                isOn: Binding(
+                    get: { !model.settings.partStartSummaries.isEmpty },
+                    set: { on in
+                        model.update { $0.partStartSummaries = on ? SettingsValue.defaults.partStartSummaries : [] }
+                    }))
 
             Toggle("Ending soon", isOn: binding(\.notifyEndingSoon))
             if model.settings.notifyEndingSoon {

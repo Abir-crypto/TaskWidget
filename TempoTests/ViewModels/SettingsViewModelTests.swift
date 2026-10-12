@@ -33,7 +33,7 @@ struct SettingsViewModelTests {
         first.setStart(of: .morning, to: 420)
         first.setStart(of: .night, to: 1320)
         first.update { settings in
-            settings.notifyPartStart = false
+            settings.partStartSummaries = [.evening, .night]
             settings.notifyEndingSoon = false
             settings.endingSoonLead = 45
             settings.notifyFixed = false
@@ -45,6 +45,7 @@ struct SettingsViewModelTests {
             settings.hideLockScreenTitles = true
             settings.tintColor = .custom(red: 30, green: 144, blue: 255)
             settings.appearance = .light
+            settings.missedStyle = .strict
         }
 
         // A new container on the same file stands in for relaunching the app.
@@ -53,7 +54,9 @@ struct SettingsViewModelTests {
         let saved = second.settings
         #expect(saved.parts.morningStart == 420)
         #expect(saved.parts.nightStart == 1320)
-        #expect(!saved.notifyPartStart && !saved.notifyEndingSoon && !saved.notifyFixed)
+        #expect(saved.partStartSummaries == [.evening, .night])
+        #expect(saved.missedStyle == .strict)
+        #expect(!saved.notifyEndingSoon && !saved.notifyFixed)
         #expect(!saved.notifyRecap && !saved.notifyTimer)
         #expect(saved.endingSoonLead == 45)
         #expect(saved.fixedLead == 15)

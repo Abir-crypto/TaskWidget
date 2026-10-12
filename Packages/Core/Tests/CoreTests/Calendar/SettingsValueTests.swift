@@ -10,7 +10,9 @@ struct SettingsValueTests {
         #expect(settings.fixedLead == 10)
         #expect(settings.recapMinute == 1410)
         #expect(settings.timerAlertMinutes == 120)
-        #expect(settings.notifyPartStart && settings.notifyEndingSoon && settings.notifyFixed)
+        #expect(settings.partStartSummaries == [.morning])
+        #expect(settings.missedStyle == .gentle)
+        #expect(settings.notifyEndingSoon && settings.notifyFixed)
         #expect(settings.notifyRecap && settings.notifyTimer)
         #expect(!settings.hideLockScreenTitles)
     }
