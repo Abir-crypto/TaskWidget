@@ -24,7 +24,7 @@ enum NextTaskWhen: Hashable {
         }
     }
 
-    /// The Focus widget's top line without the self-updating part: "NEXT · 12:30", "NOON · until 17:00",
+    /// The Focus widget's top line without the self-updating part: "NEXT · 12:30", "AFTERNOON · until 17:00",
     /// "EVENING · from 17:00", "ANYTIME".
     var focusLabel: String {
         switch self {

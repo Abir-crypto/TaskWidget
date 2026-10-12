@@ -1,7 +1,7 @@
 import Core
 import Foundation
 
-/// The words of each notification (SPEC F-07): "Noon · 3 tasks" / "Call the bank, Interview at 12:30, Read".
+/// The words of each notification (SPEC F-07): "Afternoon · 3 tasks" / "Call the bank, Interview at 12:30, Read".
 enum NotificationText {
     /// Lists show up to 3 names, then "and N more".
     static let maximumNames = 3

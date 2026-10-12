@@ -56,10 +56,10 @@ struct LockScreenWidgetTests {
     @Test func partOfDayTaskOpenNow() throws {
         try make("Call the bank", .part(.noon))
         let item = try #require(try item(at: 13))
-        #expect(item.topLine == "Noon · until \(time(1020))")
+        #expect(item.topLine == "Afternoon · until \(time(1020))")
         #expect(item.countdownTo == nil)
         #expect(item.title == "Call the bank")
-        #expect(item.inline == "Noon: Call the bank")
+        #expect(item.inline == "Afternoon: Call the bank")
     }
 
     @Test func durationHabitShowsItsProgress() throws {

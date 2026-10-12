@@ -210,6 +210,9 @@
         }
       }
     },
+    "Afternoon" : {
+      "comment" : "Part of the day"
+    },
     "Alert after" : {
 
     },
@@ -631,9 +634,6 @@
     "No upcoming tasks" : {
 
     },
-    "Noon" : {
-      "comment" : "Part of the day"
-    },
     "Not allowed yet" : {
 
     },
@@ -652,10 +652,10 @@
     "Nothing at night" : {
 
     },
-    "Nothing at noon" : {
+    "Nothing completed yet" : {
 
     },
-    "Nothing completed yet" : {
+    "Nothing in the afternoon" : {
 
     },
     "Nothing in the evening" : {
@@ -668,6 +668,9 @@
 
     },
     "Nothing planned for %@" : {
+
+    },
+    "Nothing this afternoon" : {
 
     },
     "Nothing this evening" : {
@@ -767,7 +770,7 @@
     "Pink" : {
       "comment" : "Theme color"
     },
-    "Plan your day by its parts: morning, noon, evening and night. Every task belongs to a part, a set time, or anytime." : {
+    "Plan your day by its parts: morning, afternoon, evening and night. Every task belongs to a part, a set time, or anytime." : {
 
     },
     "Previous" : {

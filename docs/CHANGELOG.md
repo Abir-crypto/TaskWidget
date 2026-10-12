@@ -14,6 +14,12 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · "Afternoon" on screen (T-39)
+- Changed: F-02 — the part that starts at `noon_start` is called Afternoon on screen; stored values and ids keep `noon` (D-106). The line "'Before night' in everyday speech means Evening" is removed.
+- Changed: §1.1, §1.3, F-04, F-07, F-08, F-10, F-15, F-16, F-19, F-20, F-22, F-24, §6, §7 — every user-facing "Noon" is now "Afternoon"; Afternoon's empty text is "Nothing this afternoon" / "Nothing in the afternoon".
+- Changed: T-05, T-07 acceptance — "Noon task" reads "Afternoon task".
+- Platform: ios.md §15 — `DayPart.title` and both string catalogs.
+
 ## 2026-10-12 · Notes on tasks (T-38)
 - Changed: §2.1, §2.2 — notes on tasks are in v1.
 - Changed: F-01 — every task can have notes (up to 1,000 characters), edited wherever the title can, never shown in widgets, on the Lock Screen or in notifications (D-105, D-119).

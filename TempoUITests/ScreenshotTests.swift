@@ -711,7 +711,8 @@ final class ScreenshotTests: XCTestCase {
 
     /// Photographs Home Screen pages 1–4 in each style named in `TEMPO_STYLES` (default "Tinted,Clear") next to a
     /// real task, then puts the Default style back and deletes the task (SPEC F-17: widgets adapt to tinted
-    /// styles).
+    /// styles). The task is an Anytime task, or, with `TEMPO_TASK_TIMING=Part`, in the part in progress (the editor's
+    /// default), which shows the part's name in the widgets (T-39).
     @MainActor
     func testWidgetStyles() {
         let app = XCUIApplication()
@@ -722,7 +723,7 @@ final class ScreenshotTests: XCTestCase {
         let title = app.textFields["Title"]
         title.tap()
         title.typeText("Style check")
-        app.buttons["Anytime"].tap()
+        if ProcessInfo.processInfo.environment["TEMPO_TASK_TIMING"] != "Part" { app.buttons["Anytime"].tap() }
         app.buttons["Save"].tap()
         sleep(1)
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")

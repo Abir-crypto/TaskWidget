@@ -18,7 +18,7 @@ final class GuideUITests: XCTestCase {
         // Skip jumps to page 6, which has the part pickers and no Skip.
         app.buttons["Skip"].tap()
         XCTAssertTrue(app.staticTexts["Your parts of the day"].waitForExistence(timeout: 3))
-        for part in ["Morning", "Noon", "Evening", "Night"] {
+        for part in ["Morning", "Afternoon", "Evening", "Night"] {
             XCTAssertTrue(app.datePickers[part].exists, "\(part) start is missing")
         }
         XCTAssertFalse(app.buttons["Skip"].exists)

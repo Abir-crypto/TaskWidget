@@ -19,7 +19,7 @@ struct NotificationTextTests {
             day: day, part: .noon,
             items: [item("Call the bank"), item("Interview", fixed: 750), item("Read", minutes: 0, target: 30)],
             anytime: [])
-        #expect(NotificationText.title(for: content) == "Noon · 3 tasks")
+        #expect(NotificationText.title(for: content) == "Afternoon · 3 tasks")
         #expect(NotificationText.body(for: content) == "Call the bank, Interview at \(time1230), Read")
     }
 

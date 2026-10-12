@@ -55,7 +55,7 @@ struct FocusWidgetTests {
             return
         }
         #expect(item.title == "Call the bank")
-        #expect(item.when.focusLabel == "NOON · until \(time(1020))")
+        #expect(item.when.focusLabel == "AFTERNOON · until \(time(1020))")
         #expect(then?.title == "Pick up")
         #expect(then?.when.focusLabel == "NEXT · \(time(960))")
     }

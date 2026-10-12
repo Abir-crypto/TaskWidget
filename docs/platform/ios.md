@@ -661,3 +661,4 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - The editor's notes field is a `TextField(axis: .vertical)` with `.lineLimit(3...8)`; saving an edit calls `TaskManager.setNotes` after `rename` or `updateOneTime`, and creating passes `notes` to `createOneTime`/`createHabit`.
   - `Tempo/Components/NotesIndicator` (used by Today and Tasks) is a `note.text` image labelled "Has notes".
   - Widget content types and `ReminderItem` carry titles, never notes, so nothing on the Lock Screen or in a notification can show them.
+- **T-39:** `DayPart.title` returns "Afternoon" for `.noon`; stored values, `noon_start`, notification ids and link parameters (`part=noon`) don't change. Both string catalogs are synced, and the stale "Noon" entries removed. The Day widget's column titles already shrink to fit (`minimumScaleFactor(0.7)`).

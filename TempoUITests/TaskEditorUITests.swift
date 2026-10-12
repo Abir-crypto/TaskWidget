@@ -74,6 +74,6 @@ final class TaskEditorUITests: XCTestCase {
         XCTAssertTrue(morning.waitForExistence(timeout: 5))
         XCTAssertEqual(morning.value as? String, "Already over")
         XCTAssertFalse(morning.isEnabled)
-        XCTAssertTrue(app.buttons["Noon"].isEnabled)
+        XCTAssertTrue(app.buttons["Afternoon"].isEnabled)
     }
 }

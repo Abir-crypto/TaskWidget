@@ -35,7 +35,7 @@
 
 ### 1.1 Concept
 
-Tempo is a to-do list organized by the time of day. Every task says *when* in the day it belongs: morning, noon, evening, night, a fixed time, or anytime today. One-time tasks are done once. Habits repeat on chosen weekdays and are tracked over weeks, months and years. Widgets are the main way to use the app: a glance shows what's next, and tasks can be checked off and timed without opening it.
+Tempo is a to-do list organized by the time of day. Every task says *when* in the day it belongs: morning, afternoon, evening, night, a fixed time, or anytime today. One-time tasks are done once. Habits repeat on chosen weekdays and are tracked over weeks, months and years. Widgets are the main way to use the app: a glance shows what's next, and tasks can be checked off and timed without opening it.
 
 ### 1.2 Principles
 
@@ -54,7 +54,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 | Habit | A repeating task: a progress habit or a duration habit. |
 | Progress habit | A habit checked off on each scheduled day, e.g. take medicine. |
 | Duration habit | A habit measured in minutes against a daily target, e.g. read 30 min. |
-| Part of the day | Morning, Noon, Evening or Night. The user sets their start times. |
+| Part of the day | Morning, Afternoon, Evening or Night. The user sets their start times. |
 | Timing | When in the day a task belongs: a fixed time, a part of the day, or anytime. |
 | Occurrence | A task on one specific day. Computed from the task and its schedule, never stored. |
 | Schedule | A habit's timing, weekdays and target from a given day onward. Habits keep a history of schedules. |
@@ -125,14 +125,15 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 | Part of the day | Gym in the evening | That part | Ending-soon reminder for that part |
 | Anytime | Renew passport, sometime today | The Anytime group, which belongs to no part | End-of-day recap only |
 
-**Parts of the day:** Morning, Noon, Evening, Night.
+**Parts of the day:** Morning, Afternoon, Evening, Night.
 
-- The user sets the start time of each part in the first-launch guide and in Settings. Defaults: Morning 06:00, Noon 12:00, Evening 17:00, Night 21:00.
+The part that starts at `noon_start` is called **Afternoon** everywhere the user can see it. Its stored values stay as they are: `noon` in §4.2, `noon_start` in §4.5, and ids such as `part-start.<day>.noon` (§0: enum values never change once shipped).
+
+- The user sets the start time of each part in the first-launch guide and in Settings. Defaults: Morning 06:00, Afternoon 12:00, Evening 17:00, Night 21:00.
 - Each part ends when the next one starts. Night ends at midnight.
 - Times before Morning's start, such as a fixed-time task at 05:00, belong to Morning.
 - Start times use 15-minute steps, must be in order, and each part must last at least 30 minutes.
 - Tasks store their part, not clock times. Changing a start time immediately moves every task in that part, along with its reminders and widget updates. Past days aren't affected, because their statuses are final (§5.4).
-- "Before night" in everyday speech means Evening.
 - Fixed times use 5-minute steps.
 
 ### F-03 · Habit schedules and goals
@@ -168,8 +169,8 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 | Missed | Its part ended and it isn't done. For duration habits, this means no minutes were logged. |
 
 - A task becomes Missed or Short when its part of the day ends:
-  - Morning tasks at Noon's start.
-  - Noon tasks at Evening's start.
+  - Morning tasks at Afternoon's start.
+  - Afternoon tasks at Evening's start.
   - Evening tasks at Night's start.
   - Night and Anytime tasks at midnight.
   - Fixed-time tasks when their part ends.
@@ -252,7 +253,7 @@ Pausing, Done or Discard cancels the alert.
 
 | Kind | When | Sent only if | Example title / body | Tapping opens |
 |---|---|---|---|---|
-| Part starts | At the part's start | The part has at least one task today that isn't done | "Noon · 3 tasks" / "Call the bank, Interview at 12:30, Read" | Today, at that part |
+| Part starts | At the part's start | The part has at least one task today that isn't done | "Afternoon · 3 tasks" / "Call the bank, Interview at 12:30, Read" | Today, at that part |
 | Ending soon | The lead time before the part ends (30 min by default) | Something in the part still isn't done | "Evening ends in 30 min" / "2 left: Gym, Read (10 of 30 min)" | Today, at that part |
 | Fixed time | The lead time before the task (10 min by default) | The task isn't done | "Interview at 12:30" / "In 10 min" | Today, at that task |
 | End-of-day recap | At the recap time (23:30 by default) | At least one task today isn't done | "Today: 2 missed, 1 still open" / "Call the bank, Read (20 of 30 min), Plan tomorrow" | Missed tab |
@@ -280,13 +281,13 @@ The Earlier section has **Sort** and **Filter**:
 - Sort: newest first (the default) or oldest first.
 - Date range: All (the default), This week, This month, or a custom range.
 - Type: one-time, progress and duration, in any combination.
-- Part of the day: Morning, Noon, Evening, Night, Anytime. Fixed-time tasks count under their part.
+- Part of the day: Morning, Afternoon, Evening, Night, Anytime. Fixed-time tasks count under their part.
 - A specific task.
 - While any filter is active, a **Clear filters** button appears. Filters reset when the app restarts.
 
 Other details:
 - A count above Earlier reflects the active filters ("14 missed").
-- Each row shows the title, a type icon, when it was due ("Tue 29 Sep · Noon" or "Tue 29 Sep · 12:30"), and for duration habits the minutes ("20 of 30 min").
+- Each row shows the title, a type icon, when it was due ("Tue 29 Sep · Afternoon" or "Tue 29 Sep · 12:30"), and for duration habits the minutes ("20 of 30 min").
 - The tab's badge shows how many tasks are Missed or Short today.
 - Deleted tasks disappear from the list. Ended habits stay in it.
 
@@ -317,11 +318,11 @@ Other details:
 2. **Day strip:** the seven days of the week. Swiping moves by a week, and tapping selects a day.
    - Each day shows a dot if it has tasks, and a red dot if it has missed tasks.
    - A "Today" button returns to today whenever another day is selected.
-3. **Sections, in this order:** Morning, Noon, Evening, Night, Anytime.
+3. **Sections, in this order:** Morning, Afternoon, Evening, Night, Anytime.
    - On today, parts that have ended collapse into one line, for example "Morning · 2 done · 1 missed". Tapping the line expands it.
    - The current part is highlighted and shows "ends in 1h 20m", updated every minute.
    - Later parts and Anytime are expanded.
-   - A part with no tasks shows "Nothing this evening" in small grey text.
+   - A part with no tasks shows "Nothing this evening" in small grey text. Afternoon's reads "Nothing this afternoon" on today and "Nothing in the afternoon" on other days.
    - Within a part, fixed-time tasks come first in time order, then part-of-day tasks in the order they were created.
 4. **The floating + button,** which adds a task to the selected day.
 
@@ -404,7 +405,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 1. **Type:** One-time, Progress or Duration. It can't be changed after the task is created; when editing, it's shown read-only.
 2. **Title.**
 3. **Notes:** optional, several lines.
-4. **When:** Fixed time, Part of the day, or Anytime. Fixed time shows a time picker in 5-minute steps. Part of the day shows Morning, Noon, Evening and Night.
+4. **When:** Fixed time, Part of the day, or Anytime. Fixed time shows a time picker in 5-minute steps. Part of the day shows Morning, Afternoon, Evening and Night.
 5. **One-time only:** the date. It defaults to the day selected in Today, or otherwise today. Past dates aren't allowed.
 6. **Habits only:**
    - Repeat on: seven weekday toggles, all on by default.
@@ -421,7 +422,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 
 ### F-16 · Settings
 
-- **Parts of the day:** the start times of Morning, Noon, Evening and Night (rules in F-02).
+- **Parts of the day:** the start times of Morning, Afternoon, Evening and Night (rules in F-02).
 - **Reminders:**
   - Part starts: on or off.
   - Ending soon: on or off, with a lead time of 15, 30, 45 or 60 min (30 by default).
@@ -461,7 +462,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 
 ### F-19 · Day widget (medium)
 
-- Four columns: Morning, Noon, Evening and Night. The current part is highlighted.
+- Four columns: Morning, Afternoon, Evening and Night. The current part is highlighted.
 - Each column shows one mark per task: ✓ done, ○ not done yet, ✗ missed, and ◐ short or a duration habit with some time logged. It shows at most 6 marks, then "+N".
 - Under each column: "done", "N left", or nothing if the part has no tasks.
 - A footer shows "Anytime · N left" while Anytime tasks are open.
@@ -472,7 +473,7 @@ The editor opens from the + button, from empty-state Add buttons, from Edit acti
 ### F-20 · Focus widget (medium)
 
 The Focus widget is information only, with no buttons. It shows the result of the next-task rule (§5.6):
-- **A top line saying when:** "NEXT · 12:30 · in 45 min", "NOON · until 17:00", "EVENING · from 17:00" or "ANYTIME".
+- **A top line saying when:** "NEXT · 12:30 · in 45 min", "AFTERNOON · until 17:00", "EVENING · from 17:00" or "ANYTIME".
 - **The title,** shown large.
 - **For duration habits,** progress such as "10 of 30 min".
 - **"Then:"** followed by the item after it.
@@ -508,7 +509,7 @@ There are two sizes: **rectangular**, under the clock, and **inline**, a single 
 | Situation | Rectangular (line 1 / line 2) | Inline |
 |---|---|---|
 | A fixed-time task coming up | "12:30 · in 45 min" / "Interview" | "Next: Interview at 12:30" |
-| A part-of-day task open now | "Noon · until 17:00" / "Call the bank" | "Noon: Call the bank" |
+| A part-of-day task open now | "Afternoon · until 17:00" / "Call the bank" | "Afternoon: Call the bank" |
 | A duration habit | "Evening · 10 of 30 min" or "12:30 · 10 of 30 min" / "Read" (its time, part or "Anytime", then its progress) | Follows its timing like any other task: "Evening: Read" or "Next: Read at 12:30" |
 | A task in a later part | "Evening · from 17:00" / "Gym" | "Evening: Gym" |
 | An Anytime task | "Anytime" / "Renew passport" | "Anytime: Renew passport" |
@@ -542,7 +543,7 @@ Every place that can be empty shows a message. Buttons labelled with "Add" open 
 | Today, with no tasks today | No tasks today | Add a task |
 | Today, on a future day | Nothing planned for Thu 8 Oct | Add a task, preset to that day |
 | Today, on an empty past day | Nothing was planned for Mon 5 Oct | — |
-| Today, an empty part | Nothing this evening (small, grey) | — |
+| Today, an empty part | Nothing this evening (small, grey); "Nothing this afternoon" on today and "Nothing in the afternoon" on other days | — |
 | Tasks › Habits | No habits yet | Add a habit |
 | Tasks › One-time | No upcoming tasks | Add a task |
 | History › One-time | Nothing completed yet | — |
@@ -834,7 +835,7 @@ For a range R (a week, month or year), counting up to and including today:
 
 | Case | Behavior |
 |---|---|
-| A Noon task created at 16:50 | Open, then Missed at 17:00 |
+| An Afternoon task created at 16:50 | Open, then Missed at 17:00 |
 | A part's start time changed while today's tasks are open | Statuses are recalculated immediately, so a task can become Missed or Open again for today |
 | Time zone change | Tasks keep their wall-clock times in the new zone. Notifications and widgets are rebuilt. |
 | Daylight-saving gap or overlap | Handled by §5.1 |
@@ -858,7 +859,7 @@ For a range R (a week, month or year), counting up to and including today:
 
 | Item | Value |
 |---|---|
-| Part starts | Morning 06:00 · Noon 12:00 · Evening 17:00 · Night 21:00 |
+| Part starts | Morning 06:00 · Afternoon 12:00 · Evening 17:00 · Night 21:00 |
 | Part start step / minimum length | 15 min / 30 min |
 | Fixed time step | 5 min |
 | Ending-soon lead | 30 min (15, 30, 45 or 60) |
@@ -940,7 +941,7 @@ Acceptance
 Implements: §5.4, F-04 · Depends on: T-04
 
 Acceptance
-- [ ] A Noon task: 11:59 Upcoming, 12:00 Open, 16:59 Open, 17:00 Missed. Completed at 18:00 the same day, it's Done.
+- [ ] An Afternoon task: 11:59 Upcoming, 12:00 Open, 16:59 Open, 17:00 Missed. Completed at 18:00 the same day, it's Done.
 - [ ] A fixed-time task at 12:30 is Missed at 17:00. An Anytime task is Missed at midnight.
 - [ ] A duration habit with target 30 at its part's end: 20 min → Short, 0 min → Missed, 30 min → Done (and Done as soon as it reaches 30).
 - [ ] Editing: today allows everything; past days allow nothing; a future one-time task can be completed early; a future habit occurrence can't be completed.
@@ -959,8 +960,8 @@ Acceptance
 Implements: §5.6, §5.8 · Depends on: T-05
 
 Acceptance
-- [ ] At 11:45, with a fixed 12:30 task and a Noon task: the result is the 12:30 task (rule 1).
-- [ ] At 13:00, with a Noon task and a fixed 16:00 task: the result is the Noon task (rule 2), and "Then" is the 16:00 task.
+- [ ] At 11:45, with a fixed 12:30 task and an Afternoon task: the result is the 12:30 task (rule 1).
+- [ ] At 13:00, with an Afternoon task and a fixed 16:00 task: the result is the Afternoon task (rule 2), and "Then" is the 16:00 task.
 - [ ] At 13:00, with only an Evening task: the result is the Evening task, "from 17:00" (rule 3).
 - [ ] At 22:00, with only an open Anytime task: the result is that task (rule 4). With nothing open: "You're free today."
 - [ ] Missed today includes Short. Missed earlier respects every filter and both sort orders. Unseen excludes tasks on the seen list.

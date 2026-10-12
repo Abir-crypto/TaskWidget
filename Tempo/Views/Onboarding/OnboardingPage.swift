@@ -42,7 +42,7 @@ enum OnboardingPage: Int, CaseIterable, Identifiable {
     var message: LocalizedStringResource {
         switch self {
         case .welcome:
-            "Plan your day by its parts: morning, noon, evening and night. Every task belongs to a part, a set time, or anytime."
+            "Plan your day by its parts: morning, afternoon, evening and night. Every task belongs to a part, a set time, or anytime."
         case .taskKinds:
             "One-time tasks are done once. Progress habits are checked off on their days, and duration habits count minutes toward a daily target."
         case .reminders:

@@ -3,12 +3,12 @@ import Foundation
 /// The task a Lock Screen widget shows (SPEC F-22), with its lines for the rectangular and inline sizes.
 struct LockScreenItem: Hashable {
     let title: String
-    /// The rectangular size's first line without the self-updating part: "12:30", "Noon · until 17:00",
+    /// The rectangular size's first line without the self-updating part: "12:30", "Afternoon · until 17:00",
     /// "Evening · 10 of 30 min", "Evening · from 17:00" or "Anytime".
     let topLine: String
     /// A fixed-time task's moment, for the self-updating "in 45 min" after `topLine`.
     let countdownTo: Date?
-    /// The inline size's line: "Next: Interview at 12:30", "Noon: Call the bank" or "Anytime: Renew passport".
+    /// The inline size's line: "Next: Interview at 12:30", "Afternoon: Call the bank" or "Anytime: Renew passport".
     let inline: String
     /// "Hide task names on the Lock Screen" is on, so the title is hidden while the device is locked (SPEC F-16).
     let hidesTitle: Bool

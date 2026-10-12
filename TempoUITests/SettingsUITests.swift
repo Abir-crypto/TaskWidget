@@ -82,7 +82,7 @@ final class SettingsUITests: XCTestCase {
         let app = UITestApp.launch()
         app.buttons["Settings"].tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
-        for part in ["Morning", "Noon", "Evening", "Night"] {
+        for part in ["Morning", "Afternoon", "Evening", "Night"] {
             XCTAssertTrue(app.staticTexts[part].exists, "\(part) start is missing")
         }
         // The form is longer than the screen, so scroll down to each item in turn.

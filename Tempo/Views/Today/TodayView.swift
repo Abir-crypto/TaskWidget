@@ -265,7 +265,7 @@ struct TodayView: View {
         let today = model.isShowingToday
         switch section.part {
         case .morning: return today ? "Nothing this morning" : "Nothing in the morning"
-        case .noon: return "Nothing at noon"
+        case .noon: return today ? "Nothing this afternoon" : "Nothing in the afternoon"
         case .evening: return today ? "Nothing this evening" : "Nothing in the evening"
         case .night: return today ? "Nothing tonight" : "Nothing at night"
         case nil: return "No anytime tasks"

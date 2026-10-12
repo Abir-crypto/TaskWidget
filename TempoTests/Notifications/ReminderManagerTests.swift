@@ -49,7 +49,7 @@ struct ReminderManagerTests {
             title: "Call", date: TestEnvironment.today, timing: .part(.noon))
         try dependencies.tasks.createOneTime(title: "Pay", date: TestEnvironment.today, timing: .part(.noon))
         await dependencies.reminders.rebuild()
-        #expect(scheduler.pending.first { $0.id == "part-start.20261006.noon" }?.title == "Noon · 2 tasks")
+        #expect(scheduler.pending.first { $0.id == "part-start.20261006.noon" }?.title == "Afternoon · 2 tasks")
         try dependencies.tasks.complete(taskID: call.id, day: TestEnvironment.today)
         await dependencies.reminders.rebuild()
         #expect(scheduler.pending.first { $0.id == "part-start.20261006.noon" }?.body == "Pay")

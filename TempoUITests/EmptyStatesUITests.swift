@@ -57,7 +57,7 @@ final class EmptyStatesUITests: XCTestCase {
         app.buttons["Anytime"].tap()
         app.buttons["Save"].tap()
         XCTAssertTrue(app.staticTexts["Renew passport"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.staticTexts["Nothing at noon"].exists)
+        XCTAssertTrue(app.staticTexts["Nothing this afternoon"].exists)
         XCTAssertTrue(app.staticTexts["Nothing this evening"].exists)
         XCTAssertTrue(app.staticTexts["Nothing tonight"].exists)
     }

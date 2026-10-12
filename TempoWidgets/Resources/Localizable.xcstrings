@@ -125,6 +125,9 @@
     "A habit you check off on the days it repeats." : {
 
     },
+    "Afternoon" : {
+      "comment" : "Part of the day"
+    },
     "All ^[%lld task](inflect: true) done" : {
 
     },
@@ -230,9 +233,6 @@
     },
     "No tasks today" : {
 
-    },
-    "Noon" : {
-      "comment" : "Part of the day"
     },
     "Now" : {
 

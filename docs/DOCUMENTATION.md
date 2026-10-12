@@ -128,7 +128,7 @@ Tasks are one-time tasks, progress habits or duration habits. The type is set wh
 - None for F-01.
 
 ## F-02 · Timing and parts of the day
-Status: Built (T-02–T-04, T-10, T-28) · Last updated: 2026-10-10 · T-32
+Status: Built (T-02–T-04, T-10, T-28, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 The rules for days, weekdays and parts of the day exist in `Core`. Nothing in the app uses them yet.
@@ -138,7 +138,8 @@ The rules for days, weekdays and parts of the day exist in `Core`. Nothing in th
 - **Weeks** start on the calendar's `firstWeekday`, which comes from the user's region (`startOfWeek`, `week`).
 - **Minute of day → moment** (`DayKey.date(atMinute:in:)`, `LocalTime`): builds the wall-clock time in the calendar's time zone. A time inside a daylight-saving gap becomes the first moment after the gap (01:30 on 29 Mar 2026 in London → 02:00 BST, D-053). A repeated time uses its first occurrence (01:30 BST on 25 Oct 2026). Minute 1440 is the next day's midnight.
 - **Weekday mask** (`Weekdays`): Mon=1, Tue=2, Wed=4, Thu=8, Fri=16, Sat=32, Sun=64. Mon/Wed/Fri is 21, every day is 127, and one-time tasks store 0.
-- **Parts of the day** (`PartSettings`, `DayPart`): defaults Morning 06:00 (360), Noon 12:00 (720), Evening 17:00 (1020), Night 21:00 (1260). Each part ends where the next starts, and Night ends at 1440. `part(containing:)` puts minutes before Morning's start into Morning. `window(of:)` is `[start, end)`.
+- **Names on screen** (T-39, D-106): the part stored as `noon` is called **Afternoon** everywhere the user sees it (`DayPart.title`). Stored values, `noon_start`, notification ids and link parameters keep `noon`.
+- **Parts of the day** (`PartSettings`, `DayPart`): defaults Morning 06:00 (360), Afternoon 12:00 (720), Evening 17:00 (1020), Night 21:00 (1260). Each part ends where the next starts, and Night ends at 1440. `part(containing:)` puts minutes before Morning's start into Morning. `window(of:)` is `[start, end)`.
 - **Validation** (`validationError`), checked in this order: every start is within 0–1439 (`outOfRange`), on a 15-minute step (`notOnStep`), later than the previous part's start (`outOfOrder`), and every part lasts at least 30 minutes (`tooShort`), so Night can start no later than 23:30. Morning may start as early as 00:00.
 - **Allowed choices** (`allowedStarts(for:)`): the quarter-hour starts a part can take while the other three stay put, keeping every part at least 30 minutes long. Settings (T-10) and the guide (T-28) will use it so invalid times can't be picked.
 
@@ -330,7 +331,7 @@ One timer per device, generic or for a habit, which can be paused, resumed, fini
 - None for F-06.
 
 ## F-07 · Notifications
-Status: Built (T-21, T-28, T-32) · Last updated: 2026-10-10 · T-32
+Status: Built (T-21, T-28, T-32, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 The app keeps the next 72 hours of reminders scheduled (the earliest 60): part summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap and the running-timer alert. The plan is rebuilt from the current data after every change. Asking for permission comes with the guide (T-28); until then Settings' "Allow notifications" asks.
@@ -344,7 +345,7 @@ The app keeps the next 72 hours of reminders scheduled (the earliest 60): part s
   - `timer-alert` at the timer's next alert time (`TimerRules.nextAlert`), while a timer is running.
   - A duration habit counts as not done until it reaches its target. Each kind is skipped when turned off in Settings. Only notifications after now and within 72 hours are kept, earliest first, at most 60 (iOS allows 64).
 - **Words** (`NotificationText`), with lists of up to 3 names then "and N more"; fixed-time tasks read "Interview at 12:30"; duration habits show "(10 of 30 min)" in ending-soon and recap lists:
-  - Part starts: "Noon · 3 tasks" / "Call the bank, Interview at 12:30, Read". Morning counts its Anytime tasks in the title and adds "…and 2 anytime" to the body; with only Anytime tasks, the body lists them (D-087).
+  - Part starts: "Afternoon · 3 tasks" / "Call the bank, Interview at 12:30, Read". Morning counts its Anytime tasks in the title and adds "…and 2 anytime" to the body; with only Anytime tasks, the body lists them (D-087).
   - Ending soon: "Evening ends in 30 min" (the actual minutes left if the part is shorter than the lead) / "2 left: Gym, Read (10 of 30 min)".
   - Fixed time: "Interview at 12:30" / "In 10 min".
   - Recap: "Today: 2 missed, 1 still open", "Today: 2 missed" or "Today: 1 still open" / the missed then open names.
@@ -380,7 +381,7 @@ Reads everything plus `deviceState.timer`; reads the notification permission fro
 - Only the fixed-time reminder was seen arriving for real. The other kinds go through the same scheduler and tap handling; their times and text are covered by the planner and text tests.
 
 ## F-08 · Missed tasks
-Status: Built (T-03, T-07, T-16, T-17) · Last updated: 2026-10-10 · T-31
+Status: Built (T-03, T-07, T-16, T-17, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 The Missed tab lists today's Missed and Short tasks, which can still be fixed, and every earlier one, read-only, with sort and filters. A popup points out new missed tasks when the app is opened normally.
@@ -388,7 +389,7 @@ The Missed tab lists today's Missed and Short tasks, which can still be fixed, a
 ### Behavior
 - **Today** section: today's Missed and Short occurrences in day order, with the footer "You can still change these". Each row has small buttons where F-04 allows: "Mark done" (one-time and progress), "Log time" (duration; opens the Log time sheet) and "Move to tomorrow" (one-time). A task leaves the section as soon as it's no longer missed. Once a missed task has been copied to tomorrow, "Move to tomorrow" is no longer offered for it, here or on Today (D-081). Empty: "You haven't missed a task today".
 - **Earlier** section: every Missed or Short occurrence before today, read-only, grouped under a date line ("Mon, 5 Oct"). The header shows the count after filters ("10 missed"). Ended habits stay; deleted tasks disappear. Empty: "Nothing missed before today"; with filters that match nothing: "No missed tasks match these filters" with "Clear filters".
-- **Rows:** the type icon, the title, when it was due ("Tue 29 Sep · Noon", "Tue 29 Sep · 12:30", "… · Anytime"), and on the right a red "Missed" with an icon, or the minutes for a Short duration habit ("20 of 30 min", orange).
+- **Rows:** the type icon, the title, when it was due ("Tue 29 Sep · Afternoon", "Tue 29 Sep · 12:30", "… · Anytime"), and on the right a red "Missed" with an icon, or the minutes for a Short duration habit ("20 of 30 min", orange).
 - **Sort & filter** (the toolbar button, filled while a filter is on; accessibility "Sort and filter" with "Filters on"/"No filters"): a sheet with Sort (Newest first, Oldest first), Date (All, This week, This month, Custom with From and To up to yesterday), Type toggles, Part of the day toggles (Morning, Noon, Evening, Night, Anytime; fixed-time tasks count under their part), and Task (Any task or one task). "Clear filters" appears in the sheet and under Earlier while a filter is on; it keeps the sort order. Changes apply at once. Filters live only while the app runs and reset on restart.
 - **"See all" from Habit detail** opens this tab with Earlier filtered to that habit.
 - **Badge:** see F-09.
@@ -468,19 +469,19 @@ Reads today's missed count; reads and clears `deviceState.pendingOpenAction`.
 - None for F-09.
 
 ## F-10 · Today screen
-Status: Built (T-12, T-20, T-31, T-38) · Last updated: 2026-10-12 · T-38
+Status: Built (T-12, T-20, T-31, T-38, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
-The Today tab shows one day at a time: a day strip, then Morning, Noon, Evening, Night and Anytime, with the actions F-04 allows. It updates every minute while open.
+The Today tab shows one day at a time: a day strip, then Morning, Afternoon, Evening, Night and Anytime, with the actions F-04 allows. It updates every minute while open.
 
 ### Behavior
 - **Title:** "Today", "Tomorrow", "Yesterday", or a short date in the user's format ("Thu 8 Oct"), as a large navigation title. The gear (Settings) is at the top right. A "Today" button appears at the top left whenever another day is selected.
 - **Day strip:** the seven days of the selected day's week, starting on the region's first weekday; each shows its weekday initial and number. Today's number is in the accent color; the selected day is circled (accent for today, black/white otherwise). A grey dot means the day has tasks; a red dot means today or a past day has Missed or Short tasks (D-076). Tapping a day selects it. Swiping the strip left or right moves the selection by a week. VoiceOver reads each day's full date and "No tasks", "Has tasks" or "Has missed tasks", and offers "Next week" and "Previous week" actions.
-- **Sections** in order: Morning, Noon, Evening, Night, Anytime (`DayPlan`). Within a part, fixed-time tasks come first in time order, then part-of-day tasks in creation order.
+- **Sections** in order: Morning, Afternoon, Evening, Night, Anytime (`DayPlan`). Within a part, fixed-time tasks come first in time order, then part-of-day tasks in creation order.
   - On today, an ended part with tasks folds into one tappable line, "Morning · 2 done · 1 missed" (Short counts as missed), with a chevron; tapping shows or hides its tasks. Expanded parts fold again when another day is selected (D-075).
   - The part in progress has its name in bold accent color and "ends in 1h 20m" on the right, recalculated every minute.
   - Other parts, and every part on other days, show their name as a plain header.
-  - A part with no tasks shows small grey text: "Nothing this morning", "Nothing at noon", "Nothing this evening", "Nothing tonight" on today; "Nothing in the morning", "Nothing at noon", "Nothing in the evening", "Nothing at night" on other days; "No anytime tasks" for Anytime (D-074).
+  - A part with no tasks shows small grey text: "Nothing this morning", "Nothing this afternoon", "Nothing this evening", "Nothing tonight" on today; "Nothing in the morning", "Nothing in the afternoon", "Nothing in the evening", "Nothing at night" on other days; "No anytime tasks" for Anytime (D-074).
 - **Rows:**
   - One-time tasks and progress habits: a checkbox (accessibility "Mark done"/"Mark not done" with the title), the title (struck through and grey when done), "Habit" with a repeat icon for progress habits, the fixed time on the right if there is one, and a red "Missed" label when missed. The checkbox is disabled where F-04 doesn't allow completing.
   - A task with notes has a small notes icon (`note.text`, spoken "Has notes") after its title, on every row type (T-38).
@@ -623,7 +624,7 @@ Reads everything through a `Snapshot`; deletes time entries, ends habits and sta
 - None for F-13.
 
 ## F-14 · Stats
-Status: Built (T-08, T-18) · Last updated: 2026-10-10 · T-31
+Status: Built (T-08, T-18, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 The Stats tab shows a week, month or year: an overview, a completion chart, time per duration habit, parts of the day, streaks and each habit's rate. The formulas are SPEC §5.7, computed in `Core`.
@@ -637,7 +638,7 @@ The Stats tab shows a week, month or year: an overview, a completion chart, time
   - Year: a bar per month ("Jan" … "Dec").
   - Tapping a day (Week or Month) opens that day in Today (read-only for past days); tapping a month in the Year chart shows that month (D-083). The footer says "Tap a day to open it in Today." or "Tap a month to see it." VoiceOver gets one button per day or month with its date and percentage.
 - **Time** (only when there are duration habits in the range): each habit's "1h 5m of 3h 30m" with a progress bar (goal includes days still to come).
-- **Parts of the day:** Morning, Noon, Evening, Night and Anytime with their rates ("—" when nothing counted), and "Most missed: Evening" in the footer when a part qualifies (at least 3 counted).
+- **Parts of the day:** Morning, Afternoon, Evening, Night and Anytime with their rates ("—" when nothing counted), and "Most missed: Evening" in the footer when a part qualifies (at least 3 counted).
 - **Streaks:** each habit's "Current 3 · Best 4", highest current first.
 - **Habits:** each habit live in the range with its rate; tapping opens Habit detail.
 - **Empty state** (F-24): with no habits, "Add a habit to see your stats" with "Add a habit" (progress habit preset).
@@ -660,7 +661,7 @@ The Stats tab shows a week, month or year: an overview, a completion chart, time
 - None for F-14.
 
 ## F-15 · Task editor
-Status: Built (T-11, T-31, T-38) · Last updated: 2026-10-12 · T-38
+Status: Built (T-11, T-31, T-38, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 A sheet for creating a task or editing one. Presets for the day and type come from where it was opened.
@@ -672,7 +673,7 @@ A sheet for creating a task or editing one. Presets for the day and type come fr
 - **Notes** (T-38): a text field of 3 to 8 lines under the title, placeholder "Notes", for every type. Over 1,000 characters, "Notes can be up to 1,000 characters." appears in red under it and Save is disabled. Saving trims them; clearing them removes them. On an ended habit they stay editable like the title; on a read-only past one-time task they're shown read-only, and the field is left out when there are none.
 - **When:** Fixed time / Part of the day / Anytime.
   - Fixed time: a time picker in 5-minute steps.
-  - Part of the day: Morning, Noon, Evening and Night as rows with a checkmark on the chosen one.
+  - Part of the day: Morning, Afternoon, Evening and Night as rows with a checkmark on the chosen one.
   - Anytime: "Anytime tasks belong to no part of the day and stay open until midnight."
   - On today (the date of a one-time task, or a habit's start day, or today for edits to a habit that has started), parts that have ended are grey with "Already over" and can't be picked, and the time picker starts at the first part that hasn't ended. A timing the task already had can stay, so a missed task can still be renamed (D-069). If the chosen timing is over, Save is disabled and the footer says "That part of the day is already over. Pick a later time."
 - **One-time:** "Date", from today onward; defaults to the preset day or today.
@@ -709,13 +710,13 @@ Writes `tasks` and `schedules` (and soft deletes everything of a deleted task).
 - None for F-15.
 
 ## F-16 · Settings
-Status: Built (T-10, T-28, T-33, T-34) · Last updated: 2026-10-11 · T-34
+Status: Built (T-10, T-28, T-33, T-34, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 Settings is pushed from the gear on Today. Every change is saved as soon as it's made and keeps its value after a restart.
 
 ### Behavior
-- **Parts of the day:** Morning, Noon, Evening and Night, each with a compact time picker in 15-minute steps (`MinuteIntervalPicker`). Each picker only offers start times that keep the parts in order and at least 30 minutes long (`PartSettings.allowedStarts`), so invalid times can't be chosen. Footer: "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." If Night moves past the recap time, the recap moves to the first allowed time (D-066).
+- **Parts of the day:** Morning, Afternoon, Evening and Night, each with a compact time picker in 15-minute steps (`MinuteIntervalPicker`). Each picker only offers start times that keep the parts in order and at least 30 minutes long (`PartSettings.allowedStarts`), so invalid times can't be chosen. Footer: "Each part ends when the next one starts, and Night ends at midnight. Every part lasts at least 30 minutes." If Night moves past the recap time, the recap moves to the first allowed time (D-066).
 - **Reminders**, all on by default:
   - "Part starts" (on/off). Since T-37 the settings row has one switch per part; until T-42 this one switch sets them together (on means Morning's, the default) and any of them on sends every part's summary, as before.
   - "Ending soon" (on/off), and when on, "Before the part ends": 15, 30 (default), 45 or 60 min.
@@ -822,14 +823,14 @@ Reads `deviceState.timer` and the timed habit's title; writes the timer and `dev
 - None for F-18.
 
 ## F-19 · Day widget (medium)
-Status: Built (T-25) · Last updated: 2026-10-10 · T-31
+Status: Built (T-25, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
-A medium widget showing today part by part: a column of marks for Morning, Noon, Evening and Night. It has no buttons.
+A medium widget showing today part by part: a column of marks for Morning, Afternoon, Evening and Night. It has no buttons.
 
 ### Behavior
 - **Gallery:** "Day" — "Your day at a glance, part by part." Medium only.
-- **Columns:** Morning, Noon, Evening and Night. The part in progress has its name in bold accent color on a light accent background.
+- **Columns:** Morning, Afternoon, Evening and Night (titles shrink to fit, down to 70%). The part in progress has its name in bold accent color on a light accent background.
 - **Marks,** one per task in day order, each an icon with a color: ✓ done (green filled check), ○ not done yet (empty circle), ✗ missed (red x), ◐ short, or a duration habit with some time logged that isn't done (orange half circle). At most 6 per column, then "+N".
 - **Under each column:** "N left" (tasks still Upcoming or Open), "done" when none are left, or nothing when the part has no tasks.
 - **Footer:** "Anytime · N left" while Anytime tasks are open; "You're free today" when every task today is done (every mark is then ✓).
@@ -852,7 +853,7 @@ A medium widget showing today part by part: a column of marks for Morning, Noon,
 - None for F-19.
 
 ## F-20 · Focus widget (medium)
-Status: Built (T-07, T-26) · Last updated: 2026-10-10 · T-27
+Status: Built (T-07, T-26, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 A medium widget with the one thing to do next, from the next-task rule (SPEC §5.6), and what comes after it. Information only, with no buttons.
@@ -861,7 +862,7 @@ A medium widget with the one thing to do next, from the next-task rule (SPEC §5
 - **Gallery:** "Focus" — "The one thing to do next, and what comes after." Medium only.
 - **Top line** (bold, accent color), from the rule's reason:
   - a fixed-time task: "NEXT · 12:30 · in 45 min", where "in 45 min" counts down by itself;
-  - a task in the part in progress: "NOON · until 17:00";
+  - a task in the part in progress: "AFTERNOON · until 17:00";
   - a task in a later part: "EVENING · from 17:00";
   - an Anytime task: "ANYTIME".
   Times follow the user's 12- or 24-hour setting.
@@ -926,7 +927,7 @@ Reads everything through the widget snapshot; writes completions, the timer and 
 - None for F-21.
 
 ## F-22 · Lock Screen widgets
-Status: Built (T-07, T-27) · Last updated: 2026-10-10 · T-27
+Status: Built (T-07, T-27, T-39) · Last updated: 2026-10-12 · T-39
 
 ### What it does
 Two Lock Screen widgets with the one thing to do next, from the next-task rule (SPEC §5.6): a rectangular one under the clock (two lines) and an inline one above it (one line). Information only.
@@ -935,13 +936,13 @@ Two Lock Screen widgets with the one thing to do next, from the next-task rule (
 - **Gallery:** "Next task" — "Your next task, on the Lock Screen." Rectangular and inline.
 - **Rectangular,** first line (bold, accent color) / title (up to two lines):
   - a fixed-time task: "12:30 · in 45 min" / "Interview", where "in 45 min" counts down by itself;
-  - a task in the part in progress: "Noon · until 17:00" / "Call the bank";
+  - a task in the part in progress: "Afternoon · until 17:00" / "Call the bank";
   - a duration habit: "Evening · 10 of 30 min" / "Read" — its time, part or "Anytime", then its progress, whatever its timing (D-092);
   - a task in a later part: "Evening · from 17:00" / "Gym";
   - an Anytime task: "Anytime" / "Renew passport";
   - nothing left: "You're free today" / "All 6 tasks done", the second line only when today had tasks and every one is done (D-091).
   The first line shrinks to fit (down to 70%) rather than being cut off, since "Morning · until 12:00 PM" is wider than the widget at the headline size.
-- **Inline:** "Next: Interview at 12:30", "Noon: Call the bank", "Evening: Read", "Evening: Gym", "Anytime: Renew passport", or "You're free today".
+- **Inline:** "Next: Interview at 12:30", "Afternoon: Call the bank", "Evening: Read", "Evening: Gym", "Anytime: Renew passport", or "You're free today".
 - Times follow the user's 12- or 24-hour setting.
 - **Hide task names on the Lock Screen** (F-16): titles are marked privacy-sensitive, so the system hides them while the device is locked and shows them once it's unlocked. On the inline widget the whole line is hidden, since it's a single line of text (D-092). Turning the setting on or off refreshes the widgets.
 - **Tapping** opens Today at the task shown, or Today when free.
