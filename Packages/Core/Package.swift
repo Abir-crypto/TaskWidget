@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Core",
-    platforms: [.iOS(.v17), .macOS(.v14)],  // macOS so `swift test` runs on the Mac
+    platforms: [.iOS(.v18), .macOS(.v15)],  // macOS so `swift test` runs on the Mac
     products: [.library(name: "Core", targets: ["Core"])],
     targets: [
         .target(name: "Core"),

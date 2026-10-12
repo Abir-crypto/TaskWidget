@@ -35,6 +35,13 @@ struct ProjectConfigurationTests {
         #expect(FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: StoreFactory.appGroup) != nil)
     }
 
+    /// The app and its extension both run on iOS 18.0 and later (D-104).
+    @Test func deploymentTargetIsiOS18() {
+        let widgets = Bundle.main.builtInPlugInsURL.flatMap { Bundle(url: $0.appending(path: "TempoWidgets.appex")) }
+        #expect(info["MinimumOSVersion"] as? String == "18.0")
+        #expect(widgets?.infoDictionary?["MinimumOSVersion"] as? String == "18.0")
+    }
+
     @Test func widgetExtensionIsEmbedded() {
         let url = Bundle.main.builtInPlugInsURL?.appending(path: "TempoWidgets.appex")
         let widgets = url.flatMap { Bundle(url: $0) }

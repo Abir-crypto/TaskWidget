@@ -6,7 +6,7 @@
 
 ## 1. Stack
 
-- **OS:** iOS and iPadOS 17.0 or later, as one universal app.
+- **OS:** iOS and iPadOS 18.0 or later, as one universal app (D-104).
 - **Frameworks:** Swift, SwiftUI, SwiftData (on the device only), WidgetKit, App Intents, UserNotifications, Swift Charts, and background refresh through SwiftUI's `.backgroundTask`.
 - **No third-party dependencies.**
 - **Xcode:** latest stable (16 or later). The project uses folder-synchronized groups, so files created on disk show up in Xcode automatically, without editing the project file.
@@ -149,7 +149,7 @@ Tempo/
 6. Each file holds one type, and the file name matches the type name.
 7. A folder with no files yet holds an empty `.gitkeep`, so git keeps it. The project setting `EXCLUDED_SOURCE_FILE_NAMES = .gitkeep` stops the synchronized folders from copying these into the app and extension bundles. A `.gitkeep` can be deleted once its folder has real files.
 
-App Intents and SwiftData records live in `Shared/`, a folder compiled into both targets, rather than in a package. With an iOS 17 deployment target, that's the most reliable setup for App Intents metadata.
+App Intents and SwiftData records live in `Shared/`, a folder compiled into both targets, rather than in a package. That's the most reliable setup for App Intents metadata, which each target extracts from its own sources.
 
 ---
 
@@ -211,12 +211,13 @@ final class TodayViewModel {
 
 ---
 
-## 5. iOS 17 rules
+## 5. iOS 18 rules
 
-- **Use freely:** SwiftData, Observation, interactive widgets (`Button(intent:)`, `Toggle(isOn:intent:)`), `containerBackground(for:)`, `ContentUnavailableView`, `sensoryFeedback`, `TimelineView`, `.contentMargins`, `#Preview` for widgets, and Swift Charts.
-- **Don't use APIs introduced in iOS 18 or later,** even behind `#available`, unless this file says so. That includes `#Index`, `#Unique`, SwiftData history, Control widgets, `.tabViewStyle(.sidebarAdaptable)` and widget push updates.
-- **Before closing each task,** run the tests on the latest iOS simulator installed (currently iOS 27.0). Xcode 27 can't install iOS 17 or 18 simulator runtimes, so there's no iOS 17 run (D-052).
-- **The deployment target stays iOS 17.0.** The compiler checks every API against it, so an iOS 18+ API used without `#available` fails the build. That check, together with the rules above, is what keeps the app iOS 17-compatible.
+- **The deployment target is iOS 18.0** for the app, the widget extension, the tests and the `Core` package (D-104, which supersedes D-052's iOS 17.0).
+- **Use freely:** everything up to iOS 18: SwiftData, Observation, interactive widgets (`Button(intent:)`, `Toggle(isOn:intent:)`), `containerBackground(for:)`, `ContentUnavailableView`, `sensoryFeedback`, `TimelineView`, `.contentMargins`, `#Preview` for widgets, Swift Charts, ActivityKit with `LiveActivityIntent`, and Control widgets.
+- **Don't use APIs introduced in iOS 26 or later** unless they're behind `if #available` with a fallback that works on iOS 18.
+- **Storage stays as D-044 says** (no `@Query`, a fresh `ModelContext` per operation), even though iOS 18 adds SwiftData history.
+- **Before closing each task,** run the tests on the latest iOS simulator installed (currently iOS 27.0). Xcode 27 can't install iOS 17 or 18 simulator runtimes, so there's no iOS 18 run; the compiler's availability checks against 18.0 catch newer APIs used without `#available`. A full day on physical devices is part of T-53.
 
 ---
 
@@ -233,7 +234,7 @@ final class TodayViewModel {
   - Code uses the current version through the typealiases in `SwiftDataTaskStore` (`SettingsRecord = SchemaV3.SettingsRecord`, …), and `StoreFactory` opens `Schema(versionedSchema: SchemaV3.self)`.
 - **Location:** the store file lives in the App Group container, opened with `cloudKitDatabase: .none`.
 - **One `ModelContainer` per process,** held in a static. **Each read or write uses a fresh `ModelContext`.** No `@Query` anywhere.
-  - On iOS 17, SwiftData doesn't reliably show writes made by another process (the widget extension), and fresh contexts avoid that problem.
+  - A long-lived context doesn't reliably show writes made by another process (the widget extension), and fresh contexts avoid that problem. This was found on iOS 17 and the approach stays on iOS 18 (D-044, D-104).
 - **Mapping:** records are converted to `Core` value types in `SwiftDataTaskStore`. Views never receive records.
 - **Device-only state** (SPEC §4.6) lives in `UserDefaults(suiteName: "group.akumatech.tempo")` as Codable JSON: the timer, the missed seen list, and the pending open action, plus the "guide completed" flag as a plain bool. The flag lives here rather than in `@AppStorage` so UI tests control it with the rest of the device-only state (D-094).
 
@@ -294,7 +295,7 @@ import PackageDescription
 
 let package = Package(
     name: "Core",
-    platforms: [.iOS(.v17), .macOS(.v14)],     // macOS so `swift test` runs on the Mac
+    platforms: [.iOS(.v18), .macOS(.v15)],     // macOS so `swift test` runs on the Mac
     products: [.library(name: "Core", targets: ["Core"])],
     targets: [
         .target(name: "Core"),
@@ -646,3 +647,8 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - `Core/Models/Appearance`, with tests first: the stored strings, and falling back to System.
   - `SchemaV3` and the lightweight migration from V2 (§6), with a test that opens a version-2 store.
   - The segmented picker in Settings › Theme, and the window's `overrideUserInterfaceStyle` in `RootView` (§12).
+- **T-35:** Docs only. SPEC catches up with D-084 and D-090–D-092 (D-103).
+- **T-36:**
+  - `IPHONEOS_DEPLOYMENT_TARGET = 18.0` at the project level, which every target inherits, and `.iOS(.v18)` (with `.macOS(.v15)`, its Mac counterpart) in `Packages/Core/Package.swift`.
+  - The rules in §5 change: APIs up to iOS 18 are allowed; anything from iOS 26 on needs `if #available` with a fallback. D-044's storage approach stays.
+  - `ProjectConfigurationTests` checks that the app and the widget extension are built for iOS 18.0.

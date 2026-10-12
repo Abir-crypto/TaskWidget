@@ -49,10 +49,10 @@ Which tables and fields it reads or writes. Device-only state it uses.
 
 ## App overview
 
-Status: Built (T-01–T-34) · Last updated: 2026-10-11 · T-34
+Status: Built (T-01–T-36) · Last updated: 2026-10-12 · T-36
 
 ### What it does
-Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the time of day, with widgets at its core. Every feature in SPEC F-01–F-28 is built, and each section below describes it as it is.
+Tempo is a to-do app for iPhone and iPad (iOS 18 and later) organized by the time of day, with widgets at its core. Every feature in SPEC F-01–F-28 is built, and each section below describes it as it is.
 
 ### Behavior
 - **App:** four tabs — Today, Tasks, Missed and Stats (F-09) — with Settings, History, Habit detail, the editor, Log time, the timer screen, the task picker, the missed popup and the first-launch guide.
@@ -72,8 +72,8 @@ Tempo is a to-do app for iPhone and iPad (iOS 17 and later) organized by the tim
 | Widget extension | `TempoWidgets`, bundle ID `com.akumatech.tempo.widgets`, embedded in the app |
 | App tests | `TempoTests`, bundle ID `com.akumatech.tempo.tests`, hosted in the app |
 | UI tests | `TempoUITests`, bundle ID `com.akumatech.tempo.uitests`, in the `Tempo` scheme; the app runs with `-ui-testing` (in-memory store) (D-064) |
-| Logic package | `Packages/Core` (Swift 6 tools, iOS 17 and macOS 14), linked into the app and the extension |
-| Deployment target | iOS 17.0, iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`) |
+| Logic package | `Packages/Core` (Swift 6 tools, iOS 18 and macOS 15), linked into the app and the extension |
+| Deployment target | iOS 18.0, iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2`), set at the project level (D-104) |
 | Swift | App, extension and tests use Swift 5 mode with strict concurrency set to `complete` and `InferSendableFromCaptures` on (D-055). Default actor isolation stays `nonisolated` (D-047). |
 | App Group | `group.akumatech.tempo`, in both targets' entitlements and `StoreFactory.appGroup` |
 | URL scheme | `tempo` (app `Info.plist`) |
@@ -90,13 +90,13 @@ The folder layout matches ios.md §3. Empty folders hold a `.gitkeep`, which is 
 - Config: `Tempo/Info.plist`, `Tempo/Tempo.entitlements`, `TempoWidgets/Info.plist`, `TempoWidgets/TempoWidgets.entitlements`, `.swift-format` (D-049)
 
 ### Tests
-- `TempoTests/ProjectConfigurationTests.swift`: the app's bundle ID, the `tempo` URL scheme, the background refresh settings, the App Group container (and that the store's App Group is the entitled one) and the embedded extension's bundle ID.
+- `TempoTests/ProjectConfigurationTests.swift`: the app's bundle ID, the `tempo` URL scheme, the background refresh settings, the App Group container (and that the store's App Group is the entitled one), the embedded extension's bundle ID, and that the app and the extension are built for iOS 18.0.
 - Each feature section lists its tests. `TempoUITests/AccessibilityUITests` audits every screen (T-31), and `ScreenshotTests` holds the checks on the real Home Screen and Lock Screen (screenshots only).
 
 ### Known gaps
 - Checked only on simulators. Never seen on a physical device: Lock Screen titles hidden while locked (no simulator can have a passcode), and real Split View and Stage Manager with a second app. Not seen as they happen: widget switches at part boundaries and midnight, a timer running past midnight, a time-zone change while the app runs, and notification kinds other than the fixed-time reminder. The rules behind them are covered by unit tests (T-32).
 - Start again's day when the part is over is an open question (D-070, F-03).
-- Tests run on the latest installed simulator (iOS 27.0), not on iOS 17, because Xcode 27 can't install iOS 17 runtimes (D-052). The deployment target is still iOS 17.0, so the compiler rejects newer APIs used without an availability check.
+- Tests run on the latest installed simulator (iOS 27.0), not on iOS 18, because Xcode 27 can't install iOS 17 or 18 runtimes. The deployment target is iOS 18.0 (D-104), so the compiler rejects newer APIs used without an availability check. A full day on physical devices is planned for T-53.
 
 ---
 

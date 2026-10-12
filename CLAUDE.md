@@ -26,7 +26,7 @@ Read them when a task needs them. Don't load every document every session.
 3. **When you start a task,** mark it 🔄 in `PROGRESS.md`.
 4. **A task is done** only when all of these hold:
    - the build passes with no new warnings;
-   - all tests pass, run on the latest iOS simulator installed (currently iOS 27.0). The deployment target stays iOS 17.0 (D-052);
+   - all tests pass, run on the latest iOS simulator installed (currently iOS 27.0). The deployment target is iOS 18.0 (D-104);
    - every acceptance item is checked;
    - `docs/DOCUMENTATION.md` is updated;
    - `docs/PROGRESS.md` is updated, with ✅, the date and notes.
@@ -75,7 +75,7 @@ After **every** change, update the affected feature's section in `docs/DOCUMENTA
   - `@Model` objects never leave `Shared/Storage/`.
 - **Time:** "now" always comes from `Clock`. `Core` never calls `Date()` or `Calendar.current`.
 - **Loading:** load in `.task`, never in `onAppear`.
-- **iOS 17:** no APIs introduced in iOS 18 or later (list in ios.md §5).
+- **iOS 18:** no APIs introduced in iOS 26 or later, unless they're behind `#available` with a fallback (ios.md §5).
 - **Safety:** no force unwraps and no `try!` outside tests. Use specific `Error` types and log with `os.Logger`.
 - **Text and accessibility:** all user-facing text goes in `Localizable.xcstrings`, and every interactive element has an accessibility label.
 - **Previews:** every view, and every widget state, has a `#Preview`.
@@ -84,7 +84,7 @@ After **every** change, update the affected feature's section in `docs/DOCUMENTA
 
 ## Why the storage rules exist
 
-- The app and the widget extension (through its App Intents) both write to one data store in the App Group. On iOS 17, a long-lived `ModelContext` or `@Query` doesn't see the other process's writes. That's why there's no `@Query` and why every read or write uses a fresh context.
+- The app and the widget extension (through its App Intents) both write to one data store in the App Group. A long-lived `ModelContext` or `@Query` doesn't reliably see the other process's writes (found on iOS 17; the rule stays on iOS 18). That's why there's no `@Query` and why every read or write uses a fresh context.
 - Statuses (missed, done, …) are calculated from `Clock`, never stored (D-012). Don't add a stored status field or a job that updates statuses at part boundaries.
 
 ## File organization

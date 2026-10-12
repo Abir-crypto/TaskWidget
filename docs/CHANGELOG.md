@@ -14,6 +14,11 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Minimum system version iOS 18 (T-36)
+- Platform: ios.md §1, §3, §5, §6, §7, §15 — the deployment target is iOS 18.0 for every target and the `Core` package; APIs from iOS 26 on need `#available` with a fallback; D-044's storage approach stays (D-104, superseding D-052).
+- Process: CLAUDE.md — the definition of done and the API rule name iOS 18.
+- No changes to SPEC.md: it never names a platform version.
+
 ## 2026-10-12 · Spec catches up with the build (T-35)
 - Changed: F-06 — the task picker lists duration habits live on the timer's day (the previous day after midnight), can't be swiped away, keeps the time while Add a duration task is open, and leaves out the current habit with Cancel for Change task (D-084, D-103).
 - Changed: F-20 — "All N tasks done" only when every one of today's tasks is done; "Then:" shows only the next title (D-091, D-103).
