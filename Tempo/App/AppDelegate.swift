@@ -32,7 +32,22 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping @Sendable () -> Void
     ) {
-        let url = (response.notification.request.content.userInfo["url"] as? String).flatMap(URL.init(string:))
+        let userInfo = response.notification.request.content.userInfo
+        // Snooze runs in the background without the app's screens, so it uses its own managers, like a widget
+        // button, and finishes before the system suspends the app (SPEC F-07, ios.md §10).
+        if let snooze = SnoozeRequest(actionIdentifier: response.actionIdentifier, userInfo: userInfo) {
+            Task { @MainActor in
+                do {
+                    let environment = try IntentEnvironment.make()
+                    await environment.refresh.reminders?.snooze(snooze)
+                } catch {
+                    Log.reminders.error("Couldn't snooze: \(error)")
+                }
+                completionHandler()
+            }
+            return
+        }
+        let url = (userInfo["url"] as? String).flatMap(URL.init(string:))
         let received = NotificationResponse(actionIdentifier: response.actionIdentifier, url: url)
         Task { @MainActor in
             self.receive(received)

@@ -82,6 +82,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 - Time tracking with a timer and with manual logging; daily targets and weekly goals.
 - Missed tracking: a Missed tab and a missed-tasks popup, shown Gentle or Strict (F-30).
 - A correction window for yesterday, until today's Afternoon starts (§5.11).
+- Snoozing fixed-time and ending-soon reminders (F-07).
 - Notifications: part-of-day summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap, and a running-timer alert.
 - Screens: Today, Tasks (with History), Missed, Stats, Habit detail, Task editor, Settings, Timer screen, Task picker.
 - Widgets: Timer (small), Day (medium), Focus (medium), Now (large), Lock Screen (rectangular and inline).
@@ -96,7 +97,6 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 - Live Activities, Control Center controls, Siri or Shortcuts actions, Apple Watch, Mac.
 - Subtasks, tags, lists, priorities, attachments, sharing.
 - Manual reordering of tasks.
-- Snoozing notifications.
 - Different part-of-day times on different weekdays.
 - The circular Lock Screen widget and the extra-large iPad widget.
 - Natural-language input.
@@ -271,6 +271,13 @@ Pausing, Done or Discard cancels the alert.
 - If the lead time would put a fixed-time reminder in the past, for example a task created at 12:25 for 12:30, no reminder is sent.
 - Notification text always reflects the latest data. Any change to tasks, completions or time entries rebuilds the pending notifications, whether it was made in the app, in a widget or from a notification action.
 - Each kind can be turned off in Settings, and the lead times and the recap time can be changed (F-16).
+- **Snooze:** fixed-time and ending-soon notifications offer **Snooze 15 min** and **Snooze 1 hour**. An option is offered only if it lands at least 5 minutes before the part ends, judged from the reminder's planned fire time. Part summaries, the recap and the timer alert can't be snoozed.
+  - A snoozed reminder fires at the moment Snooze was tapped plus the chosen time, but never later than 5 minutes before its part ends; if that moment has already passed when Snooze is tapped, nothing is scheduled.
+  - Its text is built from current data when it's planned. Fixed time: the title as before, and the body "In N min" before the task's time, "Starts now" at it, or "Started N min ago" after it. Ending soon: "Evening ends in N min" with the current list.
+  - It fires only if its condition still holds when the plan is rebuilt: for a fixed-time task, the task isn't done and fixed-time reminders are on; for ending soon, the part still has tasks that aren't done and ending-soon reminders are on.
+  - Snoozing a snoozed reminder replaces it. There's at most one snooze per original reminder.
+  - Snoozes are device-only state (§4.6). They're cleared when they fire, when their condition stops holding, and when the day changes.
+  - Tapping Snooze never opens the app.
 - Permission is requested on the last page of the first-launch guide. If it's refused, nothing is scheduled, and Settings shows that notifications are off, with a link to the system settings.
 - Platforms limit how many notifications can be scheduled in advance. At least the next 48 hours must always be scheduled. The schedule is topped up whenever the app opens, after every change, and in the background where the platform allows it.
 
@@ -855,7 +862,9 @@ For a range R (a week, month or year), counting up to and including today:
 | `fixed.<task_id>.<day>` | fixed time − lead | The task isn't done |
 | `recap.<day>` | `recap_minute` | That day will have tasks that aren't done |
 | `timer-alert` | segment start + n × alert period (the next one only) | A timer is running |
+| `snooze.fixed.<task_id>.<day>` / `snooze.ending-soon.<day>.<part>` | The snoozed time | The original reminder's condition still holds |
 
+- Fixed-time and ending-soon items carry the snooze options that land at least 5 minutes before their part ends.
 - Only items whose fire time is after now are kept. They're sorted by fire time and trimmed to the platform's limit, keeping the earliest.
 - After any change, the whole plan is rebuilt.
 
@@ -924,6 +933,7 @@ editable(d, now):
 | Fixed-time lead | 10 min (5, 10, 15 or 30) |
 | End-of-day recap | 23:30 |
 | Running timer alert | 2 hours (1, 2 or 3) |
+| Snooze | 15 min or 1 hour, at least 5 min before the part ends |
 | Duration target | 30 min, from 5 to 480 in 5-minute steps |
 | Log time | 5–480 min in 5-minute steps |
 | Set length | 1–365 days, 30 when switched on |

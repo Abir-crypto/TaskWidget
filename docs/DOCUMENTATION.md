@@ -333,7 +333,7 @@ One timer per device, generic or for a habit, which can be paused, resumed, fini
 - None for F-06.
 
 ## F-07 · Notifications
-Status: Built (T-21, T-28, T-32, T-39, T-40, T-42) · Last updated: 2026-10-12 · T-42
+Status: Built (T-21, T-28, T-32, T-39, T-40, T-42, T-43) · Last updated: 2026-10-12 · T-43
 
 ### What it does
 The app keeps the next 72 hours of reminders scheduled (the earliest 60): part summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap and the running-timer alert. The plan is rebuilt from the current data after every change. Asking for permission comes with the guide (T-28); until then Settings' "Allow notifications" asks.
@@ -345,6 +345,8 @@ The app keeps the next 72 hours of reminders scheduled (the earliest 60): part s
   - `fixed.<task_id>.<day>` at the fixed time minus the lead (10 min by default), when the task isn't done.
   - `recap.<day>` at the recap time (23:30 by default), when the day has tasks that aren't done. Each is classed by its status at the recap time: Missed or Short → "missed", still Upcoming or Open → "still open".
   - `timer-alert` at the timer's next alert time (`TimerRules.nextAlert`), while a timer is running.
+  - `snooze.fixed.<task_id>.<day>` and `snooze.ending-soon.<day>.<part>` at a snoozed reminder's time, while its original's condition still holds (T-43).
+- **Snooze** (T-43, D-110, D-122): fixed-time and ending-soon notifications have "Snooze 15 min" and "Snooze 1 hour", or only the first when an hour wouldn't land at least 5 minutes before the part ends (categories `REMINDER_SNOOZE_BOTH` and `REMINDER_SNOOZE_15`, chosen when planned). The buttons are background actions: `AppDelegate` handles them with its own managers (`IntentEnvironment`, as widget buttons do), writes the snooze to `DeviceState` and rebuilds, without opening the app. The snooze fires at the tap plus the option, never later than 5 minutes before the part ends, or not at all if that's passed. Snoozing again replaces it. Each rebuild drops snoozes that have fired, whose task is done or part has nothing left, or whose kind is switched off, and a list from another day reads as empty. A snoozed fixed-time reminder after the task's time reads "Started 6 min ago" ("Starts now" exactly at it).
   - A duration habit counts as not done until it reaches its target. Each kind is skipped when turned off in Settings. Only notifications after now and within 72 hours are kept, earliest first, at most 60 (iOS allows 64).
 - **Words** (`NotificationText`), with lists of up to 3 names then "and N more"; fixed-time tasks read "Interview at 12:30"; duration habits show "(10 of 30 min)" in ending-soon and recap lists:
   - Part starts: "Afternoon · 3 tasks" / "Call the bank, Interview at 12:30, Read". Morning counts its Anytime tasks in the title and adds "…and 2 anytime" to the body; with only Anytime tasks, the body lists them (D-087).

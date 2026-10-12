@@ -13,10 +13,11 @@ struct ReminderPlannerTests {
 
     private func plan(
         _ fixtures: Fixtures, at now: Date, settings: SettingsValue = Self.everySummary,
-        timer: ReminderPlanner.RunningTimer? = nil,
+        timer: ReminderPlanner.RunningTimer? = nil, snoozes: [Snooze] = [],
         limit: Int = ReminderPlanner.defaultLimit
     ) -> [PlannedNotification] {
-        ReminderPlanner.plan(snapshot: fixtures.snapshot(settings: settings), now: now, timer: timer, limit: limit)
+        ReminderPlanner.plan(
+            snapshot: fixtures.snapshot(settings: settings), now: now, timer: timer, snoozes: snoozes, limit: limit)
     }
 
     private func today(_ plan: [PlannedNotification]) -> [PlannedNotification] {
@@ -268,5 +269,104 @@ struct ReminderPlannerTests {
         let ids = plan(fixtures, at: TestCalendar.today(5), settings: settings).map(\.id)
         #expect(ids.contains("part-start.20261006.evening"))
         #expect(!ids.contains("part-start.20261006.morning"))
+    }
+
+    // MARK: Snooze (SPEC F-07, §5.9, D-110, T-43)
+
+    @Test func snoozeOptionsLandAtLeastFiveMinutesBeforeThePartEnds() throws {
+        var fixtures = Fixtures()
+        fixtures.oneTime("Gym", timing: .part(.evening))
+        fixtures.oneTime("Interview", timing: .fixed(minute: 750))
+        let notifications = plan(fixtures, at: TestCalendar.today(9))
+        // Evening's ending soon at 20:30: 20:45 is at least 5 min before 21:00, while 21:30 isn't.
+        let endingSoon = try #require(notifications.first { $0.id == "ending-soon.20261006.evening" })
+        #expect(endingSoon.snooze?.options == [.fifteenMinutes])
+        #expect(endingSoon.snooze?.partEnd == TestCalendar.today(21))
+        // The 12:30 reminder at 12:20, with Afternoon ending at 17:00: both.
+        let fixed = try #require(notifications.first { $0.id.hasPrefix("fixed.") })
+        #expect(fixed.snooze?.options == [.fifteenMinutes, .oneHour])
+        #expect(fixed.snooze?.partEnd == TestCalendar.today(17))
+        // Part summaries and the recap can't be snoozed.
+        #expect(
+            notifications.filter { $0.id.hasPrefix("part-start.") || $0.id.hasPrefix("recap.") }
+                .allSatisfy { $0.snooze == nil })
+    }
+
+    @Test func aLateTapFiresNoLaterThanFiveMinutesBeforeThePartEnds() {
+        let partEnd = TestCalendar.today(21)
+        #expect(
+            SnoozeRules.fireDate(tappedAt: TestCalendar.today(20, 30), option: .fifteenMinutes, partEnd: partEnd)
+                == TestCalendar.today(20, 45))
+        #expect(
+            SnoozeRules.fireDate(tappedAt: TestCalendar.today(20, 50), option: .fifteenMinutes, partEnd: partEnd)
+                == TestCalendar.today(20, 55))
+        #expect(
+            SnoozeRules.fireDate(tappedAt: TestCalendar.today(20, 56), option: .fifteenMinutes, partEnd: partEnd)
+                == nil)
+    }
+
+    @Test func aSnoozedFixedReminderIsRebuiltFromCurrentData() throws {
+        var fixtures = Fixtures()
+        let interview = fixtures.oneTime("Interview", timing: .fixed(minute: 750))
+        let original = "fixed.\(interview.id.uuidString.lowercased()).20261006"
+        let snooze = Snooze(
+            originalID: original, kind: .fixed, fireDate: TestCalendar.today(12, 35), day: TestCalendar.today)
+        let snoozed = try #require(
+            plan(fixtures, at: TestCalendar.today(12, 21), snoozes: [snooze]).first { $0.id == "snooze." + original })
+        #expect(snoozed.fireDate == TestCalendar.today(12, 35))
+        guard case .fixed(_, let item, let lead) = snoozed.content else {
+            Issue.record("Not a fixed-time reminder")
+            return
+        }
+        #expect(item.title == "Interview")
+        #expect(lead == -5)
+        #expect(snoozed.snooze?.originalID == original)
+    }
+
+    @Test func aSnoozedEndingSoonListsWhatsLeft() throws {
+        var fixtures = Fixtures()
+        fixtures.oneTime("Gym", timing: .part(.evening))
+        let snooze = Snooze(
+            originalID: "ending-soon.20261006.evening", kind: .endingSoon, fireDate: TestCalendar.today(20, 45),
+            day: TestCalendar.today)
+        let snoozed = try #require(
+            plan(fixtures, at: TestCalendar.today(20, 31), snoozes: [snooze]).first {
+                $0.id == "snooze.ending-soon.20261006.evening"
+            })
+        guard case .endingSoon(_, let part, let minutesLeft, let items) = snoozed.content else {
+            Issue.record("Not an ending-soon reminder")
+            return
+        }
+        #expect(part == .evening)
+        #expect(minutesLeft == 15)
+        #expect(items.map(\.title) == ["Gym"])
+        #expect(snoozed.snooze?.options == [])
+    }
+
+    @Test func aSnoozeIsDroppedOnceItsConditionNoLongerHolds() {
+        var fixtures = Fixtures()
+        let interview = fixtures.oneTime("Interview", timing: .fixed(minute: 750))
+        let gym = fixtures.oneTime("Gym", timing: .part(.evening))
+        fixtures.complete(interview, on: TestCalendar.today)
+        fixtures.complete(gym, on: TestCalendar.today)
+        let snoozes = [
+            Snooze(
+                originalID: "fixed.\(interview.id.uuidString.lowercased()).20261006", kind: .fixed,
+                fireDate: TestCalendar.today(12, 35), day: TestCalendar.today),
+            Snooze(
+                originalID: "ending-soon.20261006.evening", kind: .endingSoon, fireDate: TestCalendar.today(20, 45),
+                day: TestCalendar.today),
+        ]
+        let snapshot = fixtures.snapshot(settings: Self.everySummary)
+        #expect(ReminderPlanner.liveSnoozes(snoozes, snapshot: snapshot, now: TestCalendar.today(12, 21)).isEmpty)
+        // One that has already fired is gone too.
+        var open = Fixtures()
+        open.oneTime("Gym", timing: .part(.evening))
+        #expect(
+            ReminderPlanner.liveSnoozes([snoozes[1]], snapshot: open.snapshot(), now: TestCalendar.today(20, 46))
+                .isEmpty)
+        #expect(
+            ReminderPlanner.liveSnoozes([snoozes[1]], snapshot: open.snapshot(), now: TestCalendar.today(20, 40))
+                .count == 1)
     }
 }

@@ -14,6 +14,13 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Snooze reminders (T-43)
+- Changed: F-07 — fixed-time and ending-soon notifications can be snoozed for 15 minutes or an hour, when that lands at least 5 minutes before the part ends; the snooze is rebuilt from current data and replaces an earlier one (D-110, D-122).
+- Changed: §2.1, §2.2 — snoozing is in v1.
+- Changed: §5.9 — snoozed ids and the snooze options on fixed-time and ending-soon items.
+- Changed: §7 — the snooze choices.
+- Platform: ios.md §10, §15 — the snooze categories, `SnoozeRequest`, and the delegate's background handling.
+
 ## 2026-10-12 · Part summaries per part (T-42)
 - Changed: F-07, F-16, §5.9 — each part's summary has its own switch; only Morning's is on by default (D-109, superseding D-016).
 - Changed: §7 — the summaries' defaults.

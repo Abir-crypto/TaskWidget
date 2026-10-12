@@ -30,7 +30,11 @@ struct SystemNotificationScheduler: NotificationScheduling {
             content.title = notification.title
             content.body = notification.body
             content.sound = .default
-            content.userInfo = ["url": notification.url.absoluteString]
+            var userInfo: [String: Any] = ["url": notification.url.absoluteString]
+            if let snooze = notification.snooze {
+                userInfo.merge(SnoozeRequest.userInfo(for: snooze)) { _, new in new }
+            }
+            content.userInfo = userInfo
             if let category = notification.categoryIdentifier { content.categoryIdentifier = category }
             // Components without a time zone, so the reminder floats with local time like the tasks (ios.md §10).
             let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notification.fireDate)
@@ -44,14 +48,23 @@ struct SystemNotificationScheduler: NotificationScheduling {
         }
     }
 
-    /// Registers the timer alert's Stop and Keep going actions.
+    /// Registers the timer alert's Stop and Keep going actions, and the reminders' Snooze buttons. Snooze actions
+    /// run in the background, so they never open the app (SPEC F-07).
     static func registerCategories() {
         let stop = UNNotificationAction(
             identifier: NotificationCategory.stop, title: String(localized: "Stop"), options: [.foreground])
         let keepGoing = UNNotificationAction(
             identifier: NotificationCategory.keepGoing, title: String(localized: "Keep going"), options: [])
-        let category = UNNotificationCategory(
+        let timerAlert = UNNotificationCategory(
             identifier: NotificationCategory.timerAlert, actions: [stop, keepGoing], intentIdentifiers: [])
-        UNUserNotificationCenter.current().setNotificationCategories([category])
+        let snooze15 = UNNotificationAction(
+            identifier: NotificationCategory.snooze15, title: String(localized: "Snooze 15 min"), options: [])
+        let snooze60 = UNNotificationAction(
+            identifier: NotificationCategory.snooze60, title: String(localized: "Snooze 1 hour"), options: [])
+        let snoozeBoth = UNNotificationCategory(
+            identifier: NotificationCategory.snoozeBoth, actions: [snooze15, snooze60], intentIdentifiers: [])
+        let snoozeQuarter = UNNotificationCategory(
+            identifier: NotificationCategory.snoozeQuarter, actions: [snooze15], intentIdentifiers: [])
+        UNUserNotificationCenter.current().setNotificationCategories([timerAlert, snoozeBoth, snoozeQuarter])
     }
 }

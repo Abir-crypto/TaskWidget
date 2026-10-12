@@ -441,6 +441,7 @@ func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry
   - on a time zone change (`.NSSystemTimeZoneDidChange`) and a day change (`.NSCalendarDayChanged`);
   - during background refresh: `.backgroundTask(.appRefresh("com.akumatech.tempo.refresh"))`, which also submits the next `BGAppRefreshTaskRequest` with an earliest start one hour away.
 - **The timer alert's category:** `TIMER_ALERT`, with `STOP` (`.foreground`; pauses the timer and opens the timer screen) and `KEEP_GOING`.
+- **Snooze categories** (T-43): `REMINDER_SNOOZE_BOTH` (`SNOOZE_15`, `SNOOZE_60`) and `REMINDER_SNOOZE_15` (`SNOOZE_15`), chosen from the planned item's options; neither action has `.foreground`. The notification's `userInfo` carries the original id, kind, day and the part's end (`SnoozeRequest`). `AppDelegate.didReceive` handles a snooze itself with `IntentEnvironment.make()` and `ReminderManager.snooze(_:)`, and calls the completion handler only after the rebuild.
 - **Delegate** (in `AppDelegate`, through `UIApplicationDelegateAdaptor`):
   - Use the completion-handler forms of `willPresent` and `didReceive`, and call the handler on the main actor. The system calls the `async` forms' handlers off the main thread, and a tap then crashes UIKit (found in T-32).
   - `willPresent` returns `[.banner, .list, .sound]`.
@@ -673,3 +674,4 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
   - `TaskManager.editWindow()`; `logTime(taskID:minutes:day:)` takes a day; `LogTimeRequest.day` carries it from yesterday's rows to the sheet.
   - Today rebuilds every minute already, so its footnote and actions follow the window; the Missed tab checks each minute whether the window has changed and reloads (`needsReload`).
 - **T-42:** `ReminderPlanner` plans a part's summary only when `SettingsValue.partStartSummaries` contains the part. Settings shows four toggles, "Morning starts" … "Night starts", bound to that set. Planner tests default to every summary on (`everySummary`) so they still see each kind; the defaults have their own tests.
+- **T-43:** `Core/Reminders/SnoozeOption`, `SnoozeTarget`, `SnoozeRules`; `ReminderPlanner.plan(…snoozes:)` and `liveSnoozes`. `ReminderManager.notifications()` prunes `DeviceState.snoozes` to the live ones on every rebuild; `snooze(_:)` records a tap. `NotificationText` reads a negative lead as "Started N min ago".

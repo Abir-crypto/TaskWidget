@@ -343,6 +343,12 @@
     "Running" : {
 
     },
+    "Snooze 1 hour" : {
+
+    },
+    "Snooze 15 min" : {
+
+    },
     "Start" : {
 
     },
@@ -356,6 +362,12 @@
 
     },
     "Start timer for %@" : {
+
+    },
+    "Started %lld min ago" : {
+
+    },
+    "Starts now" : {
 
     },
     "Stop" : {

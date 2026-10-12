@@ -18,9 +18,10 @@ public enum ReminderPlanner {
         }
     }
 
-    /// Every notification due after `now` and within the horizon, earliest first, trimmed to `limit`.
+    /// Every notification due after `now` and within the horizon, earliest first, trimmed to `limit`. `snoozes` are
+    /// the day's snoozed reminders (SPEC F-07); each is planned while its original's condition still holds.
     public static func plan(
-        snapshot: Snapshot, now: Date, timer: RunningTimer? = nil, limit: Int = defaultLimit
+        snapshot: Snapshot, now: Date, timer: RunningTimer? = nil, snoozes: [Snooze] = [], limit: Int = defaultLimit
     ) -> [PlannedNotification] {
         let calendar = snapshot.calendar
         let settings = snapshot.settings
@@ -54,12 +55,14 @@ public enum ReminderPlanner {
                 // Ending soon: the lead time before the part ends, but never before it starts.
                 if settings.notifyEndingSoon, !items.isEmpty {
                     let fire = max(start, partEnd.addingTimeInterval(TimeInterval(-settings.endingSoonLead * 60)))
+                    let id = "ending-soon.\(day.rawValue).\(part.rawValue)"
                     plan.append(
                         PlannedNotification(
-                            id: "ending-soon.\(day.rawValue).\(part.rawValue)", fireDate: fire,
+                            id: id, fireDate: fire,
                             content: .endingSoon(
                                 day: day, part: part, minutesLeft: Int(partEnd.timeIntervalSince(fire) / 60),
-                                items: items.map { item($0, snapshot) })))
+                                items: items.map { item($0, snapshot) }),
+                            snooze: snoozeTarget(id, .endingSoon, day: day, fire: fire, partEnd: partEnd)))
                 }
             }
 
@@ -69,11 +72,15 @@ public enum ReminderPlanner {
                     guard let minute = occurrence.timing.fixedMinute else { continue }
                     let fire = day.date(atMinute: minute, in: calendar)
                         .addingTimeInterval(TimeInterval(-settings.fixedLead * 60))
+                    let id = "fixed.\(occurrence.task.id.uuidString.lowercased()).\(day.rawValue)"
+                    let partEnd = day.date(
+                        atMinute: settings.parts.end(of: settings.parts.part(containing: minute)), in: calendar)
                     plan.append(
                         PlannedNotification(
-                            id: "fixed.\(occurrence.task.id.uuidString.lowercased()).\(day.rawValue)", fireDate: fire,
-                            content: .fixed(day: day, item: item(occurrence, snapshot), leadMinutes: settings.fixedLead)
-                        ))
+                            id: id, fireDate: fire,
+                            content: .fixed(
+                                day: day, item: item(occurrence, snapshot), leadMinutes: settings.fixedLead),
+                            snooze: snoozeTarget(id, .fixed, day: day, fire: fire, partEnd: partEnd)))
                 }
             }
 
@@ -103,10 +110,65 @@ public enum ReminderPlanner {
                         habitTitle: timer.habitTitle, runningMinutes: Int(fire.timeIntervalSince(segmentStart) / 60))))
         }
 
+        // Snoozed reminders, rebuilt from the current data (SPEC F-07, §5.9).
+        plan += snoozes.compactMap { snoozed($0, snapshot: snapshot, now: now) }
+
         return Array(
             plan.filter { $0.fireDate > now && $0.fireDate <= end }
                 .sorted { ($0.fireDate, $0.id) < ($1.fireDate, $1.id) }
                 .prefix(limit))
+    }
+
+    /// The snoozes that still apply: not fired yet, and with their original reminder's condition still holding.
+    /// The rest are cleared (SPEC §4.6).
+    public static func liveSnoozes(_ snoozes: [Snooze], snapshot: Snapshot, now: Date) -> [Snooze] {
+        snoozes.filter { snoozed($0, snapshot: snapshot, now: now) != nil }
+    }
+
+    /// A snoozed reminder as a notification, or `nil` once it has fired or its condition no longer holds: for a
+    /// fixed time, the task isn't done; for ending soon, the part still has tasks that aren't done (SPEC F-07).
+    private static func snoozed(_ snooze: Snooze, snapshot: Snapshot, now: Date) -> PlannedNotification? {
+        guard snooze.fireDate > now else { return nil }
+        let calendar = snapshot.calendar
+        let settings = snapshot.settings
+        let day = snooze.day
+        let candidates = snapshot.occurrences(on: day).filter { !snapshot.statusRules.isDone($0) }
+        switch snooze.kind {
+        case .fixed:
+            guard settings.notifyFixed, let taskID = snooze.taskID,
+                let occurrence = candidates.first(where: { $0.task.id == taskID }),
+                let minute = occurrence.timing.fixedMinute
+            else { return nil }
+            let taskTime = day.date(atMinute: minute, in: calendar)
+            let partEnd = day.date(
+                atMinute: settings.parts.end(of: settings.parts.part(containing: minute)), in: calendar)
+            let lead = Int((taskTime.timeIntervalSince(snooze.fireDate) / 60).rounded())
+            return PlannedNotification(
+                id: snooze.id, fireDate: snooze.fireDate,
+                content: .fixed(day: day, item: item(occurrence, snapshot), leadMinutes: lead),
+                snooze: snoozeTarget(snooze.originalID, .fixed, day: day, fire: snooze.fireDate, partEnd: partEnd))
+        case .endingSoon:
+            guard settings.notifyEndingSoon, let part = snooze.part else { return nil }
+            let items = DayOrder.sorted(candidates, parts: snapshot.parts)
+                .filter { $0.part(parts: snapshot.parts) == part }
+            guard !items.isEmpty else { return nil }
+            let partEnd = day.date(atMinute: settings.parts.end(of: part), in: calendar)
+            return PlannedNotification(
+                id: snooze.id, fireDate: snooze.fireDate,
+                content: .endingSoon(
+                    day: day, part: part, minutesLeft: Int((partEnd.timeIntervalSince(snooze.fireDate) / 60).rounded()),
+                    items: items.map { item($0, snapshot) }),
+                snooze: snoozeTarget(
+                    snooze.originalID, .endingSoon, day: day, fire: snooze.fireDate, partEnd: partEnd))
+        }
+    }
+
+    private static func snoozeTarget(
+        _ originalID: String, _ kind: SnoozeKind, day: DayKey, fire: Date, partEnd: Date
+    ) -> SnoozeTarget {
+        SnoozeTarget(
+            originalID: originalID, kind: kind, day: day, partEnd: partEnd,
+            options: SnoozeRules.options(firingAt: fire, partEnd: partEnd))
     }
 
     private static func item(_ occurrence: Occurrence, _ snapshot: Snapshot) -> ReminderItem {

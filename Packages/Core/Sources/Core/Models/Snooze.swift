@@ -18,6 +18,24 @@ public struct Snooze: Hashable, Codable, Sendable {
     }
 }
 
+extension Snooze {
+    /// The snoozed notification's own id: `snooze.` and the original's id (SPEC §5.9).
+    public var id: String { "snooze.\(originalID)" }
+
+    /// The task a fixed-time snooze is for, read from `fixed.<task_id>.<day>`.
+    public var taskID: UUID? {
+        let parts = originalID.split(separator: ".")
+        guard kind == .fixed, parts.count == 3 else { return nil }
+        return UUID(uuidString: String(parts[1]))
+    }
+
+    /// The part an ending-soon snooze is for, read from `ending-soon.<day>.<part>`.
+    public var part: DayPart? {
+        guard kind == .endingSoon, let last = originalID.split(separator: ".").last else { return nil }
+        return DayPart(rawValue: String(last))
+    }
+}
+
 /// Which kind of reminder was snoozed. Only fixed-time and ending-soon reminders can be (SPEC F-07).
 public enum SnoozeKind: String, Codable, Hashable, Sendable {
     case fixed

@@ -33,7 +33,10 @@ enum NotificationText {
         case .endingSoon(_, _, _, let items):
             return String(localized: "\(items.count) left: \(list(items.map { name($0, progress: true) }))")
         case .fixed(_, _, let lead):
-            return String(localized: "In \(lead) min")
+            // A snoozed reminder can come after the task's time (SPEC F-07).
+            if lead > 0 { return String(localized: "In \(lead) min") }
+            if lead == 0 { return String(localized: "Starts now") }
+            return String(localized: "Started \(-lead) min ago")
         case .recap(_, let missed, let open):
             return list((missed + open).map { name($0, progress: true) })
         case .timerAlert(_, let minutes):

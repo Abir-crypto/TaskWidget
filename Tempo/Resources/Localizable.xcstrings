@@ -913,6 +913,12 @@
     "Skip" : {
 
     },
+    "Snooze 1 hour" : {
+
+    },
+    "Snooze 15 min" : {
+
+    },
     "Something went wrong while opening Tempo's data. Close the app and open it again." : {
 
     },
@@ -940,6 +946,9 @@
     "Start timer" : {
 
     },
+    "Started %lld min ago" : {
+
+    },
     "Started again" : {
 
     },
@@ -947,6 +956,9 @@
 
     },
     "Starts %@" : {
+
+    },
+    "Starts now" : {
 
     },
     "Stats" : {
