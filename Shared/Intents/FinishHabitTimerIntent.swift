@@ -3,7 +3,7 @@ import Foundation
 
 /// Done in the Now widget's timer mode: freezes the time and saves it without opening the app; the widget goes
 /// back to its list (SPEC F-21, F-06). Under a minute, nothing is saved.
-struct FinishHabitTimerIntent: AppIntent {
+struct FinishHabitTimerIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Finish Habit Timer"
     static let isDiscoverable = false
 

@@ -2,7 +2,7 @@ import AppIntents
 import Foundation
 
 /// Pause in the Timer widget and the Now widget (SPEC F-18, F-21).
-struct PauseTimerIntent: AppIntent {
+struct PauseTimerIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Pause Timer"
     static let isDiscoverable = false
 

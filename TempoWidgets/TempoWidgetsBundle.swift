@@ -9,5 +9,6 @@ struct TempoWidgetsBundle: WidgetBundle {
         FocusWidget()  // .systemMedium
         NowWidget()  // .systemLarge
         LockScreenWidget()  // .accessoryRectangular, .accessoryInline
+        TimerLiveActivity()  // the timer on the Lock Screen and in the Dynamic Island
     }
 }

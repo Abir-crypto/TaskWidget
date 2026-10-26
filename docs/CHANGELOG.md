@@ -14,6 +14,12 @@ Every change to `docs/SPEC.md` or `docs/platform/*.md`, newest first. Code-only 
 
 ---
 
+## 2026-10-12 · Timer Live Activity (T-45)
+- Added: F-31 — the timer as a Live Activity on the Lock Screen and in the Dynamic Island, with Pause/Resume and Done (D-112, D-123).
+- Changed: §2.1, §2.2 — Live Activities are in v1.
+- Changed: F-06 — the Live Activity row in "Who controls the timer".
+- Platform: ios.md §3, §8, §15 — `Shared/LiveActivity/`, `TimerActivityManager`, the timer intents as `LiveActivityIntent`s, `NSSupportsLiveActivities`.
+
 ## 2026-10-12 · Same timer controls everywhere (T-44)
 - Changed: F-06 — every place that shows the timer can pause and resume it; the Timer widget's Done saves a habit timer without opening the app (D-111, superseding D-022).
 - Changed: F-17, F-18, F-21 — the Timer widget's habit states have Pause/Resume and Done; the Now widget's generic timer line, "Timer · 05:12", has Pause/Resume and Done.

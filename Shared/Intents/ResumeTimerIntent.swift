@@ -2,7 +2,7 @@ import AppIntents
 import Foundation
 
 /// Resume in the Timer widget and the Now widget (SPEC F-18, F-21).
-struct ResumeTimerIntent: AppIntent {
+struct ResumeTimerIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Resume Timer"
     static let isDiscoverable = false
 

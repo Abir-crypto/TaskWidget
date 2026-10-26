@@ -89,6 +89,7 @@ Tempo/
 │   │   └── DeviceState.swift             # App Group UserDefaults: timer, seen list, pending open action, guide completed
 │   ├── Intents/                          # every widget button (§8), plus IntentEnvironment
 │   ├── Widgets/                          # WidgetSnapshot, SnapshotLoader, WidgetTimelinePlan (shared so TempoTests can test them)
+│   ├── LiveActivity/                     # TimerActivityAttributes, shared by the app and the extension (T-45)
 │   ├── DeepLink/
 │   │   └── DeepLink.swift
 │   └── Utilities/
@@ -133,7 +134,8 @@ Tempo/
 │   │   ├── Day/
 │   │   ├── Focus/
 │   │   ├── Now/
-│   │   └── LockScreen/
+│   │   ├── LockScreen/
+│   │   └── TimerActivity/                # the timer's Live Activity (T-45)
 │   ├── Components/                       # CheckboxToggleStyle, TaskMark, WidgetRow, …
 │   └── Resources/                        # the extension's own Assets.xcassets and Localizable.xcstrings
 ├── TempoTests/                           # app tests: managers with an in-memory store, deep links
@@ -325,7 +327,7 @@ Main API. All of it is pure, `Sendable`, and takes `now` and `calendar` as param
 
 ## 8. App Intents (widget buttons)
 
-Every intent lives in `Shared/Intents/`, is compiled into both targets, sets `static let isDiscoverable = false`, builds its managers with `IntentEnvironment.make()`, and ends with `await refresh.refreshNowAndWait()`, so widgets reload and notifications are rebuilt before the extension's process ends. Each intent's logic is in a `run(in:)` method that tests call with an in-memory environment.
+The timer intents are `LiveActivityIntent`s (T-45), so the system runs them in the app's process, where the timer's Live Activity can be started, updated and ended. Every intent lives in `Shared/Intents/`, is compiled into both targets, sets `static let isDiscoverable = false`, builds its managers with `IntentEnvironment.make()`, and ends with `await refresh.refreshNowAndWait()`, so widgets reload and notifications are rebuilt before the extension's process ends. Each intent's logic is in a `run(in:)` method that tests call with an in-memory environment.
 
 | Intent | Used by | Opens app | What it does |
 |---|---|---|---|
@@ -676,3 +678,9 @@ These follow the same IDs as SPEC §8. They cover only what's specific to iOS; b
 - **T-42:** `ReminderPlanner` plans a part's summary only when `SettingsValue.partStartSummaries` contains the part. Settings shows four toggles, "Morning starts" … "Night starts", bound to that set. Planner tests default to every summary on (`everySummary`) so they still see each kind; the defaults have their own tests.
 - **T-43:** `Core/Reminders/SnoozeOption`, `SnoozeTarget`, `SnoozeRules`; `ReminderPlanner.plan(…snoozes:)` and `liveSnoozes`. `ReminderManager.notifications()` prunes `DeviceState.snoozes` to the live ones on every rebuild; `snooze(_:)` records a tap. `NotificationText` reads a negative lead as "Started N min ago".
 - **T-44:** The Timer widget shows both kinds with the same layout: the name ("Timer" or the habit's), the clock, "Running" or "Paused", Pause or Resume, and Done, which is `FinishHabitTimerIntent` for a habit timer and `FinishGenericTimerIntent` otherwise. The Now widget's generic timer line becomes "Timer · 05:12" with the pause/resume intent and `FinishGenericTimerIntent`. Every timer change reloads every widget through `refreshNowAndWait()`, so the last action shows everywhere.
+- **T-45:**
+  - `Shared/LiveActivity/TimerActivityAttributes` (`ActivityAttributes`); `Shared/Managers/TimerActivityManager.sync()` requests, updates or ends `Activity<TimerActivityAttributes>` from the stored timer, guarded by `ActivityAuthorizationInfo().areActivitiesEnabled` and by running in the app (`Bundle.main` is an `.app`).
+  - `RefreshManager.timerActivity` runs it after every refresh and when the app becomes active; only `AppDependencies.live()` (not UI testing) and `IntentEnvironment.make()` set it.
+  - The seven timer intents conform to `LiveActivityIntent`.
+  - `TempoWidgets/Widgets/TimerActivity/TimerLiveActivity` is an `ActivityConfiguration` in the widget bundle. Clocks use the self-updating timer text (`WidgetClock`, `Text(timerInterval:)`) and `ProgressView(timerInterval:)`, so the activity isn't updated every second. The name uses `.privacySensitive(hidesName)`.
+  - `NSSupportsLiveActivities = YES` in `Tempo/Info.plist`.

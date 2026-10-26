@@ -34,6 +34,16 @@
         }
       }
     },
+    "%@ of %lld min today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ of %2$lld min today"
+          }
+        }
+      }
+    },
     "%@ starts at %@" : {
       "localizations" : {
         "en" : {
@@ -45,6 +55,9 @@
       }
     },
     "%@ timer is still running" : {
+
+    },
+    "%@ today" : {
 
     },
     "%@ …and %lld anytime" : {

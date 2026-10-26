@@ -4,7 +4,7 @@ import Foundation
 
 /// The Timer widget's Done: freezes the time at the tap and opens the app's task picker (SPEC F-18, F-06).
 /// `openAppWhenRun` can't change at runtime, which is why the Now widget has its own finish intent (ios.md §8).
-struct FinishGenericTimerIntent: AppIntent {
+struct FinishGenericTimerIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Finish Timer"
     static let isDiscoverable = false
     static let openAppWhenRun = true

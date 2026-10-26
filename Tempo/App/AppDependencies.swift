@@ -72,13 +72,17 @@ final class AppDependencies {
         }
         let clock = SystemClock()
         let container = try StoreFactory.shared.get()
-        return AppDependencies(
+        let dependencies = AppDependencies(
             clock: clock,
             store: SwiftDataTaskStore(container: container, clock: clock),
             deviceState: .shared,
             notifications: SystemNotificationScheduler(),
             widgets: WidgetManager()
         )
+        // Only the real app shows the timer's Live Activity (SPEC F-31).
+        dependencies.refresh.timerActivity = TimerActivityManager(
+            store: dependencies.store, deviceState: .shared, clock: clock)
+        return dependencies
     }
 
     /// In-memory dependencies for previews, at Tuesday 6 Oct 2026, 10:30 in the current time zone, optionally

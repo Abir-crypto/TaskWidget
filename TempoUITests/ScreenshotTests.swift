@@ -405,6 +405,52 @@ final class ScreenshotTests: XCTestCase {
         Self.deleteHabit(named: "Widget check", in: app)
     }
 
+    /// Starts a habit timer in the real app and photographs its Live Activity in the Dynamic Island and on the Lock
+    /// Screen, pauses it from the Lock Screen, then deletes the habit, which ends it (SPEC F-31, T-45). iPhone only.
+    @MainActor
+    func testTimerLiveActivity() {
+        let app = XCUIApplication()
+        app.launch()
+        finishGuideIfShown(app)
+        if app.buttons["Not now"].waitForExistence(timeout: 2) { app.buttons["Not now"].tap() }
+        app.buttons["Today"].firstMatch.tap()
+        app.buttons["Add task"].firstMatch.tap()
+        _ = app.buttons["Duration"].waitForExistence(timeout: 5)
+        app.buttons["Duration"].tap()
+        let title = app.textFields["Title"]
+        title.tap()
+        title.typeText("Live check")
+        app.buttons["Anytime"].tap()
+        app.buttons["Save"].tap()
+        let play = app.buttons["Start timer"].firstMatch
+        _ = play.waitForExistence(timeout: 5)
+        play.tap()
+        sleep(2)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        XCUIDevice.shared.press(.home)
+        sleep(3)
+        save(springboard, "live-1-dynamic-island")
+        lockAndWake()
+        sleep(2)
+        save(springboard, "live-2-lock-screen")
+        let pause = springboard.buttons["Pause"].firstMatch
+        if pause.waitForExistence(timeout: 3) {
+            pause.tap()
+            sleep(3)
+        }
+        save(springboard, "live-3-paused")
+        XCUIDevice.shared.press(.home)
+        sleep(1)
+        app.activate()
+        save(app, "live-4-app-paused")
+        Self.deleteHabit(named: "Live check", in: app)
+        XCUIDevice.shared.press(.home)
+        sleep(2)
+        lockAndWake()
+        save(springboard, "live-5-ended")
+        XCUIDevice.shared.press(.home)
+    }
+
     /// Deletes a habit with its history through Tasks › Habits, which also discards its timer.
     @MainActor
     static func deleteHabit(named name: String, in app: XCUIApplication) {

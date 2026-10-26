@@ -2,7 +2,7 @@ import AppIntents
 import Foundation
 
 /// The Timer widget's Start: begins a generic timer without opening the app (SPEC F-18).
-struct StartGenericTimerIntent: AppIntent {
+struct StartGenericTimerIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Start Timer"
     static let isDiscoverable = false
 

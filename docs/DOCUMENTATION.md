@@ -279,7 +279,7 @@ Duration habits collect time entries. The math for minutes, weekly goals and tot
 - None for F-05.
 
 ## F-06 · Timer
-Status: Built (T-19, T-20, T-23, T-24, T-44) · Last updated: 2026-10-12 · T-44
+Status: Built (T-19, T-20, T-23, T-24, T-44, T-45) · Last updated: 2026-10-12 · T-45
 
 ### What it does
 One timer per device, generic or for a habit, which can be paused, resumed, finished or discarded. Its state is stored on the device, shared by the app and the widgets. In the app it shows as a bar above the tabs and a timer screen, with a task picker and a confirmation after Done. Every widget that shows it can pause and resume it (T-44, D-111): the Timer widget for both kinds, and the Now widget's timer mode and generic timer line.
@@ -1254,3 +1254,38 @@ Settings › Missed tasks chooses how missed tasks look: **Gentle** (the default
 
 ### Known gaps
 - None for F-30.
+
+---
+
+## F-31 · Timer Live Activity
+Status: Built (T-45) · Last updated: 2026-10-12 · T-45
+
+### What it does
+While a timer exists, it shows as a Live Activity on the Lock Screen and in the Dynamic Island, with Pause or Resume and Done. It starts, updates and ends with the timer, wherever the timer was changed.
+
+### Behavior
+- **Lock Screen:** the habit's name with a timer icon (or "Timer"), the clock on the right (counting by itself; paused, the time so far and a pause icon), for a habit timer a progress bar and "22:15 of 30 min today" counting from today's total including time logged earlier (both move by themselves while running; paused, "22 of 30 min today"), then Pause or Resume and Done.
+- **Dynamic Island:** compact, a timer icon in the theme color and the clock; minimal, the icon; expanded, the name, the clock, the progress and the buttons.
+- **Done:** a habit timer's saves without opening the app; a generic timer's opens the task picker (F-06). No Discard.
+- **Tapping** elsewhere opens the timer screen (`tempo://timer`).
+- **Hide task names:** the name is `privacySensitive` while that setting is on, so it's hidden while locked, as on the Lock Screen widgets (D-123).
+- **Theme color:** the buttons, the progress bar and the icon use it.
+- **When it changes:** every refresh (`RefreshManager`) brings the activity in line with the stored timer: it starts one when there's a timer and none is showing (including after the system ended it), updates it, or ends it at once when the timer is gone. The app also checks when it becomes active.
+- **iPad, or Live Activities turned off:** nothing happens; timers work as before.
+
+### Data
+Reads the device-only timer, the habit's title, its time entries and target on the timer's day, and the settings (hide names, theme color). Stores nothing.
+
+### Implementation (iOS)
+- `Shared/LiveActivity/TimerActivityAttributes.swift`: the attributes (kind, habit, start day) and content state.
+- `Shared/Managers/TimerActivityManager.swift`: `sync()` and the pure `contentState(for:snapshot:)`. It only acts in the app's process; the app and `IntentEnvironment.make()` attach it to their `RefreshManager` (tests and UI-test launches don't, so they never start one).
+- The timer intents (`Start…`, `Pause…`, `Resume…`, `Finish…`, `Discard…`) are `LiveActivityIntent`s, so a widget or Live Activity button runs them in the app's process.
+- `TempoWidgets/Widgets/TimerActivity/`: `TimerLiveActivity` (the `ActivityConfiguration`), `TimerActivityView`, `TimerActivityName`, `TimerActivityClock`, `TimerActivityProgress`, `TimerActivityButtons`, and preview data.
+- `Tempo/Info.plist`: `NSSupportsLiveActivities`.
+
+### Tests
+- `TempoTests/LiveActivity/TimerActivityTests.swift`: the content for a running habit timer (name, clock, earlier time, target) and a paused generic one; Hide task names and the theme color; every timer intent is a `LiveActivityIntent`; Done after midnight saves to the day the timer started.
+- `TempoUITests/ScreenshotTests.testTimerLiveActivity` (screenshots only): a habit timer from the app in the Dynamic Island and on the Lock Screen, paused from the Lock Screen, and gone after the habit is deleted.
+
+### Known gaps
+- Checked on the iPhone simulator; a locked device with a passcode (hidden names) is part of T-53.

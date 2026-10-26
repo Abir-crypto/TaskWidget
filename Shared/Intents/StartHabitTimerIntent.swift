@@ -3,7 +3,7 @@ import Foundation
 
 /// ▶ in the Now widget: starts a habit timer without opening the app, and the widget turns into the timer
 /// (SPEC F-21, F-06).
-struct StartHabitTimerIntent: AppIntent {
+struct StartHabitTimerIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Start Habit Timer"
     static let isDiscoverable = false
 

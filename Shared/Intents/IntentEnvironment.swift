@@ -11,11 +11,16 @@ struct IntentEnvironment {
     let deviceState: DeviceState
 
     /// The real managers: the App Group store, the system clock, WidgetKit and the notification center.
+    /// The timer's Live Activity is kept in step too; only the app's process can do that, which is why the timer
+    /// intents are Live Activity intents (SPEC F-31).
     static func make() throws -> IntentEnvironment {
         let clock = SystemClock()
-        return make(
-            store: SwiftDataTaskStore(container: try StoreFactory.shared.get(), clock: clock), deviceState: .shared,
-            clock: clock, widgets: WidgetManager(), scheduler: SystemNotificationScheduler())
+        let store = SwiftDataTaskStore(container: try StoreFactory.shared.get(), clock: clock)
+        let environment = make(
+            store: store, deviceState: .shared, clock: clock, widgets: WidgetManager(),
+            scheduler: SystemNotificationScheduler())
+        environment.refresh.timerActivity = TimerActivityManager(store: store, deviceState: .shared, clock: clock)
+        return environment
     }
 
     static func make(

@@ -83,6 +83,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 - Missed tracking: a Missed tab and a missed-tasks popup, shown Gentle or Strict (F-30).
 - A correction window for yesterday, until today's Afternoon starts (§5.11).
 - Snoozing fixed-time and ending-soon reminders (F-07).
+- A Live Activity for the timer (F-31).
 - Notifications: part-of-day summaries, ending-soon reminders, fixed-time reminders, an end-of-day recap, and a running-timer alert.
 - Screens: Today, Tasks (with History), Missed, Stats, Habit detail, Task editor, Settings, Timer screen, Task picker.
 - Widgets: Timer (small), Day (medium), Focus (medium), Now (large), Lock Screen (rectangular and inline).
@@ -94,7 +95,7 @@ Tempo is a to-do list organized by the time of day. Every task says *when* in th
 ### 2.2 Not in v1
 
 - Accounts, sync, server backup, and the Android app. The data model is ready for them (F-26).
-- Live Activities, Control Center controls, Siri or Shortcuts actions, Apple Watch, Mac.
+- Control Center controls, Siri or Shortcuts actions, Apple Watch, Mac.
 - Subtasks, tags, lists, priorities, attachments, sharing.
 - Manual reordering of tasks.
 - Different part-of-day times on different weekdays.
@@ -219,6 +220,7 @@ There's one timer at a time per device. Its state stays on the device and is nev
 |---|---|---|
 | Timer widget (small) | Pause/Resume, Done (opens the task picker) | Pause/Resume, Done (saves without opening the app) |
 | Now widget (large) | The line "Timer · 05:12" with Pause/Resume and Done (opens the task picker) | Timer mode with Pause/Resume, Done and Discard |
+| Live Activity (F-31) | Pause/Resume, Done (opens the task picker) | Pause/Resume, Done (saves without opening the app) |
 | App (timer bar and timer screen) | Full control | Full control |
 
 While a timer exists, whether running or paused, every ▶ button is hidden and the Timer widget shows the timer instead of Start. The current timer has to be finished or discarded before another can start.
@@ -643,6 +645,20 @@ The user chooses how missed tasks are shown in Settings: **Gentle** (the default
 - The style applies at once, in the app, the widgets and the notifications planned from then on.
 - The popup never runs in Gentle, so nothing is added to its seen list (§4.6) there. Switching from Gentle to Strict adds today's tasks that are missed at that moment to the seen list, so the popup only shows tasks missed after the switch, at the next normal open.
 - A stored style the app can't read is treated as Gentle.
+
+### F-31 · Timer Live Activity
+
+A timer shows as a Live Activity while it exists, wherever it was started.
+
+- It starts when a timer starts, from anywhere: the app, a widget, the control (F-32) or a Shortcut (F-33). It ends when the timer is finished or discarded.
+- **Lock Screen:** the habit name (or "Timer"), the clock counting up (or the time so far, paused), and, for a habit timer, a progress bar with today's total against the target ("22:15 of 30 min today"). It has Pause/Resume and Done.
+- **Dynamic Island:** compact shows a timer icon and the clock; minimal shows the icon. Expanded shows the name, the clock, the progress and the buttons.
+- **Done** follows F-06: a habit timer's saves without opening the app, a generic timer's opens the task picker. There's no Discard.
+- **Tapping** outside the buttons opens the app's timer screen.
+- **Hide task names:** while the device is locked, the habit name is hidden, the same way as the Lock Screen widgets' titles (F-22).
+- **Colors:** buttons and progress use the theme color (F-27).
+- If the user has turned Live Activities off, or the device doesn't show them (iPad), nothing else changes.
+- If the system ends the activity, for example at its time limit, the timer keeps running. The activity comes back at the next timer action.
 
 ---
 

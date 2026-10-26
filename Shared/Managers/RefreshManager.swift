@@ -18,6 +18,8 @@ final class RefreshManager {
     @ObservationIgnored private var pending: Task<Void, Never>?
     /// Rebuilds notifications after each refresh. Set once the reminder manager exists.
     @ObservationIgnored var reminders: ReminderManager?
+    /// Keeps the timer's Live Activity in step (SPEC F-31). Set only for the real app, so tests never start one.
+    @ObservationIgnored var timerActivity: TimerActivityManager?
 
     init(widgets: any WidgetReloading) {
         self.widgets = widgets
@@ -38,6 +40,9 @@ final class RefreshManager {
     /// after a widget changed something.
     func dataMayHaveChanged() {
         revision += 1
+        if let timerActivity {
+            Task { await timerActivity.sync() }
+        }
     }
 
     /// Refreshes immediately. App Intents use this, because their process may end right after.
@@ -49,6 +54,9 @@ final class RefreshManager {
         if let reminders {
             Task { await reminders.rebuild() }
         }
+        if let timerActivity {
+            Task { await timerActivity.sync() }
+        }
     }
 
     /// Refreshes immediately and waits for the notifications to be rebuilt. App Intents use this, because the
@@ -58,5 +66,6 @@ final class RefreshManager {
         pending = nil
         widgets.reloadAll()
         await reminders?.rebuild()
+        await timerActivity?.sync()
     }
 }
